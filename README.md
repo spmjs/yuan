@@ -70,7 +70,19 @@ Server response:
 ```json
 {
     "status": "fail",
-    "message": "found more than one package"
+    "message": "found more than one package",
+    "packages": [
+        {
+            "name": "yuan",
+            "author": "lepture",
+            "description": "yuan is a distributed packaging system"
+        },
+        {
+            "name": "yuan",
+            "author": "lifesinger",
+            "description": "yuan is a seajs module"
+        }
+    ]
 }
 ```
 
