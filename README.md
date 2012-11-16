@@ -128,14 +128,19 @@ Body:
     user/group
     name
     version
+    homepage
     dependencies
     description
     md5
-    file
+    file/url
 ```
 
 Server will do:
 
 1. authentication and permission check
 2. check md5
-3. save information in database then save the file
+3. save information in database
+4. save the file (optional)
+
+
+## Mirror
