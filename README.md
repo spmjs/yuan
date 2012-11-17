@@ -32,7 +32,7 @@ In this case two packages of two people can have the same name.
 Client request:
 
 ```
-GET /request/search?name=yuan
+GET /request/search?package=yuan
 ```
 
 Server response:
@@ -62,7 +62,7 @@ Server response:
 Client request:
 
 ```
-GET /request/fetch?name=yuan
+GET /request/fetch?package=yuan
 ```
 
 Server response:
@@ -94,10 +94,10 @@ And yuan can be namespace-less with just a few configuration.
 Client request:
 
 ```
-GET /request/fetch?name=lepture/yuan
+GET /request/fetch?package=lepture/yuan
 
-or with a version, like lepture/yuan=1.0.0 please encode it.
-GET /request/fetch?name=lepture/yuan%3D1.0.0
+or with a version, like lepture/yuan==1.0.0 please encode it.
+GET /request/fetch?package=lepture/yuan%3D%3D1.0.0
 ```
 
 Server count the hit and then response:
@@ -116,7 +116,8 @@ Client should do:
 
 1. if server responses with a homepage address, client should hit the homepage.
 2. client should download the dependencies recursively until there is no dependency.
-3. client should check the md5 value of the package, if it doesn't match, client should show a warnning.
+3. client should not rely only on the dependencies given by the server.
+4. client should check the md5 value of the package, if it doesn't match, client should show a warnning.
 
 
 ### Upload
