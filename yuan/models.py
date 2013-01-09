@@ -1,14 +1,13 @@
 import hashlib
 import random
 from datetime import datetime
-from flask.ext.login import UserMixin
 
 from flask.ext.sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
 
-class Account(db.Model, UserMixin):
+class Account(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(40), unique=True, index=True)
     email = db.Column(db.String(200), unique=True, index=True)
@@ -24,7 +23,7 @@ class Account(db.Model, UserMixin):
     comment_service = db.Column(db.String(100))
 
     private = db.Column(db.Boolean, default=False)
-    status = db.Column(db.Integer, default=1)
+    role = db.Column(db.Integer, default=1)
     created = db.Column(db.DateTime, default=datetime.utcnow)
     token = db.Column(db.String(20))
 
@@ -47,7 +46,7 @@ class Account(db.Model, UserMixin):
         return db.app.config['GRAVATAR_BASE_URL'] + query
 
     def is_active(self):
-        return self.status > 1
+        return self.role > 1
 
     @staticmethod
     def create_password(raw):
