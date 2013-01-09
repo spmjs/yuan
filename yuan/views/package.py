@@ -3,7 +3,7 @@
 from flask import Blueprint
 from ..models import Project
 
-bp = Blueprint('front', __name__)
+bp = Blueprint('package', __name__)
 
 
 @bp.route('/')
