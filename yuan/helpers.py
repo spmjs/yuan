@@ -40,7 +40,7 @@ require_staff = require_role(6)
 require_admin = require_role(9)
 
 
-def get_user():
+def get_current_user():
     if 'id' in session and 'token' in session:
         user = Account.query.get(int(session['id']))
         if not user:

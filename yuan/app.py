@@ -6,10 +6,11 @@ ROOTDIR = os.path.split(PROJDIR)[0]
 CONFDIR = os.path.join(PROJDIR, '_config')
 
 from flask import Flask
-from flask import request
+from flask import request, g
 from flask.ext.babel import Babel
 from .models import db
 from .views import front, account
+from .helpers import get_current_user
 
 
 def create_app(config=None):
@@ -32,7 +33,7 @@ def create_app(config=None):
 
     @app.before_request
     def load_current_user():
-        pass
+        g.user = get_current_user()
 
     # babel for i18n
     babel = Babel(app)

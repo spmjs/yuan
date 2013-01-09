@@ -4,7 +4,7 @@ from flask import Blueprint
 from flask import g, request
 from flask import render_template, redirect, url_for
 from ..helpers import login_user, logout_user
-from ..forms import SignupForm
+from ..forms import SignupForm, SigninForm
 
 bp = Blueprint('account', __name__)
 
@@ -24,7 +24,11 @@ def signin():
     next_url = request.args.get('next', '/')
     if g.user:
         return redirect(next_url)
-    #form = SigninForm()
+    form = SigninForm()
+    if form.validate_on_submit():
+        login_user(form.user)
+        return redirect(next_url)
+    return render_template('signin.html', form=form)
 
 
 @bp.route('/signout')
@@ -36,9 +40,4 @@ def signout():
 
 @bp.route('/settings')
 def settings():
-    pass
-
-
-@bp.route('/group')
-def group():
-    pass
+    return render_template('settings.html')

@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% from "macro/form.html" import render_field %}
+
+{% block mainbody %}
+<form class="classy" method="post" action="">
+  {{ form.csrf_token }}
+  {{ render_field(form.account) }}
+  {{ render_field(form.password) }}
+
+  <div class="form-submit">
+    <button class="classy">Submit</button>
+  </div>
+</form>
+{% endblock %}

@@ -11,7 +11,7 @@ class BaseForm(Form):
     pass
 
 
-class SignupForm(Form):
+class SignupForm(BaseForm):
     name = TextField(
         _('Username'), validators=[Required(), Length(min=3, max=20)]
     )
@@ -27,3 +27,26 @@ class SignupForm(Form):
         db.session.add(user)
         db.session.commit()
         return user
+
+
+class SigninForm(BaseForm):
+    account = TextField(
+        _('Account'), validators=[Required(), Length(min=3, max=20)]
+    )
+    password = PasswordField(
+        _('Password'), validators=[Required()]
+    )
+
+    def validate_password(self, field):
+        account = self.account.data
+        if '@' in account:
+            user = Account.query.filter_by(email=account).first()
+        else:
+            user = Account.query.filter_by(name=account).first()
+
+        if not user:
+            raise ValueError(_('Wrong account or password'))
+        if user.check_password(field.data):
+            self.user = user
+            return user
+        raise ValueError(_('Wrong account or password'))
