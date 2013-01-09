@@ -1,23 +1,37 @@
 # coding: utf-8
 
 from flask import Blueprint
+from flask import g, request
+from flask import render_template, redirect, url_for
+from ..helpers import login_user, logout_user
+from ..forms import SignupForm
 
 bp = Blueprint('account', __name__)
 
 
-@bp.route('/signup')
+@bp.route('/signup', methods=['GET', 'POST'])
 def signup():
-    pass
+    form = SignupForm()
+    if form.validate_on_submit():
+        user = form.save()
+        login_user(user)
+        return redirect(url_for('.settings'))
+    return render_template('signup.html', form=form)
 
 
-@bp.route('/signin')
+@bp.route('/signin', methods=['GET', 'POST'])
 def signin():
-    pass
+    next_url = request.args.get('next', '/')
+    if g.user:
+        return redirect(next_url)
+    #form = SigninForm()
 
 
 @bp.route('/signout')
 def signout():
-    pass
+    next_url = request.args.get('next', '/')
+    logout_user()
+    return redirect(next_url)
 
 
 @bp.route('/settings')

@@ -9,7 +9,7 @@ from flask import Flask
 from flask import request
 from flask.ext.babel import Babel
 from .models import db
-from .views import front
+from .views import front, account
 
 
 def create_app(config=None):
@@ -27,6 +27,7 @@ def create_app(config=None):
     db.app = app
 
     # register blueprints
+    app.register_blueprint(account.bp, url_prefix='/account')
     app.register_blueprint(front.bp, url_prefix='')
 
     @app.before_request

@@ -1,0 +1,20 @@
+{% macro render_field(field, class=None) %}
+<dl class="form-field {% if field.flags.required %}required{% endif %}">
+  <dt>
+  <label>{{field.label}}</label>
+  {%- if field.description %}
+  <span class="description">{{ field.description }}</span>
+  {%- endif %}
+  </dt>
+  <dd>{{field()}}</dd>
+  {%- if field.errors %}
+  <dd class="errors">
+  <ul class="error-list">
+    {%- for error in field.errors %}
+    <li>{{error}}</li>
+    {%- endfor %}
+  </ul>
+  </dd>
+  {%- endif %}
+</dl>
+{% endmacro %}
