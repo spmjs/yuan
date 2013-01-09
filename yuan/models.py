@@ -90,6 +90,8 @@ class Project(db.Model):
     account_id = db.Column(db.Integer, nullable=False, index=True)
 
     name = db.Column(db.String(40), unique=True, index=True)
+    homepage = db.Column(db.String(200))
+
     screen_name = db.Column(db.String(80))
     description = db.Column(db.String(400))
 
@@ -107,5 +109,13 @@ class Version(db.Model):
     channel = db.Column(db.String(20), default='stable')
 
     download_url = db.Column(db.String(400))
+    dependencies = db.Column(db.Text)
     md5value = db.Column(db.String(50), unique=True)
+
     created = db.Column(db.DateTime, default=datetime.utcnow)
+
+    @property
+    def dependency_list(self):
+        if not self.dependencies:
+            return []
+        return self.dependencies.split()
