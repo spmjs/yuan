@@ -12,7 +12,7 @@ manager = Manager(create_app())
 
 
 @manager.command
-def runserver(port=8000, config=CONFIG):
+def runserver(port=5000, config=CONFIG):
     """Runs a development server."""
     from gevent.wsgi import WSGIServer
     from werkzeug.serving import run_with_reloader

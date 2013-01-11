@@ -1,6 +1,8 @@
 {% extends "layout.html" %}
 {% from "macro/form.html" import render_field %}
 
+{% block title %}{{_('Signin')}}{% endblock %}
+
 {% block mainbody %}
 <form class="classy" method="post" action="">
   {{ form.csrf_token }}
@@ -8,7 +10,7 @@
   {{ render_field(form.password) }}
 
   <div class="form-submit">
-    <button class="classy">Submit</button>
+    <button class="nicely">Submit</button>
   </div>
 </form>
 {% endblock %}
