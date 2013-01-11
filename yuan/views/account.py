@@ -15,7 +15,8 @@ def signup():
     if form.validate_on_submit():
         user = form.save()
         login_user(user)
-        return redirect(url_for('.settings'))
+        next_url = request.args.get('next', url_for('.settings'))
+        return redirect(next_url)
     return render_template('signup.html', form=form)
 
 

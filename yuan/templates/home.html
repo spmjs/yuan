@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block title %}{% endblock %}
+
+{% block mainbody %}
+{%- if g.user %}
+hello {{g.user.name}}, <a href="/account/signout">signout</a>
+{%- else %}
+<a class="button-nicely" href="/account/signin">signin</a>
+<a class="button-nicely" href="/account/signup">signup</a>
+{%- endif %}
+{% endblock %}
+

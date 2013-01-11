@@ -7,10 +7,27 @@ from flask.ext.sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
+def get_models_by_ids(model, ids):
+    ids = set(ids)
+    if len(ids) == 0:
+        return {}
+    if len(ids) == 1:
+        ident = ids.pop()
+        rv = model.query.get(ident)
+        if not rv:
+            return {}
+        return {ident: rv}
+    items = model.query.filter(model.id.in_(ids))
+    dct = {}
+    for u in items:
+        dct[u.id] = u
+    return dct
+
+
 class Account(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(40), unique=True, index=True)
-    email = db.Column(db.String(200), unique=True, index=True)
+    name = db.Column(db.String(40), unique=True, index=True, nullable=False)
+    email = db.Column(db.String(200), index=True)
 
     # user need a password
     password = db.Column(db.String(100))
@@ -23,17 +40,28 @@ class Account(db.Model):
     comment_service = db.Column(db.String(100))
 
     private = db.Column(db.Boolean, default=False)
+
+    # if it is an org, role means the owner
+    # if it is a user: 1 - not verified, 2 - verified, > 20 staff > 40 admin
     role = db.Column(db.Integer, default=1)
+
     created = db.Column(db.DateTime, default=datetime.utcnow)
     token = db.Column(db.String(20))
 
-    def __init__(self, email, **kwargs):
-        self.email = email.lower()
+    def __init__(self, **kwargs):
         self.token = self.create_token(16)
 
         if 'password' in kwargs:
             raw = kwargs.pop('password')
             self.password = self.create_password(raw)
+
+        if 'name' in kwargs:
+            name = kwargs.pop('name')
+            self.name = name.lower()
+
+        if 'email' in kwargs:
+            email = kwargs.pop('email')
+            self.email = email.lower()
 
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -44,9 +72,6 @@ class Account(db.Model):
         md5email = hashlib.md5(self.email).hexdigest()
         query = "%s?s=%s%s" % (md5email, size, db.app.config['GRAVATAR_EXTRA'])
         return db.app.config['GRAVATAR_BASE_URL'] + query
-
-    def is_active(self):
-        return self.role > 1
 
     @staticmethod
     def create_password(raw):
@@ -83,6 +108,35 @@ class GroupMember(db.Model):
     # owner, admin, write, read
     role_type = db.Column(db.String(20), default='write')
     created = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __getattr__(self, key):
+        try:
+            return super(GroupMember, self).__getattr__(key)
+        except AttributeError as e:
+            if not hasattr(self, '_model'):
+                raise e
+            pass
+        return getattr(self._model, key)
+
+    @classmethod
+    def get_groups(cls, user_id):
+        items = cls.query.filter_by(user_id=user_id).all()
+        ids = (o.group_id for o in items)
+        relates = get_models_by_ids(Account, ids)
+        for item in items:
+            if item.id in relates:
+                item._model = relates[item.id]
+                yield item
+
+    @classmethod
+    def get_members(cls, group_id):
+        items = cls.query.filter_by(group_id=group_id).all()
+        ids = (o.user_id for o in items)
+        relates = get_models_by_ids(Account, ids)
+        for item in items:
+            if item.id in relates:
+                item._model = relates[item.id]
+                yield item
 
 
 class Project(db.Model):

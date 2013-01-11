@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{url_for('static', filename='yue.tmp.css')}}" />
+    <link rel="stylesheet" href="{{url_for('static', filename='site.css')}}" />
   </head>
   <body>
-    {% block mainbody %}{% endblock %}
+    <div class="container">
+      {% block mainbody %}{% endblock %}
+    </div>
   </body>
 </html>

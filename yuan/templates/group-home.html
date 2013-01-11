@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% from "macro/form.html" import render_field, render_errors %}
+
+{% block title %}{% endblock %}
+
+{% block mainbody %}
+{% for group in admins %}
+{{group.name}}
+{% endfor %}
+<form method="post" action="">
+  {{ form.csrf_token }}
+  {{ render_field(form.name, 'long') }}
+  {{ render_field(form.screen_name, 'long') }}
+  {{ render_field(form.email, 'long') }}
+  {{ render_field(form.bio, 'long') }}
+
+  <dl class="form{% if form.comment_service_id.errors %} error{% endif %}">
+    <dt>{{form.comment_service_name.label}}</dt>
+    <dd>{{form.comment_service_name()}} {{form.comment_service_id(class_='text')}}</dd>
+    {{ render_errors(form.comment_service_id.errors) }}
+    {{ render_errors(form.comment_service_name.errors) }}
+  </dl>
+
+  <div class="checkbox-form {{modifier}}">
+    {{form.private()}} {{form.private.label}}
+    <p>{{form.private.description}}</p>
+  </div>
+
+  <div class="form-submit">
+    <button class="nicely">Submit</button>
+  </div>
+</form>
+{% endblock %}
