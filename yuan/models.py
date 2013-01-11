@@ -73,6 +73,19 @@ class Account(db.Model):
         query = "%s?s=%s%s" % (md5email, size, db.app.config['GRAVATAR_EXTRA'])
         return db.app.config['GRAVATAR_BASE_URL'] + query
 
+    @property
+    def comment_service_name(self):
+        if self.comment_service:
+            return self.comment_service.split('-')[0]
+        return None
+
+    @property
+    def comment_service_id(self):
+        if self.comment_service:
+            bits = self.comment_service.split('-')
+            return '-'.join(bits[1:])
+        return None
+
     @staticmethod
     def create_password(raw):
         salt = Account.create_token(8)

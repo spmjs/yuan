@@ -6,12 +6,15 @@ from flask.ext.wtf import TextAreaField, SelectField
 from flask.ext.wtf.html5 import EmailField
 from flask.ext.wtf import Required, Email, Length, Regexp, Optional
 from flask.ext.babel import lazy_gettext as _
+from wtforms.compat import iteritems
 
 from .models import db, Account
 
 
 class BaseForm(Form):
-    pass
+    def __init__(self, *args, **kwargs):
+        self._obj = kwargs.get('obj', None)
+        super(BaseForm, self).__init__(*args, **kwargs)
 
 
 class SignupForm(BaseForm):
@@ -96,13 +99,27 @@ class GroupForm(BaseForm):
     )
 
     def validate_name(self, field):
+        if self._obj and self._obj.name == field.data.lower():
+            return
         if Account.query.filter_by(name=field.data.lower()).count():
             raise ValueError(_('This name has been registered.'))
 
     def validate_email(self, field):
+        if self._obj and self._obj.email == field.data.lower():
+            return
         if field.data:
             if Account.query.filter_by(email=field.data.lower()).count():
                 raise ValueError(_('This email has been registered.'))
+
+    def populate_obj(self, obj):
+        for name, field in iteritems(self._fields):
+            if not name.startswith('comment_service'):
+                field.populate_obj(obj, name)
+
+        csn = self._fields['comment_service_name']
+        csi = self._fields['comment_service_id']
+        if csn and csi:
+            obj.comment_service = '%s-%s' % (csn.data, csi.data)
 
     def save(self, user):
         data = dict(self.data)
