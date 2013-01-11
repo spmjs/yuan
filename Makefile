@@ -45,10 +45,14 @@ clean-pyc:
 
 files := $(shell find . -name '*.py' ! -path "*__init__.py*" ! -path "*docs/*")
 lint:
-	@flake8 ${files}
+	@flake8 ${files} --ignore=E127
 
+options =
 testing:
-	@nosetests -v
+	@nosetests ${options}
+
+print-test:
+	@$(MAKE) testing options=--nocapture
 
 coverage:
 	@rm .coverage
