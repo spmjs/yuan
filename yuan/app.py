@@ -9,7 +9,7 @@ from flask import Flask
 from flask import request, g
 from flask.ext.babel import Babel
 from .models import db
-from .views import front, account, group, package
+from .views import front, account, group, package, admin
 from .helpers import get_current_user
 
 
@@ -22,12 +22,14 @@ def create_app(config=None):
     app.config.from_pyfile(os.path.join(CONFDIR, 'base.py'))
     if config and isinstance(config, dict):
         app.config.from_object(config)
-    elif config and isinstance(config, str):
+    elif config:
         app.config.from_pyfile(config)
 
     # prepare for database
     db.init_app(app)
     db.app = app
+
+    admin.admin.init_app(app)
 
     # register blueprints
     app.register_blueprint(account.bp, url_prefix='/account')
