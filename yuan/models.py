@@ -151,6 +151,11 @@ class GroupMember(db.Model):
                 item._model = relates[item.id]
                 yield item
 
+    @classmethod
+    def is_member(cls, group_id, user_id):
+        rv = cls.query.filter_by(group_id=group_id, user_id=user_id).first()
+        return rv
+
 
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -168,11 +173,11 @@ class Project(db.Model):
                         onupdate=datetime.utcnow)
 
 
-class Version(db.Model):
+class Package(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     project_id = db.Column(db.Integer, nullable=False, index=True)
-    semantic = db.Column(db.String(50), nullable=False)
+    version = db.Column(db.String(50), nullable=False)
     channel = db.Column(db.String(20), default='stable')
 
     download_url = db.Column(db.String(400))
