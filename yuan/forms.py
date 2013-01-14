@@ -8,7 +8,7 @@ from flask.ext.wtf import Required, Email, Length, Regexp, Optional
 from flask.ext.babel import lazy_gettext as _
 from wtforms.compat import iteritems
 
-from .models import db, Account, Group
+from .models import db, Account, Team
 
 
 class BaseForm(Form):
@@ -156,6 +156,6 @@ class TeamForm(BaseForm):
     def save(self, org):
         data = dict(self.data)
         data['owner_id'] = org.id
-        group = Group(**data)
-        group.save()
-        return group
+        team = Team(**data)
+        team.save()
+        return team

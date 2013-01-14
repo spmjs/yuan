@@ -6,7 +6,7 @@ from datetime import datetime
 from werkzeug import cached_property
 from ._base import db, YuanQuery, SessionMixin, model_created
 
-__all__ = ['Account', 'Group']
+__all__ = ['Account', 'Team']
 
 
 class Account(db.Model, SessionMixin):
@@ -38,7 +38,7 @@ class Account(db.Model, SessionMixin):
     token = db.Column(db.String(20))
 
     def __init__(self, **kwargs):
-        model_created.connect(create_owner_group, sender=self)
+        model_created.connect(create_owner_team, sender=self)
 
         self.token = self.create_token(16)
 
@@ -104,7 +104,7 @@ class Account(db.Model, SessionMixin):
         return verify == hsh
 
 
-class Group(db.Model, SessionMixin):
+class Team(db.Model, SessionMixin):
     query_class = YuanQuery
 
     id = db.Column(db.Integer, primary_key=True)
@@ -120,27 +120,27 @@ class Group(db.Model, SessionMixin):
     # contain members
     members = db.relationship(
         Account,
-        secondary=lambda: group_member,
+        secondary=lambda: team_member,
         lazy='dynamic',
     )
 
 
-group_member = db.Table(
-    'group_member', db.Model.metadata,
+team_member = db.Table(
+    'team_member', db.Model.metadata,
     db.Column(
         'account_id', db.Integer,
         db.ForeignKey('account.id', ondelete='CASCADE'),
         primary_key=True,
     ),
     db.Column(
-        'group_id', db.Integer,
-        db.ForeignKey('group.id', ondelete='CASCADE'),
+        'team_id', db.Integer,
+        db.ForeignKey('team.id', ondelete='CASCADE'),
         primary_key=True,
     )
 )
 
 
-def create_owner_group(sender, model=None):
+def create_owner_team(sender, model=None):
     if not model:
         return
     if model.account_type != 'org':
@@ -148,6 +148,6 @@ def create_owner_group(sender, model=None):
     user = Account.query.get(model.org_owner_id)
     if not user:
         return
-    group = Group(name='Owner', permission='own', owner_id=model.id)
-    group.members.append(user)
-    return group.save()
+    team = Team(name='Owner', permission='own', owner_id=model.id)
+    team.members.append(user)
+    return team.save()

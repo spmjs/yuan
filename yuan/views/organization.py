@@ -4,7 +4,7 @@ from flask import Blueprint
 from flask import g, url_for, request
 from flask import render_template, redirect, abort
 from ..helpers import require_user
-from ..models import Account, Group
+from ..models import Account, Team
 from ..forms import OrgForm, TeamForm
 
 bp = Blueprint('organization', __name__)
@@ -58,7 +58,7 @@ def team_index(name):
 @require_user
 def team(name, ident):
     org = Account.query.filter_by(name=name).first_or_404()
-    team = Group.query.get_or_404(ident)
+    team = Team.query.get_or_404(ident)
     if team.owner_id != org.id:
         return abort(404)
     if request.method == 'POST':
