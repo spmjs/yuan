@@ -2,7 +2,9 @@
 
 from datetime import datetime
 from werkzeug import cached_property
+from flask.ext.principal import Permission
 from ._base import db, YuanQuery, SessionMixin
+from ._base import create_user_needs
 
 __all__ = ['Project', 'Package']
 
@@ -30,6 +32,16 @@ class Project(db.Model, SessionMixin):
     packages = db.relationship(
         'Package', backref='project', lazy='dynamic',
     )
+
+    @cached_property
+    def permission_read(self):
+        if not self.private:
+            class _Permission(object):
+                def can(self):
+                    return True
+            return _Permission()
+        needs = create_user_needs(self.owner_id, 0)
+        return Permission(*needs)
 
 
 class Package(db.Model, SessionMixin):

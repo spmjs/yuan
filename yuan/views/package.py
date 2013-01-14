@@ -24,9 +24,34 @@ def account():
 def project(root, pkg):
     account = Account.query.filter_by(name=root).first()
     if not account:
-        return jsonify(status='error', message=_('Invalid account.'))
+        response = jsonify(status='error', message=_('Invalid account.'))
+        response.status_code = 404
+        return response
 
     project = Project.query.filter_by(name=pkg).first()
+    if request.method == 'GET':
+        if not project:
+            response = jsonify(status='error', message=_('Project not found.'))
+            response.status_code = 404
+            return response
+        if project.permission_read.can():
+            # TODO return project json
+            return
+        response = jsonify(status='error', message=_('Permission denied.'))
+        response.status_code = 403
+        return response
+
+    if request.method == 'POST':
+        if project and account.permission_edit.can():
+            # edit project
+            pass
+        if not project and account.permission_delete.can():
+            # create project
+            pass
+        response = jsonify(status='error', message=_('Permission denied.'))
+        response.status_code = 403
+        return response
+
     if project.private:
         #TODO permission check
         return jsonify(
