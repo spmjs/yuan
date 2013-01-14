@@ -6,6 +6,7 @@ from datetime import datetime
 from werkzeug import cached_property
 from flask.ext.principal import Permission, UserNeed
 from ._base import db, YuanQuery, SessionMixin, model_created
+from ._base import create_user_needs
 
 __all__ = ['Account', 'Team']
 
@@ -89,12 +90,7 @@ class Account(db.Model, SessionMixin):
         if self.account_type == 'user':
             return Permission(UserNeed(self.id))
         # organization
-        rv = db.session.execute(
-            'SELECT account_id FROM team_member '
-            'JOIN team ON team_member.team_id=team.id '
-            'AND team.owner_id=:id AND team._permission>:permission '
-            'GROUP BY account_id', {'id': self.id, 'permission': 2})
-        needs = map(lambda o: UserNeed(o[0]), rv)
+        needs = create_user_needs(self.id, 2)
         return Permission(UserNeed(self.org_owner_id), *needs)
 
     @cached_property
@@ -102,12 +98,7 @@ class Account(db.Model, SessionMixin):
         if self.account_type == 'user':
             return Permission(UserNeed(self.id))
         # organization
-        rv = db.session.execute(
-            'SELECT account_id FROM team_member '
-            'JOIN team ON team_member.team_id=team.id '
-            'AND team.owner_id=:id AND team._permission>:permission '
-            'GROUP BY account_id', {'id': self.id, 'permission': 3})
-        needs = map(lambda o: UserNeed(o[0]), rv)
+        needs = create_user_needs(self.id, 3)
         return Permission(UserNeed(self.org_owner_id), *needs)
 
     @staticmethod

@@ -2,10 +2,12 @@
 
 from flask.signals import Namespace
 from flask.ext.sqlalchemy import SQLAlchemy, BaseQuery
+from flask.ext.principal import UserNeed
 
 __all__ = [
-    'db', 'YuanQuery', 'SessionMixin', 'model_created', 'model_updated',
-    'model_deleted',
+    'db', 'YuanQuery', 'SessionMixin',
+    'model_created', 'model_updated', 'model_deleted',
+    'create_user_needs',
 ]
 
 signals = Namespace()
@@ -14,6 +16,15 @@ model_updated = signals.signal('model-updated')
 model_deleted = signals.signal('model-deleted')
 
 db = SQLAlchemy()
+
+
+def create_user_needs(owner_id, permission):
+    rv = db.session.execute(
+        'SELECT account_id FROM team_member '
+        'JOIN team ON team_member.team_id=team.id '
+        'AND team.owner_id=:id AND team._permission>:permission '
+        'GROUP BY account_id', {'id': owner_id, 'permission': permission})
+    return map(lambda o: UserNeed(o[0]), rv)
 
 
 class YuanQuery(BaseQuery):

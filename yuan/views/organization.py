@@ -62,7 +62,7 @@ def team(name, ident):
     team = Team.query.get_or_404(ident)
     if team.owner_id != org.id:
         return abort(404)
-    if request.method == 'POST':
+    if request.method == 'POST' and org.permission_edit.can():
         username = request.form.get('username', None)
         user = None
         if username:

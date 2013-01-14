@@ -156,6 +156,12 @@ class TeamForm(BaseForm):
     def save(self, org):
         data = dict(self.data)
         data['owner_id'] = org.id
+        permission = data.pop('permission')
+        if permission in ('read', 'write', 'admin'):
+            dct = {'read': 1, 'write': 2, 'admin': 3}
+            data['_permission'] = dct[permission]
+        else:
+            data['_permission'] = 1
         team = Team(**data)
         team.save()
         return team
