@@ -9,7 +9,7 @@ from flask import Flask
 from flask import request, g
 from flask.ext.babel import Babel
 from .models import db
-from .views import front, account, group, package, admin
+from .views import front, account, organization, package, admin
 from .helpers import get_current_user
 
 
@@ -34,7 +34,7 @@ def create_app(config=None):
     # register blueprints
     app.register_blueprint(account.bp, url_prefix='/account')
     app.register_blueprint(package.bp, url_prefix='/package')
-    app.register_blueprint(group.bp, url_prefix='/group')
+    app.register_blueprint(organization.bp, url_prefix='/organization')
     app.register_blueprint(front.bp, url_prefix='')
 
     @app.before_request

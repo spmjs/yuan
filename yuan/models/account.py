@@ -118,7 +118,7 @@ class Group(db.Model, SessionMixin):
     )
 
     # contain members
-    memebers = db.relationship(
+    members = db.relationship(
         Account,
         secondary=lambda: group_member,
         lazy='dynamic',
@@ -149,5 +149,5 @@ def create_owner_group(sender, model=None):
     if not user:
         return
     group = Group(name='Owner', permission='own', owner_id=model.id)
-    group.memebers.append(user)
+    group.members.append(user)
     return group.save()

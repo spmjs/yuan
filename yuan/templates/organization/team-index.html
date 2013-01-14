@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% from "macro/form.html" import render_field, render_errors %}
+
+{% block title %}{% endblock %}
+
+{% block mainbody %}
+<form method="post" action="">
+  {{ render_field(form.name, 'long') }}
+  {{ render_field(form.permission, 'long') }}
+
+  {{ form.csrf_token }}
+  {{ render_errors(form.csrf_token.errors) }}
+
+  <div class="form-submit">
+    <button class="classy">Submit</button>
+  </div>
+</form>
+{% endblock %}

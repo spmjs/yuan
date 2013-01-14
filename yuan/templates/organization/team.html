@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+
+{% block title %}{% endblock %}
+
+{% block mainbody %}
+{%- for user in team.members %}
+{{user.name}}
+{%- endfor %}
+<form method="post" action="">
+  <input type="text" class="text" placeholder="Add a member" name="username" />
+  <button class="mini">Add</button>
+</form>
+{% endblock %}

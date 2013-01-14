@@ -8,7 +8,7 @@ from flask.ext.wtf import Required, Email, Length, Regexp, Optional
 from flask.ext.babel import lazy_gettext as _
 from wtforms.compat import iteritems
 
-from .models import db, Account
+from .models import db, Account, Group
 
 
 class BaseForm(Form):
@@ -68,7 +68,7 @@ class SigninForm(BaseForm):
         raise ValueError(_('Wrong account or password'))
 
 
-class GroupForm(BaseForm):
+class OrgForm(BaseForm):
     name = TextField(
         _('Name'), validators=[
             Required(), Length(min=3, max=20), Regexp('[a-z0-9A-Z]+')
@@ -77,15 +77,15 @@ class GroupForm(BaseForm):
     screen_name = TextField(_('Display Name'), validators=[Length(max=80)])
     email = EmailField(
         _('Gravatar Email'), validators=[Optional(), Email()],
-        description=_('Avatar of your group.'),
+        description=_('Avatar of your organization.'),
     )
-    bio = TextAreaField(
+    description = TextAreaField(
         _('Description'), validators=[Optional(), Length(max=400)],
         description=_('Markdown is supported.')
     )
     private = BooleanField(
-        _('This is a private group.'),
-        description=_('We encourage public groups.')
+        _('This is a private organization.'),
+        description=_('We encourage public organizations.')
     )
     comment_service_name = SelectField(
         _('Comment Service'),
@@ -132,8 +132,30 @@ class GroupForm(BaseForm):
         if email:
             data['email'] = email
         data['account_type'] = 'org'
-        data['role'] = user.id
-        group = Account(**data)
-        db.session.add(group)
-        db.session.commit()
+        data['org_owner_id'] = user.id
+        org = Account(**data)
+        org.save()
+        return org
+
+
+class TeamForm(BaseForm):
+    name = TextField(
+        _('Name'), validators=[
+            Required(), Length(min=3, max=100)
+        ], description=_('3 to 100 characters.')
+    )
+    permission = SelectField(
+        _('Permission'),
+        choices=[
+            ('write', 'Read & Write'),
+            ('read', 'Read Only'),
+            ('admin', 'Administractive'),
+        ]
+    )
+
+    def save(self, org):
+        data = dict(self.data)
+        data['owner_id'] = org.id
+        group = Group(**data)
+        group.save()
         return group

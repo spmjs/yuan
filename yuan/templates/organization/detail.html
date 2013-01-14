@@ -4,16 +4,13 @@
 {% block title %}{% endblock %}
 
 {% block mainbody %}
-{% for group in admins %}
-{{group.name}}
-{% endfor %}
+{%- if form %}
 <form method="post" action="">
   {{ form.csrf_token }}
-  {{ render_errors(form.csrf_token.errors) }}
   {{ render_field(form.name, 'long') }}
   {{ render_field(form.screen_name, 'long') }}
   {{ render_field(form.email, 'long') }}
-  {{ render_field(form.bio, 'long') }}
+  {{ render_field(form.description, 'long') }}
 
   <dl class="form{% if form.comment_service_id.errors %} error{% endif %}">
     <dt>{{form.comment_service_name.label}}</dt>
@@ -31,4 +28,5 @@
     <button class="nicely">Submit</button>
   </div>
 </form>
+{%- endif %}
 {% endblock %}

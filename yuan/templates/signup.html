@@ -4,12 +4,12 @@
 {% block mainbody %}
 <form class="classy" method="post" action="">
   {{ form.csrf_token }}
-  {{ render_field(form.name) }}
-  {{ render_field(form.email) }}
-  {{ render_field(form.password) }}
+  {{ render_field(form.name, 'long') }}
+  {{ render_field(form.email, 'long') }}
+  {{ render_field(form.password, 'long') }}
 
   <div class="form-submit">
-    <button class="nicely">Submit</button>
+    <button class="classy">Submit</button>
   </div>
 </form>
 {% endblock %}
