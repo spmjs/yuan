@@ -1,4 +1,7 @@
 import functools
+import time
+import hashlib
+import base64
 from flask import g, request, session
 from flask import flash, url_for, redirect, abort
 from flask.ext.babel import lazy_gettext as _
@@ -66,3 +69,38 @@ def logout_user():
         return
     session.pop('id')
     session.pop('token')
+
+
+def create_auth_token(user):
+    timestamp = int(time.time())
+    token = '%s%s%s' % (timestamp, user.id, user.token)
+    hsh = hashlib.md5(token).hexdigest()
+    return base64.b32encode('%s|%s|%s' % (timestamp, user.id, hsh))
+
+
+def verify_auth_token(token, expires=30):
+    try:
+        token = base64.b32decode(token)
+    except:
+        return None
+    bits = token.split('|')
+    if len(bits) != 3:
+        return None
+    timestamp, user_id, hsh = bits
+    try:
+        timestamp = int(timestamp)
+        user_id = int(user_id)
+    except:
+        return None
+    delta = time.time() - timestamp
+    if delta < 0:
+        return None
+    if delta > expires * 60 * 60 * 24:
+        return None
+    user = Account.query.get(user_id)
+    if not user:
+        return None
+    _hsh = hashlib.md5('%s%s%s' % (timestamp, user_id, user.token))
+    if hsh == _hsh.hexdigest():
+        return user
+    return None

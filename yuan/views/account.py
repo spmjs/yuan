@@ -1,9 +1,11 @@
 # coding: utf-8
 
 from flask import Blueprint
-from flask import g, request
-from flask import render_template, redirect, url_for
-from ..helpers import login_user, logout_user
+from flask import g, request, json
+from flask import render_template, redirect, url_for, jsonify
+from flask.ext.babel import gettext as _
+from ..models import Account
+from ..helpers import login_user, logout_user, create_auth_token
 from ..forms import SignupForm, SigninForm
 
 bp = Blueprint('account', __name__)
@@ -42,3 +44,41 @@ def signout():
 @bp.route('/settings')
 def settings():
     return render_template('settings.html')
+
+
+@bp.route('/login', methods=['POST'])
+def login():
+    ctype = request.headers.get('CONTENT_TYPE')
+    if ctype != 'application/json':
+        response = jsonify(
+            status='error', message=_('Only application/json is allowed.')
+        )
+        response.status_code = 403
+        return response
+    try:
+        data = json.loads(request.data)
+    except Exception as e:
+        response = jsonify(status='error', message=e)
+        response.status_code = 500
+        return response
+    if 'account' in data and 'password' in data:
+        account = data['account']
+        if '@' in account:
+            user = Account.query.filter_by(email=account).first()
+        else:
+            user = Account.query.filter_by(name=account).first()
+        if user and user.check_password(data['password']):
+            auth = create_auth_token(user)
+            return jsonify(status='success', data={'auth': auth})
+        response = jsonify(
+            status='error',
+            message=_('Wrong account or password')
+        )
+        response.status_code = 403
+        return response
+    response = jsonify(
+        status='error',
+        message=_('Parameters missing.')
+    )
+    response.status_code = 403
+    return response
