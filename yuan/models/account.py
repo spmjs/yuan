@@ -4,12 +4,12 @@ import hashlib
 import random
 from datetime import datetime
 from werkzeug import cached_property
-from ._base import db, YuanQuery
+from ._base import db, YuanQuery, SessionMixin, model_created
 
 __all__ = ['Account', 'Group']
 
 
-class Account(db.Model):
+class Account(db.Model, SessionMixin):
     query_class = YuanQuery
 
     id = db.Column(db.Integer, primary_key=True)
@@ -20,10 +20,12 @@ class Account(db.Model):
     password = db.Column(db.String(100))
 
     screen_name = db.Column(db.String(80))
-    bio = db.Column(db.String(400))
+    description = db.Column(db.String(400))
 
     # user, org
     account_type = db.Column(db.String(10), default='user')
+    org_owner_id = db.Column(db.Integer)
+
     comment_service = db.Column(db.String(100))
 
     private = db.Column(db.Boolean, default=False)
@@ -36,6 +38,8 @@ class Account(db.Model):
     token = db.Column(db.String(20))
 
     def __init__(self, **kwargs):
+        model_created.connect(create_owner_group, sender=self)
+
         self.token = self.create_token(16)
 
         if 'password' in kwargs:
@@ -59,12 +63,6 @@ class Account(db.Model):
         md5email = hashlib.md5(self.email).hexdigest()
         query = "%s?s=%s%s" % (md5email, size, db.app.config['GRAVATAR_EXTRA'])
         return db.app.config['GRAVATAR_BASE_URL'] + query
-
-    @cached_property
-    def created_by(self):
-        if self.account_type == 'user':
-            return self.id
-        return self.role
 
     @cached_property
     def comment_service_name(self):
@@ -106,35 +104,50 @@ class Account(db.Model):
         return verify == hsh
 
 
-group_member = db.Table(
-    'group_member', db.Model.metadata,
-    db.Column(
-        'account_id', db.Integer,
-        db.ForeignKey('account.id', ondelete='CASCADE')
-    ),
-    db.Column(
-        'group_id', db.Integer,
-        db.ForeignKey('group.id', ondelete='CASCADE')
-    )
-)
-
-
-class Group(db.Model):
+class Group(db.Model, SessionMixin):
     query_class = YuanQuery
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
     permission = db.Column(db.String(10), default='read')
     # belong to an organization
-    org_id = db.Column(
+    owner_id = db.Column(
         db.Integer,
         db.ForeignKey('account.id', ondelete='CASCADE'),
         nullable=False
     )
 
     # contain members
-    memebers = db.dynamic_loader(
+    memebers = db.relationship(
         Account,
-        secondary=group_member,
-        query_class=YuanQuery,
+        secondary=lambda: group_member,
+        lazy='dynamic',
     )
+
+
+group_member = db.Table(
+    'group_member', db.Model.metadata,
+    db.Column(
+        'account_id', db.Integer,
+        db.ForeignKey('account.id', ondelete='CASCADE'),
+        primary_key=True,
+    ),
+    db.Column(
+        'group_id', db.Integer,
+        db.ForeignKey('group.id', ondelete='CASCADE'),
+        primary_key=True,
+    )
+)
+
+
+def create_owner_group(sender, model=None):
+    if not model:
+        return
+    if model.account_type != 'org':
+        return
+    user = Account.query.get(model.org_owner_id)
+    if not user:
+        return
+    group = Group(name='Owner', permission='own', owner_id=model.id)
+    group.memebers.append(user)
+    return group.save()

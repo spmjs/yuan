@@ -1,7 +1,17 @@
+# coding: utf-8
+
+from flask.signals import Namespace
 from flask.ext.sqlalchemy import SQLAlchemy, BaseQuery
 
-__all__ = ['db', 'YuanQuery']
+__all__ = [
+    'db', 'YuanQuery', 'SessionMixin', 'model_created', 'model_updated',
+    'model_deleted',
+]
 
+signals = Namespace()
+model_created = signals.signal('model-created')
+model_updated = signals.signal('model-updated')
+model_deleted = signals.signal('model-deleted')
 
 db = SQLAlchemy()
 
@@ -26,3 +36,21 @@ class YuanQuery(BaseQuery):
     def as_list(self, *columns):
         columns = map(db.defer, columns)
         return self.options(map(db.defer, columns))
+
+
+class SessionMixin(object):
+    def save(self):
+        if self.id:
+            emitter = model_updated
+        else:
+            emitter = model_created
+        db.session.add(self)
+        db.session.commit()
+        emitter.send(self, model=self)
+        return self
+
+    def delete(self):
+        db.session.delete(self)
+        model_deleted.send(self, model=self)
+        db.session.commit()
+        return self

@@ -26,7 +26,6 @@ class TestNoAccountCase(BaseSuite):
     def test_delete(self):
         rv = self.client.delete('/package/lepture/arale/1.0.1')
         assert rv.status_code == 404
-        assert "Invalid account" in rv.data
 
 
 class TestNoProjectCase(BaseSuite):
