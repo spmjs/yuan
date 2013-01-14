@@ -3,7 +3,7 @@
 from flask import Blueprint
 from flask import g, request, jsonify
 from flask.ext.babel import gettext as _
-from ..models import db, Project, Package, Account, GroupMember
+from ..models import db, Project, Package, Account
 
 bp = Blueprint('package', __name__)
 
@@ -118,8 +118,8 @@ def create_package():
 
 def delete_package(project, package):
     # only owner can delete it
-    if project.account_id == g.user.id or \
-       GroupMember.is_member(project.account_id, g.user.id):
+    if project.account_id == g.user.id:
+        #TODO
         db.session.delete(package)
         db.session.commit()
         return jsonify(status='info', message=_('Package deleted.'))

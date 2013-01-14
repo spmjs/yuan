@@ -22,8 +22,8 @@ Flask-WTF
 # mail support
 Flask-Mail
 
-# login support
-Flask-Login
+# Access control
+Flask-Principal
 
 # admin site
 Flask-Admin
@@ -32,7 +32,6 @@ Flask-Admin
 Flask-Script
 
 # testing
-Flask-Testing
 nose
 nose-cov
 

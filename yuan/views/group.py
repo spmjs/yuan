@@ -4,7 +4,7 @@ from flask import Blueprint
 from flask import g, url_for
 from flask import render_template, redirect, abort
 from ..helpers import require_user
-from ..models import db, Account, GroupMember
+from ..models import db, Account
 from ..forms import GroupForm
 
 bp = Blueprint('group', __name__)
@@ -19,8 +19,7 @@ def home():
         return redirect(url_for('.detail', name=group.name))
     user_id = g.user.id
     admins = Account.query.filter_by(role=user_id, account_type='org').all()
-    joins = GroupMember.get_groups(user_id=user_id)
-    dct = {'admins': admins, 'joins': joins, 'form': form}
+    dct = {'admins': admins, 'form': form}
     return render_template('group-home.html', **dct)
 
 
@@ -40,8 +39,7 @@ def detail(name):
         db.session.add(group)
         db.session.commit()
         return redirect(url_for('.detail', name=group.name))
-    members = GroupMember.get_members(group.id)
-    dct = {'group': group, 'form': form, 'members': members}
+    dct = {'group': group, 'form': form}
     return render_template('group-detail.html', **dct)
 
 
