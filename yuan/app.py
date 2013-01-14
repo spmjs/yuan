@@ -8,6 +8,7 @@ CONFDIR = os.path.join(PROJDIR, '_config')
 from flask import Flask
 from flask import request, g
 from flask.ext.babel import Babel
+from flask.ext.principal import Principal, Identity, identity_loaded, UserNeed
 from .models import db
 from .views import front, account, organization, package, admin
 from .helpers import get_current_user
@@ -21,7 +22,7 @@ def create_app(config=None):
     )
     app.config.from_pyfile(os.path.join(CONFDIR, 'base.py'))
     if config and isinstance(config, dict):
-        app.config.from_object(config)
+        app.config.update(config)
     elif config:
         app.config.from_pyfile(config)
 
@@ -51,5 +52,17 @@ def create_app(config=None):
         match = app.config['BABEL_SUPPORTED_LOCALES']
         defautl = app.config['BABEL_DEFAULT_LOCALE']
         return request.accept_languages.best_match(match, defautl)
+
+    princi = Principal(app)
+
+    @princi.identity_loader
+    def load_identity():
+        return Identity('yuan')
+
+    @identity_loaded.connect_via(app)
+    def on_identity_loaded(sender, identity):
+        identity.user = g.user
+        if g.user:
+            identity.provides.add(UserNeed(g.user.id))
 
     return app

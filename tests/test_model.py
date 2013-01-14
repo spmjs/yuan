@@ -1,7 +1,7 @@
 # coding: utf-8
 
 
-from yuan.models import Account
+from yuan.models import Account, Team
 
 from .suite import BaseSuite
 
@@ -17,3 +17,19 @@ class TestAccount(BaseSuite):
             org_owner_id=user.id,
         )
         org.save()
+        assert Team.query.count() == 1
+
+        team = Team(name='Developer', owner_id=org.id, _permission=3)
+        team.members.append(user)
+        team.save()
+        assert Team.query.count() == 2
+
+        robot = Account(name='robot')
+        robot.save()
+        team.members.append(robot)
+        team.save()
+        print org.permission_edit.needs
+        print org.permission_delete.needs
+
+        assert len(org.permission_edit.needs) == 2
+        assert len(org.permission_delete.needs) == 1

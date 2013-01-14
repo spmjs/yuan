@@ -4,6 +4,7 @@ import hashlib
 import random
 from datetime import datetime
 from werkzeug import cached_property
+from flask.ext.principal import Permission, UserNeed
 from ._base import db, YuanQuery, SessionMixin, model_created
 
 __all__ = ['Account', 'Team']
@@ -57,6 +58,12 @@ class Account(db.Model, SessionMixin):
         for k, v in kwargs.items():
             setattr(self, k, v)
 
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return '<Account: %s>' % self
+
     def get_avatar(self, size=48):
         if self.avatar:
             return self.avatar
@@ -76,6 +83,32 @@ class Account(db.Model, SessionMixin):
             bits = self.comment_service.split('-')
             return '-'.join(bits[1:])
         return None
+
+    @cached_property
+    def permission_edit(self):
+        if self.account_type == 'user':
+            return Permission(UserNeed(self.id))
+        # organization
+        rv = db.session.execute(
+            'SELECT account_id FROM team_member '
+            'JOIN team ON team_member.team_id=team.id '
+            'AND team.owner_id=:id AND team._permission>:permission '
+            'GROUP BY account_id', {'id': self.id, 'permission': 2})
+        needs = map(lambda o: UserNeed(o[0]), rv)
+        return Permission(UserNeed(self.org_owner_id), *needs)
+
+    @cached_property
+    def permission_delete(self):
+        if self.account_type == 'user':
+            return Permission(UserNeed(self.id))
+        # organization
+        rv = db.session.execute(
+            'SELECT account_id FROM team_member '
+            'JOIN team ON team_member.team_id=team.id '
+            'AND team.owner_id=:id AND team._permission>:permission '
+            'GROUP BY account_id', {'id': self.id, 'permission': 3})
+        needs = map(lambda o: UserNeed(o[0]), rv)
+        return Permission(UserNeed(self.org_owner_id), *needs)
 
     @staticmethod
     def create_password(raw):
@@ -109,7 +142,9 @@ class Team(db.Model, SessionMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
-    permission = db.Column(db.String(10), default='read')
+    # 1: read, 2: write, 3: admin, > 3 own
+    _permission = db.Column(db.Integer, default=2)
+
     # belong to an organization
     owner_id = db.Column(
         db.Integer,
@@ -123,6 +158,24 @@ class Team(db.Model, SessionMixin):
         secondary=lambda: team_member,
         lazy='dynamic',
     )
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return '<Team: %s>' % self
+
+    @cached_property
+    def permission(self):
+        if self._permission < 2:
+            return 'read'
+        if self._permission < 3:
+            return 'write'
+        if self._permission < 4:
+            return 'admin'
+        if self._permission > 3:
+            return 'own'
+        return 'none'
 
 
 team_member = db.Table(
@@ -148,6 +201,6 @@ def create_owner_team(sender, model=None):
     user = Account.query.get(model.org_owner_id)
     if not user:
         return
-    team = Team(name='Owner', permission='own', owner_id=model.id)
+    team = Team(name='Owner', _permission=4, owner_id=model.id)
     team.members.append(user)
     return team.save()

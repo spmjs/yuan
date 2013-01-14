@@ -17,14 +17,14 @@ class require_role(object):
                 if '?' not in url:
                     url += '?next=' + request.url
                 return redirect(url)
-            if g.user.role is None:
+            if self.role is None:
                 return method(*args, **kwargs)
             if g.user.id == 1:
                 # this is superuser, have no limitation
                 return method(*args, **kwargs)
             if g.user.role == 1:
                 flash(_('Please verify your email'), 'warn')
-                return redirect('/account/setting')
+                return redirect('/account/settings')
             if g.user.role < 1:
                 #TODO
                 return redirect('/doc/guideline')

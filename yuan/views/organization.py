@@ -29,8 +29,7 @@ def detail(name):
     org = Account.query.filter_by(name=name).first_or_404()
     if org.account_type != 'org':
         return abort(404)
-    if org.org_owner_id == g.user.id:
-        # current user is the owner
+    if org.permission_edit.can():
         form = OrgForm(obj=org)
     else:
         form = None
@@ -46,9 +45,11 @@ def detail(name):
 @require_user
 def team_index(name):
     org = Account.query.filter_by(name=name).first_or_404()
-    # TODO permission check
-    form = TeamForm()
-    if form.validate_on_submit():
+    if org.permission_edit.can():
+        form = TeamForm()
+    else:
+        form = None
+    if form and form.validate_on_submit():
         team = form.save(org)
         return redirect(url_for('.team', name=name, ident=team.id))
     return render_template('organization/team-index.html', form=form)
