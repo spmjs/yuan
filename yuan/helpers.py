@@ -2,7 +2,7 @@ import functools
 import time
 import hashlib
 import base64
-from flask import g, request, session
+from flask import g, request, session, current_app
 from flask import flash, url_for, redirect, abort
 from flask.ext.babel import lazy_gettext as _
 from .models import Account
@@ -73,7 +73,8 @@ def logout_user():
 
 def create_auth_token(user):
     timestamp = int(time.time())
-    token = '%s%s%s' % (timestamp, user.id, user.token)
+    secret = current_app.secret_key
+    token = '%s%s%s%s' % (secret, timestamp, user.id, user.token)
     hsh = hashlib.md5(token).hexdigest()
     return base64.b32encode('%s|%s|%s' % (timestamp, user.id, hsh))
 
@@ -100,7 +101,8 @@ def verify_auth_token(token, expires=30):
     user = Account.query.get(user_id)
     if not user:
         return None
-    _hsh = hashlib.md5('%s%s%s' % (timestamp, user_id, user.token))
+    secret = current_app.secret_key
+    _hsh = hashlib.md5('%s%s%s%s' % (secret, timestamp, user_id, user.token))
     if hsh == _hsh.hexdigest():
         return user
     return None
