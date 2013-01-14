@@ -2,18 +2,18 @@
 
 from datetime import datetime
 from werkzeug import cached_property
-from ._base import db, YuanQuery
+from ._base import db, YuanQuery, SessionMixin
 
 __all__ = ['Project', 'Package']
 
 
-class Project(db.Model):
+class Project(db.Model, SessionMixin):
     query_class = YuanQuery
 
     id = db.Column(db.Integer, primary_key=True)
-    account_id = db.Column(
+    owner_id = db.Column(
         db.Integer,
-        db.ForeignKey('account.id')
+        db.ForeignKey('account.id', ondelete='CASCADE'),
     )
 
     name = db.Column(db.String(40), unique=True, index=True)
@@ -27,14 +27,18 @@ class Project(db.Model):
     updated = db.Column(db.DateTime, default=datetime.utcnow,
                         onupdate=datetime.utcnow)
 
+    packages = db.relationship(
+        'Package', backref='project', lazy='dynamic',
+    )
 
-class Package(db.Model):
+
+class Package(db.Model, SessionMixin):
     query_class = YuanQuery
 
     id = db.Column(db.Integer, primary_key=True)
     project_id = db.Column(
         db.Integer,
-        db.ForeignKey('project.id')
+        db.ForeignKey('project.id', ondelete='CASCADE'),
     )
     version = db.Column(db.String(50), nullable=False)
     tag = db.Column(db.String(20), default='stable')
