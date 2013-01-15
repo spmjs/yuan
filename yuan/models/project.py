@@ -16,8 +16,9 @@ class Project(db.Model, SessionMixin):
         db.ForeignKey('account.id', ondelete='CASCADE'),
     )
 
-    name = db.Column(db.String(40), unique=True, index=True)
+    name = db.Column(db.String(40), index=True)
     homepage = db.Column(db.String(200))
+    repository = db.Column(db.String(400))
 
     screen_name = db.Column(db.String(80))
     description = db.Column(db.String(400))
@@ -82,3 +83,8 @@ class Package(db.Model, SessionMixin):
     def html(self):
         #TODO markdown
         return self.readme
+
+    @cache.memoize(100)
+    def get_by_version(cls, project_id, version):
+        q = cls.query.filter_by(project_id=project_id, version=version)
+        return q.first()

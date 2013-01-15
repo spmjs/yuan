@@ -174,6 +174,9 @@ class ProjectForm(BaseForm):
     homepage = URLField(
         _('Homepage'), validators=[Optional(), URL()]
     )
+    repository = TextField(
+        _('Repository'), validators=[Optional()]
+    )
     screen_name = TextField(
         _('Display Name'), validators=[Optional(), Length(max=80)]
     )
@@ -185,9 +188,25 @@ class ProjectForm(BaseForm):
         description=_('We encourage public projects.')
     )
 
-    def save(self, org):
+    def __init__(self, *args, **kwargs):
+        self._owner = kwargs.get('owner', None)
+        super(ProjectForm, self).__init__(*args, **kwargs)
+
+    def validate_name(self, field):
+        if self._obj and self._obj.name == field.data:
+            return
+        count = Project.query.filter_by(
+            owner_id=self._owner.id, name=field.data
+        ).count()
+        if count:
+            raise ValueError(_('This name has been registered.'))
+
+    def save(self, org=None):
         data = dict(self.data)
-        data['owner_id'] = org.id
+        if org:
+            data['owner_id'] = org.id
+        else:
+            data['owner_id'] = self._owner.id
         proj = Project(**data)
         proj.save()
         return proj
