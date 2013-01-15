@@ -1,9 +1,11 @@
 # coding: utf-8
 
+import werkzeug
 from flask import Blueprint
 from flask import g, request, jsonify, abort
 from flask.ext.babel import gettext as _
 from ..models import db, Project, Package, Account
+from ..forms import ProjectForm
 
 bp = Blueprint('package', __name__)
 
@@ -24,29 +26,28 @@ def account():
 def project(root, pkg):
     account = Account.query.filter_by(name=root).first()
     if not account:
-        return abortify(404, status='error', message=_('Invalid account.'))
+        return abortify(404, message=_('Account not found.'))
 
     project = Project.query.filter_by(name=pkg).first()
     if request.method == 'GET':
         if not project:
-            abortify(404, status='error', message=_('Project not found.'))
+            abortify(404, message=_('Project not found.'))
             return
-        if not project.private or account.permission_read.can():
-            # TODO return project json
-            return
-        return abortify(403)
+        if project.private and not account.permission_read.can():
+            return abortify(403)
+        return jsonify(status='success', data=dict(project))
 
     if request.method == 'POST':
         if project and account.permission_write.can():
             # edit project
             pass
         if not project and account.permission_admin.can():
-            # create project
-            pass
+            project = create_project(account)
+            return jsonify(status='success', message=_('Project created.'))
         return abortify(403)
 
     if not project:
-        return abortify(404, status='error', message=_('Project not found.'))
+        return abortify(404, message=_('Project not found.'))
 
     if not account.permission_admin.can():
         return abortify(403)
@@ -94,7 +95,6 @@ def package(root, pkg, version):
     ).first()
     if package and request.method == 'POST':
         # if it is force?
-        print request.data
         return jsonify(
             status='error',
             message=_('Package exists. Force to write it?')
@@ -111,15 +111,36 @@ def search():
 
 # helpers
 def abortify(code, **kwargs):
+    if code == 403 and not g.user:
+        code = 401
+        kwargs = dict(message=_('Authorization required.'))
+
     if code == 403 and not kwargs:
-        kwargs = dict(status='error', message=_('Permission denied.'))
+        kwargs = dict(message=_('Permission denied.'))
+
+    if 'status' not in kwargs:
+        kwargs['status'] = 'error'
     response = jsonify(**kwargs)
     response.status_code = code
     return abort(response)
 
 
-def create_project():
-    pass
+def _get_request_data():
+    if not g.user:
+        return abortify(
+            401, message=_('Authorization required.')
+        )
+    if not request.json:
+        return abortify(400, message=_('Only application/json is allowed.'))
+    return request.json
+
+
+def create_project(org):
+    data = werkzeug.datastructures.MultiDict(_get_request_data())
+    form = ProjectForm(data, csrf_enabled=False)
+    if form.validate():
+        return form.save(org)
+    return abortify(406, message=_('Request invalid.'))
 
 
 def create_package():

@@ -52,6 +52,5 @@ class TestNoProjectCase(BaseSuite):
         assert rv.status_code == 404
         assert "Package not exists" in rv.data
 
-    def test_post_no_data(self):
-        rv = self.client.post('/package/lepture/arale/1.0.1')
+        rv = self.client.post('/package/lepture/arale')
         print rv.data

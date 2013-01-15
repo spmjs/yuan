@@ -3,12 +3,12 @@
 from flask.ext.wtf import Form
 from flask.ext.wtf import TextField, PasswordField, BooleanField
 from flask.ext.wtf import TextAreaField, SelectField
-from flask.ext.wtf.html5 import EmailField
-from flask.ext.wtf import Required, Email, Length, Regexp, Optional
+from flask.ext.wtf.html5 import EmailField, URLField
+from flask.ext.wtf import Required, Email, Length, Regexp, Optional, URL
 from flask.ext.babel import lazy_gettext as _
 from wtforms.compat import iteritems
 
-from .models import db, Account, Team
+from .models import db, Account, Team, Project
 
 
 class BaseForm(Form):
@@ -165,3 +165,29 @@ class TeamForm(BaseForm):
         team = Team(**data)
         team.save()
         return team
+
+
+class ProjectForm(BaseForm):
+    name = TextField(
+        _('Name'), validators=[Required(), Length(max=40)]
+    )
+    homepage = URLField(
+        _('Homepage'), validators=[Optional(), URL()]
+    )
+    screen_name = TextField(
+        _('Display Name'), validators=[Optional(), Length(max=80)]
+    )
+    description = TextField(
+        _('Description'), validators=[Optional(), Length(max=400)]
+    )
+    private = BooleanField(
+        _('This is a private project.'),
+        description=_('We encourage public projects.')
+    )
+
+    def save(self, org):
+        data = dict(self.data)
+        data['owner_id'] = org.id
+        proj = Project(**data)
+        proj.save()
+        return proj
