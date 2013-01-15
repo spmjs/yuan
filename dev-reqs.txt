@@ -9,7 +9,7 @@ gevent
 Flask-SQLAlchemy
 
 # cache support
-#Flask-Cache
+Flask-Cache
 #python-memcached
 
 # i18n and l10n

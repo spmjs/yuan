@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from flask import Blueprint
-from flask import g, request, jsonify
+from flask import g, request, jsonify, abort
 from flask.ext.babel import gettext as _
 from ..models import db, Project, Package, Account
 
@@ -24,56 +24,34 @@ def account():
 def project(root, pkg):
     account = Account.query.filter_by(name=root).first()
     if not account:
-        response = jsonify(status='error', message=_('Invalid account.'))
-        response.status_code = 404
-        return response
+        return abortify(404, status='error', message=_('Invalid account.'))
 
     project = Project.query.filter_by(name=pkg).first()
     if request.method == 'GET':
         if not project:
-            response = jsonify(status='error', message=_('Project not found.'))
-            response.status_code = 404
-            return response
-        if project.permission_read.can():
+            abortify(404, status='error', message=_('Project not found.'))
+            return
+        if not project.private or account.permission_read.can():
             # TODO return project json
             return
-        response = jsonify(status='error', message=_('Permission denied.'))
-        response.status_code = 403
-        return response
+        return abortify(403)
 
     if request.method == 'POST':
-        if project and account.permission_edit.can():
+        if project and account.permission_write.can():
             # edit project
             pass
-        if not project and account.permission_delete.can():
+        if not project and account.permission_admin.can():
             # create project
             pass
-        response = jsonify(status='error', message=_('Permission denied.'))
-        response.status_code = 403
-        return response
+        return abortify(403)
 
-    if project.private:
-        #TODO permission check
-        return jsonify(
-            status='warn', message=_('This is a private package.')
-        )
+    if not project:
+        return abortify(404, status='error', message=_('Project not found.'))
 
-    # TODO permission
-    if request.method == 'GET':
-        # get information of a project
-        if not project:
-            return jsonify(
-                status='error', message=_('Not found this package.')
-            )
-    elif request.method == 'POST':
-        # edit information of a project
-        pass
-    elif request.method == 'PUT':
-        # upload a package
-        pass
-    else:
-        # delete a package
-        pass
+    if not account.permission_admin.can():
+        return abortify(403)
+    project.delete()
+    return jsonify(status='success', message=_('Project deleted.'))
 
 
 @bp.route('/<root>/<pkg>/<version>', methods=['GET', 'POST', 'PUT', 'DELETE'])
@@ -132,6 +110,13 @@ def search():
 
 
 # helpers
+def abortify(code, **kwargs):
+    if code == 403 and not kwargs:
+        kwargs = dict(status='error', message=_('Permission denied.'))
+    response = jsonify(**kwargs)
+    response.status_code = code
+    return abort(response)
+
 
 def create_project():
     pass

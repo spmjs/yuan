@@ -29,7 +29,7 @@ def detail(name):
     org = Account.query.filter_by(name=name).first_or_404()
     if org.account_type != 'org':
         return abort(404)
-    if org.permission_edit.can():
+    if org.permission_admin.can():
         form = OrgForm(obj=org)
     else:
         form = None
@@ -45,7 +45,7 @@ def detail(name):
 @require_user
 def team_index(name):
     org = Account.query.filter_by(name=name).first_or_404()
-    if org.permission_edit.can():
+    if org.permission_admin.can():
         form = TeamForm()
     else:
         form = None
@@ -62,7 +62,7 @@ def team(name, ident):
     team = Team.query.get_or_404(ident)
     if team.owner_id != org.id:
         return abort(404)
-    if request.method == 'POST' and org.permission_edit.can():
+    if request.method == 'POST' and org.permission_admin.can():
         username = request.form.get('username', None)
         user = None
         if username:

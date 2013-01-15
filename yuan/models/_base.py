@@ -4,11 +4,12 @@ from functools import partial
 from flask.signals import Namespace
 from flask.ext.sqlalchemy import SQLAlchemy, BaseQuery
 from flask.ext.principal import Need, UserNeed
+from flask.ext.cache import Cache
 
 __all__ = [
-    'db', 'YuanQuery', 'SessionMixin',
+    'db', 'cache', 'YuanQuery', 'SessionMixin',
     'model_created', 'model_updated', 'model_deleted',
-    'create_user_needs', 'TeamNeed', 'PublicPermission',
+    'create_user_needs', 'TeamNeed',
 ]
 
 signals = Namespace()
@@ -17,6 +18,7 @@ model_updated = signals.signal('model-updated')
 model_deleted = signals.signal('model-deleted')
 
 db = SQLAlchemy()
+cache = Cache()
 TeamNeed = partial(Need, 'team')
 
 
@@ -67,8 +69,3 @@ class SessionMixin(object):
         model_deleted.send(self, model=self)
         db.session.commit()
         return self
-
-
-class PublicPermission(object):
-    def can(self):
-        return True

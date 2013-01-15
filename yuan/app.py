@@ -9,7 +9,7 @@ from flask import Flask
 from flask import request, g
 from flask.ext.babel import Babel
 from flask.ext.principal import Principal, Identity, identity_loaded, UserNeed
-from .models import db, TeamNeed
+from .models import db, cache, TeamNeed
 from .views import front, account, organization, package, admin
 from .helpers import get_current_user, verify_auth_token
 
@@ -29,6 +29,8 @@ def create_app(config=None):
     # prepare for database
     db.init_app(app)
     db.app = app
+
+    cache.init_app(app)
 
     admin.admin.init_app(app)
 

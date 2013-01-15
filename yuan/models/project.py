@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from werkzeug import cached_property
-from ._base import db, YuanQuery, SessionMixin
+from ._base import db, cache, YuanQuery, SessionMixin
 
 __all__ = ['Project', 'Package']
 
@@ -27,9 +27,21 @@ class Project(db.Model, SessionMixin):
     updated = db.Column(db.DateTime, default=datetime.utcnow,
                         onupdate=datetime.utcnow)
 
-    packages = db.relationship(
-        'Package', backref='project', lazy='dynamic',
-    )
+    packages = db.relationship('Package', lazy='dynamic')
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return '<Project: %s>' % self
+
+    @cache.memoize(100)
+    def package(self):
+        pkg = Package.query.filter_by(project_id=self.id)\
+                .filter_by(tag='stable')\
+                .order_by(Package.id.desc())\
+                .first()
+        return pkg
 
 
 class Package(db.Model, SessionMixin):
@@ -49,6 +61,16 @@ class Package(db.Model, SessionMixin):
     md5value = db.Column(db.String(50), unique=True)
 
     created = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __str__(self):
+        return '%s - %s' % (self.project_id, self.version)
+
+    def __repr__(self):
+        return '<Package: %s>' % self
+
+    @cache.memoize(100)
+    def project(self):
+        return Project.query.get(self.project_id)
 
     @cached_property
     def dependency_list(self):
