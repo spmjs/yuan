@@ -75,7 +75,7 @@ def create_auth_token(user):
     timestamp = int(time.time())
     secret = current_app.secret_key
     token = '%s%s%s%s' % (secret, timestamp, user.id, user.token)
-    hsh = hashlib.md5(token).hexdigest()
+    hsh = hashlib.sha1(token).hexdigest()
     return base64.b32encode('%s|%s|%s' % (timestamp, user.id, hsh))
 
 
@@ -102,7 +102,7 @@ def verify_auth_token(token, expires=30):
     if not user:
         return None
     secret = current_app.secret_key
-    _hsh = hashlib.md5('%s%s%s%s' % (secret, timestamp, user_id, user.token))
+    _hsh = hashlib.sha1('%s%s%s%s' % (secret, timestamp, user_id, user.token))
     if hsh == _hsh.hexdigest():
         return user
     return None
