@@ -22,3 +22,7 @@ class TestAccount(BaseSuite):
         )
         data = json.loads(rv.data)
         assert 'data' in data
+
+        auth = data['data']['auth']
+        assert auth
+        self.client.get('/', headers={'X-YUAN-AUTH': auth})

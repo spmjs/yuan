@@ -8,7 +8,7 @@ from flask.ext.principal import Need, UserNeed
 __all__ = [
     'db', 'YuanQuery', 'SessionMixin',
     'model_created', 'model_updated', 'model_deleted',
-    'create_user_needs', 'TeamNeed',
+    'create_user_needs', 'TeamNeed', 'PublicPermission',
 ]
 
 signals = Namespace()
@@ -67,3 +67,8 @@ class SessionMixin(object):
         model_deleted.send(self, model=self)
         db.session.commit()
         return self
+
+
+class PublicPermission(object):
+    def can(self):
+        return True

@@ -86,7 +86,27 @@ class Account(db.Model, SessionMixin):
         return None
 
     @cached_property
-    def permission_edit(self):
+    def permission_read(self):
+        if self.account_type == 'user':
+            return Permission(UserNeed(self.id))
+        # organization
+        rv = Team.query.filter_by(owner_id=self.id)\
+                .filter(Team._permission > 0).values('id')
+        needs = map(lambda o: TeamNeed(o[0]), rv)
+        return Permission(UserNeed(self.org_owner_id), *needs)
+
+    @cached_property
+    def permission_write(self):
+        if self.account_type == 'user':
+            return Permission(UserNeed(self.id))
+        # organization
+        rv = Team.query.filter_by(owner_id=self.id)\
+                .filter(Team._permission > 1).values('id')
+        needs = map(lambda o: TeamNeed(o[0]), rv)
+        return Permission(UserNeed(self.org_owner_id), *needs)
+
+    @cached_property
+    def permission_admin(self):
         if self.account_type == 'user':
             return Permission(UserNeed(self.id))
         # organization
@@ -96,7 +116,7 @@ class Account(db.Model, SessionMixin):
         return Permission(UserNeed(self.org_owner_id), *needs)
 
     @cached_property
-    def permission_delete(self):
+    def permission_own(self):
         if self.account_type == 'user':
             return Permission(UserNeed(self.id))
         # organization
