@@ -84,6 +84,7 @@ class Package(db.Model, SessionMixin):
         #TODO markdown
         return self.readme
 
+    @classmethod
     @cache.memoize(100)
     def get_by_version(cls, project_id, version):
         q = cls.query.filter_by(project_id=project_id, version=version)

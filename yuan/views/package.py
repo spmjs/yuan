@@ -1,7 +1,9 @@
 # coding: utf-8
 
+import os
 import werkzeug
-from flask import Blueprint
+import hashlib
+from flask import Blueprint, current_app
 from flask import g, request, jsonify, abort
 from distutils.version import StrictVersion
 from flask.ext.babel import gettext as _
@@ -31,7 +33,7 @@ def project(root, pkg):
     if not account:
         return abortify(404, message=_('Account not found.'))
 
-    project = Project.query.filter_by(name=pkg).first()
+    project = Project.query.filter_by(owner_id=account.id, name=pkg).first()
     if request.method == 'GET':
         if not project:
             abortify(404, message=_('Project not found.'))
@@ -66,7 +68,7 @@ def package(root, pkg, version):
     if not account:
         return abortify(404, message=_('Account not found.'))
 
-    project = Project.query.filter_by(name=pkg).first()
+    project = Project.query.filter_by(owner_id=account.id, name=pkg).first()
     if not project and request.method != 'POST':
         return abortify(404, message=_('Project not found.'))
 
@@ -94,8 +96,13 @@ def package(root, pkg, version):
             return res
 
     if request.method == 'PUT':
-        # stream file
-        pass
+        if not account.permission_write.can():
+            return abortify(403)
+        package = Package.get_by_version(project.id, version)
+        if not package:
+            return abortify(404, message=_('Package not found.'))
+        upload_package(project, package, account)
+        return jsonify(status='info', message=_('Package uploaded.'))
 
 
 @bp.route('/search')
@@ -162,14 +169,14 @@ def create_package(project, version=None):
     if 'version' in data:
         version = data['version']
     try:
-        version = StrictVersion(version)
+        _ver = StrictVersion(version)
     except:
         return abortify(406, message=_('Invalid version.'))
     dependencies = data.get('dependencies', [])
     if not isinstance(dependencies, list):
         return abortify(406, message=_('Invalid dependencies.'))
     dct = {}
-    dct['version'] = str(version)
+    dct['version'] = version
     dct['dependencies'] = ' '.join(dependencies)
     dct['md5value'] = data.get('md5')
 
@@ -177,7 +184,7 @@ def create_package(project, version=None):
         if data.get(key, None):
             dct[key] = data.get(key)
 
-    if 'tag' not in dct and version.prerelease:
+    if 'tag' not in dct and _ver.prerelease:
         dct['tag'] = 'unstable'
     dct['project_id'] = project.id
     pkg = Package(**dct)
@@ -199,5 +206,34 @@ def delete_package(project, package):
     )
 
 
-def upload_package():
-    pass
+def upload_package(project, package, owner):
+    encoding = request.headers.get('CONTENT-ENCODING')
+    ctype = request.headers.get('CONTENT-TYPE')
+    if ctype == 'application/x-tar' and encoding == 'x-gzip':
+        ctype = 'application/x-tar-gz'
+    if ctype not in ('application/x-tar-gz', 'application/x-tgz'):
+        return abortify(400, message=_('Only gziped tar file is allowed.'))
+
+    force = request.headers.get('X-YUAN-FORCE', False)
+    if package.download_url and not force:
+        return abortify(405, message=_('Package existed.'))
+
+    if project.private:
+        token = '%s-%s' % (current_app.secret_key, repr(package))
+        hsh = hashlib.md5(token).hexdigest()
+        filename = '%s-%s.tgz' % (project.name, hsh)
+        directory = current_app.config['PACKAGE_STORAGE_PRIVATE']
+    else:
+        filename = '%s-%s.tgz' % (project.name, package.version)
+        directory = current_app.config['PACKAGE_STORAGE_PUBLIC']
+    filepath = os.path.join(directory, owner.name, project.name, filename)
+    directory = os.path.dirname(filepath)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    f = open(filepath, 'wb')
+    f.write(request.data)
+    f.close()
+    package.download_url = '%s/%s/%s' % (owner.name, project.name, filename)
+    package.save()
+    return package

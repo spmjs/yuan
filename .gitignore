@@ -3,6 +3,7 @@
 *.egg-info
 *.mo
 *.log
+*.tgz
 *.tmp.*
 __pycache__
 bin
