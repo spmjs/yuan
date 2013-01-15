@@ -1,13 +1,14 @@
 # coding: utf-8
 
+from functools import partial
 from flask.signals import Namespace
 from flask.ext.sqlalchemy import SQLAlchemy, BaseQuery
-from flask.ext.principal import UserNeed
+from flask.ext.principal import Need, UserNeed
 
 __all__ = [
     'db', 'YuanQuery', 'SessionMixin',
     'model_created', 'model_updated', 'model_deleted',
-    'create_user_needs',
+    'create_user_needs', 'TeamNeed',
 ]
 
 signals = Namespace()
@@ -16,6 +17,7 @@ model_updated = signals.signal('model-updated')
 model_deleted = signals.signal('model-deleted')
 
 db = SQLAlchemy()
+TeamNeed = partial(Need, 'team')
 
 
 def create_user_needs(owner_id, permission):

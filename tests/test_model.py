@@ -27,9 +27,5 @@ class TestAccount(BaseSuite):
         robot = Account(name='robot')
         robot.save()
         team.members.append(robot)
-        team.save()
-        print org.permission_edit.needs
-        print org.permission_delete.needs
-
-        assert len(org.permission_edit.needs) == 2
-        assert len(org.permission_delete.needs) == 1
+        assert len(org.permission_edit.needs) == 3
+        assert len(org.permission_delete.needs) == 2
