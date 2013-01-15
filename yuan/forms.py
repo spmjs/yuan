@@ -10,6 +10,14 @@ from wtforms.compat import iteritems
 
 from .models import db, Account, Team, Project
 
+RESERVED_WORDS = [
+    'root', 'admin', 'bot', 'robot', 'master', 'webmaster',
+    'account', 'people', 'peoples', 'user', 'users',
+    'project', 'team', 'teams', 'group', 'groups', 'organization',
+    'organizations', 'package', 'packages', 'org', 'com', 'net',
+    'help', 'doc', 'docs', 'document', 'documentation', 'blog',
+]
+
 
 class BaseForm(Form):
     def __init__(self, *args, **kwargs):
@@ -31,6 +39,8 @@ class SignupForm(BaseForm):
     )
 
     def validate_name(self, field):
+        if field.data.lower() in RESERVED_WORDS:
+            raise ValueError(_('This name is a reserved name.'))
         if Account.query.filter_by(name=field.data.lower()).count():
             raise ValueError(_('This name has been registered.'))
 
@@ -99,6 +109,8 @@ class OrgForm(BaseForm):
     )
 
     def validate_name(self, field):
+        if field.data.lower() in RESERVED_WORDS:
+            raise ValueError(_('This name is a reserved name.'))
         if self._obj and self._obj.name == field.data.lower():
             return
         if Account.query.filter_by(name=field.data.lower()).count():
