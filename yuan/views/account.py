@@ -1,24 +1,55 @@
 # coding: utf-8
 
+import gevent
 from flask import Blueprint
-from flask import g, request, json
+from flask import g, request, json, current_app, flash
 from flask import render_template, redirect, url_for, jsonify
 from flask.ext.babel import gettext as _
+from flask_mail import Message
 from ..models import Account
-from ..helpers import login_user, logout_user, create_auth_token
-from ..helpers import require_login
+from ..helpers import login_user, logout_user, require_login
+from ..helpers import create_auth_token, verify_auth_token
 from ..forms import SignupForm, SigninForm, SettingForm
+from ..tasks import send_mail
 
 bp = Blueprint('account', __name__)
 
 
 @bp.route('/signup', methods=['GET', 'POST'])
 def signup():
+    next_url = request.args.get('next', url_for('.setting'))
+    token = request.args.get('token')
+    if token:
+        user = verify_auth_token(token, 1)
+        if not user:
+            flash(_('Invalid or expired token.'), 'error')
+            return redirect(next_url)
+        user.role = 2
+        user.save()
+        login_user(user)
+        flash(_('This account is verified.'), 'info')
+        return redirect(next_url)
+
     form = SignupForm()
     if form.validate_on_submit():
         user = form.save()
         login_user(user)
-        next_url = request.args.get('next', url_for('.setting'))
+        config = current_app.config
+        msg = Message(
+            _("Signup for %(site)s", site=config['SITE_TITLE']),
+            recipients=[user.email]
+        )
+        dct = {
+            'host': config.get('SITE_SECURE_URL', '').rstrip('/'),
+            'path': url_for('.signup'),
+            'token': create_auth_token(user)
+        }
+        link = '%(host)s%(path)s?token=%(token)s' % dct
+        html = render_template('email/signup.html', user=user, link=link)
+        msg.html = html
+        gevent.spawn(send_mail, config, msg)
+        flash(_('We have sent you an activate email, check your inbox.'),
+              'info')
         return redirect(next_url)
     return render_template('signup.html', form=form)
 
