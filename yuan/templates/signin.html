@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
 {% from "macro/form.html" import render_field %}
 
-{% block title %}{{_('Signin')}}{% endblock %}
+{% block subtitle %}{{_('Signin')}}{% endblock %}
 
-{% block mainbody %}
-<form class="classy" method="post" action="">
+{% block whitepaper %}
+<form class="single" method="post" action="">
   {{ form.csrf_token }}
   {{ render_field(form.account, 'long') }}
   {{ render_field(form.password, 'long') }}

@@ -1,11 +1,11 @@
 {% extends "layout.html" %}
 {% from "macro/form.html" import render_field, render_errors %}
 
-{% block title %}{% endblock %}
+{% block subtitle %}{% endblock %}
 
-{% block mainbody %}
+{% block whitepaper %}
 {%- if form %}
-<form method="post" action="">
+<form class="single" method="post" action="">
   {{ form.csrf_token }}
   {{ render_field(form.name, 'long') }}
   {{ render_field(form.screen_name, 'long') }}
@@ -20,7 +20,7 @@
   </dl>
 
   <div class="form-submit">
-    <button class="nicely">Submit</button>
+    <button class="classy">Submit</button>
   </div>
 </form>
 {%- endif %}

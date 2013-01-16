@@ -2,13 +2,41 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>{% block title %}{% endblock %}</title>
+    <title>{% block title %}{{config.SITE_TITLE}} - {% block subtitle %}{% endblock %}{% endblock %}</title>
     <link rel="stylesheet" href="{{url_for('static', filename='yue.tmp.css')}}" />
     <link rel="stylesheet" href="{{url_for('static', filename='site.css')}}" />
   </head>
   <body>
-    <div class="container">
-      {% block mainbody %}{% endblock %}
+    <header id="header">
+      <div class="container fn-clear">
+        <h1 class="brand fn-left"><a href="/">{{config.SITE_TITLE}}</a></h1>
+        <ul class="navigation fn-right">
+          {%- if g.user %}
+          <li><a href="/{{g.user.name}}">{{g.user.name}}</a></li>
+          <li><a href="{{url_for('organization.home')}}">{{_('Organization')}}</a></li>
+          <li><a href="{{url_for('account.setting')}}">{{_('Settings')}}</a></li>
+          <li><a href="{{url_for('account.signout')}}">{{_('Log Out')}}</a></li>
+          {%- else %}
+          <li><a href="{{url_for('account.signin')}}">{{_('Log In')}}</a></li>
+          <li><a href="{{url_for('account.signup')}}">{{_('Register')}}</a></li>
+          {%- endif %}
+        </ul>
+        {%- from "macro/utils.html" import flash_messages %}
+        {%- with messages = get_flashed_messages(with_categories=true) %}
+        {{ flash_messages(messages) }}
+        {%- endwith %}
+      </div>
+    </header>
+    {%- block mainbody %}
+    <div class="white-paper">
+      <div class="container">
+        {% block whitepaper %}{% endblock %}
+      </div>
     </div>
+    {%- endblock %}
+    <footer id="footer">
+      <div class="container">
+      </div>
+    </footer>
   </body>
 </html>

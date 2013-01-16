@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
 {% from "macro/form.html" import render_field, render_errors %}
 
-{% block title %}{% endblock %}
+{% block subtitle %}{{_('Organization')}}{% endblock %}
 
-{% block mainbody %}
-<form method="post" action="">
+{% block whitepaper %}
+<form class="single" method="post" action="">
   {{ form.csrf_token }}
   {{ render_errors(form.csrf_token.errors) }}
   {{ render_field(form.name, 'long') }}
@@ -20,7 +20,7 @@
   </dl>
 
   <div class="form-submit">
-    <button class="nicely">Submit</button>
+    <button class="classy">Submit</button>
   </div>
 </form>
 {% endblock %}
