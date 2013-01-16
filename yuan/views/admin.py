@@ -3,7 +3,7 @@
 from flask import g
 from flask.ext.admin import Admin, AdminIndexView, expose
 from flask.ext.admin.contrib.sqlamodel import ModelView
-from ..models import db, Account, Project, Package
+from ..models import db, Account, Project, Team, Package
 
 
 class BaseView(ModelView):
@@ -36,7 +36,18 @@ class HomeView(AdminIndexView):
         return g.user.role > 40
 
 
+class UserView(BaseView):
+    can_edit = True
+    excluded_list_columns = ('password', 'token')
+    excluded_form_columns = ('password', 'created', 'token')
+
+
+class PackageView(BaseView):
+    excluded_list_columns = ('readme')
+
+
 admin = Admin(name='Yuan', index_view=HomeView())
-admin.add_view(BaseView(Account, db.session))
+admin.add_view(UserView(Account, db.session))
+admin.add_view(BaseView(Team, db.session))
 admin.add_view(BaseView(Project, db.session))
-admin.add_view(BaseView(Package, db.session))
+admin.add_view(PackageView(Package, db.session))

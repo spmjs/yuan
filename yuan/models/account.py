@@ -30,8 +30,6 @@ class Account(db.Model, SessionMixin):
 
     comment_service = db.Column(db.String(100))
 
-    private = db.Column(db.Boolean, default=False)
-
     # if it is an org, role means the owner
     # if it is a user: 1 - not verified, 2 - verified, > 20 staff > 40 admin
     role = db.Column(db.Integer, default=1)
