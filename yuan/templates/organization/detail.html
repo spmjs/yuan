@@ -19,11 +19,6 @@
     {{ render_errors(form.comment_service_name.errors) }}
   </dl>
 
-  <div class="checkbox-form {{modifier}}">
-    {{form.private()}} {{form.private.label}}
-    <p>{{form.private.description}}</p>
-  </div>
-
   <div class="form-submit">
     <button class="nicely">Submit</button>
   </div>

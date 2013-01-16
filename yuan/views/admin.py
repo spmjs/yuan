@@ -38,7 +38,7 @@ class HomeView(AdminIndexView):
 
 class UserView(BaseView):
     can_edit = True
-    excluded_list_columns = ('password', 'token')
+    excluded_list_columns = ('password', 'token', 'description')
     excluded_form_columns = ('password', 'created', 'token')
 
 

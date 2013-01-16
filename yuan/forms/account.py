@@ -1,14 +1,14 @@
 # coding: utf-8
 
-from flask.ext.wtf import Form
-from flask.ext.wtf import TextField, PasswordField, BooleanField
+from flask.ext.wtf import TextField, PasswordField
 from flask.ext.wtf import TextAreaField, SelectField
-from flask.ext.wtf.html5 import EmailField, URLField
-from flask.ext.wtf import Required, Email, Length, Regexp, Optional, URL
+from flask.ext.wtf.html5 import EmailField
+from flask.ext.wtf import Required, Email, Length, Regexp, Optional
 from flask.ext.babel import lazy_gettext as _
 from wtforms.compat import iteritems
 
-from .models import db, Account, Team, Project
+from ._base import BaseForm
+from ..models import Account, Team
 
 RESERVED_WORDS = [
     'root', 'admin', 'bot', 'robot', 'master', 'webmaster',
@@ -16,13 +16,8 @@ RESERVED_WORDS = [
     'project', 'team', 'teams', 'group', 'groups', 'organization',
     'organizations', 'package', 'packages', 'org', 'com', 'net',
     'help', 'doc', 'docs', 'document', 'documentation', 'blog',
+    'bbs', 'forum', 'forums',
 ]
-
-
-class BaseForm(Form):
-    def __init__(self, *args, **kwargs):
-        self._obj = kwargs.get('obj', None)
-        super(BaseForm, self).__init__(*args, **kwargs)
 
 
 class SignupForm(BaseForm):
@@ -50,8 +45,7 @@ class SignupForm(BaseForm):
 
     def save(self):
         user = Account(**self.data)
-        db.session.add(user)
-        db.session.commit()
+        user.save()
         return user
 
 
@@ -78,24 +72,11 @@ class SigninForm(BaseForm):
         raise ValueError(_('Wrong account or password'))
 
 
-class OrgForm(BaseForm):
-    name = TextField(
-        _('Name'), validators=[
-            Required(), Length(min=3, max=20), Regexp('[a-z0-9A-Z]+')
-        ], description=_('English Characters Only.'),
-    )
+class SettingForm(BaseForm):
     screen_name = TextField(_('Display Name'), validators=[Length(max=80)])
-    email = EmailField(
-        _('Gravatar Email'), validators=[Optional(), Email()],
-        description=_('Avatar of your organization.'),
-    )
     description = TextAreaField(
         _('Description'), validators=[Optional(), Length(max=400)],
         description=_('Markdown is supported.')
-    )
-    private = BooleanField(
-        _('This is a private organization.'),
-        description=_('We encourage public organizations.')
     )
     comment_service_name = SelectField(
         _('Comment Service'),
@@ -106,6 +87,28 @@ class OrgForm(BaseForm):
     )
     comment_service_id = TextField(
         _('Service ID'), validators=[Length(max=80)]
+    )
+
+    def populate_obj(self, obj):
+        for name, field in iteritems(self._fields):
+            if not name.startswith('comment_service'):
+                field.populate_obj(obj, name)
+
+        csn = self._fields['comment_service_name']
+        csi = self._fields['comment_service_id']
+        if csn and csi:
+            obj.comment_service = '%s-%s' % (csn.data, csi.data)
+
+
+class OrgForm(SettingForm):
+    name = TextField(
+        _('Name'), validators=[
+            Required(), Length(min=3, max=20), Regexp('[a-z0-9A-Z]+')
+        ], description=_('English Characters Only.'),
+    )
+    email = EmailField(
+        _('Gravatar Email'), validators=[Optional(), Email()],
+        description=_('Avatar of your organization.'),
     )
 
     def validate_name(self, field):
@@ -122,16 +125,6 @@ class OrgForm(BaseForm):
         if field.data:
             if Account.query.filter_by(email=field.data.lower()).count():
                 raise ValueError(_('This email has been registered.'))
-
-    def populate_obj(self, obj):
-        for name, field in iteritems(self._fields):
-            if not name.startswith('comment_service'):
-                field.populate_obj(obj, name)
-
-        csn = self._fields['comment_service_name']
-        csi = self._fields['comment_service_id']
-        if csn and csi:
-            obj.comment_service = '%s-%s' % (csn.data, csi.data)
 
     def save(self, user):
         data = dict(self.data)
@@ -177,48 +170,3 @@ class TeamForm(BaseForm):
         team = Team(**data)
         team.save()
         return team
-
-
-class ProjectForm(BaseForm):
-    name = TextField(
-        _('Name'), validators=[Required(), Length(max=40)]
-    )
-    homepage = URLField(
-        _('Homepage'), validators=[Optional(), URL()]
-    )
-    repository = TextField(
-        _('Repository'), validators=[Optional()]
-    )
-    screen_name = TextField(
-        _('Display Name'), validators=[Optional(), Length(max=80)]
-    )
-    description = TextField(
-        _('Description'), validators=[Optional(), Length(max=400)]
-    )
-    private = BooleanField(
-        _('This is a private project.'),
-        description=_('We encourage public projects.')
-    )
-
-    def __init__(self, *args, **kwargs):
-        self._owner = kwargs.get('owner', None)
-        super(ProjectForm, self).__init__(*args, **kwargs)
-
-    def validate_name(self, field):
-        if self._obj and self._obj.name == field.data:
-            return
-        count = Project.query.filter_by(
-            owner_id=self._owner.id, name=field.data
-        ).count()
-        if count:
-            raise ValueError(_('This name has been registered.'))
-
-    def save(self, org=None):
-        data = dict(self.data)
-        if org:
-            data['owner_id'] = org.id
-        else:
-            data['owner_id'] = self._owner.id
-        proj = Project(**data)
-        proj.save()
-        return proj
