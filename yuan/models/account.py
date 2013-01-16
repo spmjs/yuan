@@ -8,7 +8,7 @@ from flask.ext.principal import Permission, UserNeed
 from ._base import db, YuanQuery, SessionMixin, model_created
 from ._base import TeamNeed
 
-__all__ = ['Account', 'Team']
+__all__ = ['Account', 'Team', 'get_user_organizations']
 
 
 class Account(db.Model, SessionMixin):
@@ -58,7 +58,7 @@ class Account(db.Model, SessionMixin):
             setattr(self, k, v)
 
     def __str__(self):
-        return self.name
+        return self.screen_name or self.name
 
     def __repr__(self):
         return '<Account: %s>' % self
@@ -217,3 +217,10 @@ def create_owner_team(sender, model=None):
     team = Team(name='Owner', _permission=4, owner_id=model.id)
     team.members.append(user)
     return team.save()
+
+
+def get_user_organizations(user_id):
+    q = db.session.query(Team._permission, Account).\
+            join(team_member, team_member.c.account_id == user_id).\
+            filter(Team.owner_id == Account.id)
+    return q.all()

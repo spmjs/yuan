@@ -4,7 +4,7 @@ from flask import Blueprint
 from flask import g, url_for, request
 from flask import render_template, redirect, abort
 from ..helpers import require_user
-from ..models import Account, Team
+from ..models import Account, Team, get_user_organizations
 from ..forms import OrgForm, TeamForm
 
 bp = Blueprint('organization', __name__)
@@ -17,9 +17,8 @@ def home():
     if form.validate_on_submit():
         org = form.save(g.user)
         return redirect(url_for('.detail', name=org.name))
-    user_id = g.user.id
-    admins = Account.query.filter_by(role=user_id, account_type='org').all()
-    dct = {'admins': admins, 'form': form}
+    orgs = get_user_organizations(g.user.id)
+    dct = {'orgs': orgs, 'form': form}
     return render_template('organization/home.html', **dct)
 
 
@@ -37,7 +36,8 @@ def detail(name):
         form.populate_obj(org)
         org.save()
         return redirect(url_for('.detail', name=org.name))
-    dct = {'organization': org, 'form': form}
+    dct = {'org': org, 'form': form}
+    dct['teams'] = Team.query.filter_by(owner_id=org.id).all()
     return render_template('organization/detail.html', **dct)
 
 
