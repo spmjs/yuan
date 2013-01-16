@@ -6,7 +6,8 @@ from flask import render_template, redirect, url_for, jsonify
 from flask.ext.babel import gettext as _
 from ..models import Account
 from ..helpers import login_user, logout_user, create_auth_token
-from ..forms import SignupForm, SigninForm
+from ..helpers import require_login
+from ..forms import SignupForm, SigninForm, SettingForm
 
 bp = Blueprint('account', __name__)
 
@@ -17,7 +18,7 @@ def signup():
     if form.validate_on_submit():
         user = form.save()
         login_user(user)
-        next_url = request.args.get('next', url_for('.settings'))
+        next_url = request.args.get('next', url_for('.setting'))
         return redirect(next_url)
     return render_template('signup.html', form=form)
 
@@ -41,9 +42,17 @@ def signout():
     return redirect(next_url)
 
 
-@bp.route('/settings')
-def settings():
-    return render_template('settings.html')
+@bp.route('/setting', methods=['GET', 'POST'])
+@require_login
+def setting():
+    form = SettingForm(obj=g.user)
+    next_url = request.args.get('next', url_for('.setting'))
+    if form.validate_on_submit():
+        user = Account.query.get(g.user.id)
+        form.populate_obj(user)
+        user.save()
+        return redirect(next_url)
+    return render_template('setting.html', form=form)
 
 
 @bp.route('/login', methods=['POST'])
