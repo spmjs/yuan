@@ -1,9 +1,22 @@
 {%- macro flash_messages(messages) %}
-{% if messages %}
+{%- if messages %}
 <ul class=flashes>
-  {% for category, message in messages %}
+  {%- for category, message in messages %}
   <li class="{{ category }}">{{ message }} <span class="close">×</span></li>
-  {% endfor %}
+  {%- endfor %}
 </ul>
-{% endif %}
+{%- endif %}
+{%- endmacro %}
+
+
+{%- macro render_navigation(user, active=None) %}
+{%- if user %}
+<li><a href="/{{user.name}}">{{user.name}}</a></li>
+<li{%- if active == 'organization' %} class="active"{%- endif %}><a href="{{url_for('organization.home')}}">{{_('Organization')}}</a></li>
+<li><a href="{{url_for('account.setting')}}">{{_('Settings')}}</a></li>
+<li><a href="{{url_for('account.signout')}}">{{_('Log Out')}}</a></li>
+{%- else %}
+<li><a href="{{url_for('account.signin')}}">{{_('Log In')}}</a></li>
+<li><a href="{{url_for('account.signup')}}">{{_('Register')}}</a></li>
+{%- endif %}
 {%- endmacro %}

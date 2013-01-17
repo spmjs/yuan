@@ -17,6 +17,8 @@ parts
 docs/_build
 .tox
 
+messages.pot
+
 data/elasticsearch/
 logs/elasticsearch/
 
