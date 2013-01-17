@@ -1,4 +1,4 @@
-# Makefile for project June
+# Makefile for project yuan
 .PHONY: clean-pyc clean-build docs
 
 all: install
@@ -21,13 +21,13 @@ babel-extract:
 	@pybabel extract -F babel.cfg -o messages.pot .
 
 babel-init:
-	@pybabel init -i messages.pot -d june/translations -l zh
+	@pybabel init -i messages.pot -d yuan/translations -l zh
 
 babel-compile:
-	@pybabel compile -d june/translations
+	@pybabel compile -d yuan/translations
 
 babel-update: babel-extract
-	@pybabel update -i messages.pot -d june/translations
+	@pybabel update -i messages.pot -d yuan/translations
 
 # Common Task
 clean: clean-build clean-pyc
@@ -55,8 +55,8 @@ print-test:
 	@$(MAKE) testing options=--nocapture
 
 coverage:
-	@rm .coverage
-	@nosetests --with-cov --cov june tests/
+	@rm -f .coverage
+	@nosetests --with-cov --cov yuan tests/
 	@rm .coverage
 
 # Sphinx Documentation
