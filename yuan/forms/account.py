@@ -12,11 +12,11 @@ from ..models import Account, Team
 
 RESERVED_WORDS = [
     'root', 'admin', 'bot', 'robot', 'master', 'webmaster',
-    'account', 'people', 'peoples', 'user', 'users',
-    'project', 'team', 'teams', 'group', 'groups', 'organization',
+    'account', 'people', 'user', 'users', 'project', 'projects',
+    'team', 'teams', 'group', 'groups', 'organization',
     'organizations', 'package', 'packages', 'org', 'com', 'net',
     'help', 'doc', 'docs', 'document', 'documentation', 'blog',
-    'bbs', 'forum', 'forums',
+    'bbs', 'forum', 'forums', 'static', 'assets',
 ]
 
 

@@ -1,8 +1,9 @@
 # coding: utf-8
 
 from flask import Blueprint
-from flask import g, url_for, request
+from flask import g, url_for, request, flash
 from flask import render_template, redirect, abort
+from flask.ext.babel import gettext as _
 from ..helpers import require_user
 from ..models import Account, Team, get_user_organizations
 from ..forms import OrgForm, TeamForm
@@ -67,11 +68,10 @@ def team(name, ident):
         user = None
         if username:
             user = Account.query.filter_by(name=username).first()
-        if not user:
-            #TODO flash message
-            pass
-        else:
+        if user and user.account_type == 'user':
             team.members.append(user)
             team.save()
+        else:
+            flash(_('This user does not exist.'), 'error')
         return redirect(url_for('.team', name=name, ident=ident))
     return render_template('organization/team.html', team=team)

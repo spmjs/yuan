@@ -21,11 +21,11 @@
           <li><a href="{{url_for('account.signup')}}">{{_('Register')}}</a></li>
           {%- endif %}
         </ul>
-        {%- from "macro/utils.html" import flash_messages %}
-        {%- with messages = get_flashed_messages(with_categories=true) %}
-        {{ flash_messages(messages) }}
-        {%- endwith %}
       </div>
+      {%- from "macro/utils.html" import flash_messages %}
+      {%- with messages = get_flashed_messages(with_categories=true) %}
+      {{ flash_messages(messages) }}
+      {%- endwith %}
     </header>
     {%- block mainbody %}
     <div class="white-paper">

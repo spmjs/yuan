@@ -9,7 +9,7 @@
     {%- if orgs %}
     <h3>{{_('Organizations')}}</h3>
     <ul class="sidenav">
-      {%- for permission, org in orgs %}
+      {%- for org in orgs %}
       <li><a href="{{url_for('organization.detail', name=org.name)}}">{{org}}</a></li>
       {%- endfor %}
     </ul>

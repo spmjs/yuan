@@ -15,7 +15,6 @@ html, body {
   margin: 0 auto;
   padding: 0 14px;
 }
-
 /* layout */
 .layout-two-columns .small-column {
   min-width: 300px;
@@ -47,6 +46,11 @@ html, body {
 #header .navigation {
   margin-top: 35px;
 }
+#header .flashes {
+  width: 400px;
+  margin: 0 auto;
+}
+
 
 form.single {
   max-width: 560px;

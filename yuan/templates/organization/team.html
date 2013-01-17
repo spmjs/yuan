@@ -6,8 +6,8 @@
 {%- for user in team.members %}
 {{user.name}}
 {%- endfor %}
-<form method="post" action="">
+<form class="form" method="post" action="">
   <input type="text" class="text" placeholder="Add a member" name="username" />
-  <button class="mini">Add</button>
+  <button class="classy">Add</button>
 </form>
 {% endblock %}

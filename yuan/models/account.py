@@ -220,7 +220,7 @@ def create_owner_team(sender, model=None):
 
 
 def get_user_organizations(user_id):
-    q = db.session.query(Team._permission, Account).\
+    q = db.session.query(Account).\
             join(team_member, team_member.c.account_id == user_id).\
-            filter(Team.owner_id == Account.id)
+            join(Team, Team.owner_id == Account.id)
     return q.all()
