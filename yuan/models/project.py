@@ -44,6 +44,26 @@ class Project(db.Model, SessionMixin):
                 .first()
         return pkg
 
+    @cache.memoize(100)
+    def tagged_project(self, tag):
+        packages = Package.query.filter_by(
+            project_id=self.id, tag=tag
+        ).order_by(Package.id.desc()).all()
+
+        data = self.to_dict(
+            'name', 'homepage', 'repository', 'screen_name', 'description',
+            'created', 'updated',
+        )
+
+        def _to_dict(pkg):
+            dct = pkg.to_dict('version', 'download_url', 'created')
+            dct['md5'] = pkg.md5value
+            dct['dependencies'] = pkg.dependency_list
+            return dct
+
+        data['packages'] = map(_to_dict, packages)
+        return data
+
 
 class Package(db.Model, SessionMixin):
     query_class = YuanQuery
@@ -89,3 +109,18 @@ class Package(db.Model, SessionMixin):
     def get_by_version(cls, project_id, version):
         q = cls.query.filter_by(project_id=project_id, version=version)
         return q.first()
+
+    def dict_with_project(self, project=None):
+        if not project:
+            project = self.project
+
+        data = project.to_dict(
+            'name', 'homepage', 'repository', 'screen_name', 'description',
+            'created', 'updated', 'private',
+        )
+        data['version'] = self.version
+        data['download_url'] = self.download_url
+        data['tag'] = self.tag
+        data['md5'] = self.md5value
+        data['dependencies'] = self.dependency_list
+        return data

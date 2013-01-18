@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import datetime
 from functools import partial
 from flask.signals import Namespace
 from flask.ext.sqlalchemy import SQLAlchemy, BaseQuery
@@ -54,6 +55,15 @@ class YuanQuery(BaseQuery):
 
 
 class SessionMixin(object):
+    def to_dict(self, *columns):
+        dct = {}
+        for col in columns:
+            value = getattr(self, col)
+            if isinstance(value, datetime.datetime):
+                value = value.strftime('%Y-%m-%d %H:%M:%S')
+            dct[col] = value
+        return dct
+
     def save(self):
         if self.id:
             emitter = model_updated

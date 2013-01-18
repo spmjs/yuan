@@ -7,7 +7,7 @@ from flask import Blueprint, current_app
 from flask import g, request, jsonify, abort
 from distutils.version import StrictVersion
 from flask.ext.babel import gettext as _
-from ..models import db, Project, Package, Account
+from ..models import Project, Package, Account
 from ..forms import ProjectForm
 
 __all__ = ['bp']
@@ -17,30 +17,41 @@ bp = Blueprint('repository', __name__)
 
 @bp.route('/')
 def index():
-    # only index public project
-    projects = Project.query.filter_by(private=False)
-    return projects
+    #TODO
+    return abort(404)
 
 
-@bp.route('/<root>/')
-def account():
-    pass
+@bp.route('/<name>/')
+def account(name):
+    #TODO
+    return abort(404)
 
 
-@bp.route('/<root>/<pkg>', methods=['GET', 'POST', 'DELETE'])
-def project(root, pkg):
-    account = Account.query.filter_by(name=root).first()
+@bp.route('/<name>/<pkg>', methods=['GET', 'POST', 'DELETE'])
+def project(name, pkg):
+    """Create, delete, and get information of a project on these conditions:
+
+        1. Public projects can be read by all users.
+        2. Private projects can be only accessable by group members.
+        3. Projects can be only created by users who has write permission.
+        4. Projects can be only deleted by users who has admin permission.
+    """
+
+    # account can be a user or organization
+    account = Account.query.filter_by(name=name).first()
     if not account:
         return abortify(404, message=_('Account not found.'))
 
+    #TODO: cache it
     project = Project.query.filter_by(owner_id=account.id, name=pkg).first()
     if request.method == 'GET':
         if not project:
-            abortify(404, message=_('Project not found.'))
-            return
+            return abortify(404, message=_('Project not found.'))
         if project.private and not account.permission_read.can():
             return abortify(403)
-        return jsonify(status='info', data=dict(project))
+        tag = request.args.get('tag', 'stable')
+        data = project.tagged_project(tag)
+        return jsonify(status='success', data=data)
 
     if request.method == 'POST':
         if project and account.permission_write.can():
@@ -56,15 +67,18 @@ def project(root, pkg):
     if not project:
         return abortify(404, message=_('Project not found.'))
 
-    if not account.permission_admin.can():
-        return abortify(403)
-    project.delete()
-    return jsonify(status='info', message=_('Project deleted.'))
+    if account.permission_admin.can():
+        project.delete()
+        return jsonify(status='info', message=_('Project deleted.'))
+    return abortify(403)
 
 
-@bp.route('/<root>/<pkg>/<version>', methods=['GET', 'POST', 'PUT', 'DELETE'])
-def package(root, pkg, version):
-    account = Account.query.filter_by(name=root).first()
+@bp.route('/<name>/<pkg>/<version>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+def package(name, pkg, version):
+    """Create, delete, upload, and get information of a package."""
+
+    # account can be a user or organization
+    account = Account.query.filter_by(name=name).first()
     if not account:
         return abortify(404, message=_('Account not found.'))
 
@@ -75,6 +89,7 @@ def package(root, pkg, version):
     if not project:
         if not account.permission_admin.can():
             return abortify(403)
+        # POST method will create project
         project = create_project(account, pkg)
 
     if request.method == 'GET':
@@ -83,19 +98,37 @@ def package(root, pkg, version):
         package = Package.get_by_version(project.id, version)
         if not package:
             return abortify(404, message=_('Package not found.'))
-        #TODO
-        return
+        return jsonify(
+            status='success',
+            data=package.dict_with_project(project)
+        )
+
     if request.method == 'POST':
         if not account.permission_write.can():
             return abortify(403)
         package = Package.get_by_version(project.id, version)
         if not package:
-            create_package(project, version)
-            res = jsonify(status='info', message=_('Package created.'))
+            data = _get_package_data(project, version)
+            package = Package(**data)
+            package.save()
+
+            res = jsonify(
+                status='success',
+                data=package.dict_with_project(project)
+            )
             res.status_code = 201
             return res
-        #TODO
-        return jsonify(status='info')
+        isforce = request.headers.get('X-YUAN-FORCE', False)
+        if not isforce:
+            return abortify(444)
+        data = _get_package_data(project, version)
+        for key in data:
+            setattr(package, data[key])
+            package.save()
+        return jsonify(
+            status='success',
+            data=package.dict_with_project(project)
+        )
 
     if request.method == 'PUT':
         if not account.permission_write.can():
@@ -106,24 +139,40 @@ def package(root, pkg, version):
         upload_package(project, package, account)
         return jsonify(status='info', message=_('Package uploaded.'))
 
+    if account.permission_admin.can():
+        package.delete()
+        return jsonify(status='info', message=_('Package deleted.'))
+    return abortify(403)
+
 
 @bp.route('/search')
 def search():
-    pass
+    #TODO
+    return abort(404)
 
 
 # helpers
 
 def abortify(code, **kwargs):
-    if code == 403 and not g.user:
+    if code in (403, 406, 415) and not g.user:
         code = 401
-        kwargs = dict(message=_('Authorization required.'))
 
-    if code == 403 and not kwargs:
-        kwargs = dict(message=_('Permission denied.'))
+    msgs = {
+        400: _('Bad request.'),
+        401: _('Authorization required.'),
+        403: _('Permission denied.'),
+        404: _('Not found.'),
+        406: _('Not acceptable.'),
+        415: _('Unsupported media type.'),
+        426: _('Upgrade required.'),
+        444: _('Force option required.'),
+    }
+    if 'message' not in kwargs and code in msgs:
+        kwargs['message'] = msgs[code]
 
     if 'status' not in kwargs:
         kwargs['status'] = 'error'
+
     response = jsonify(**kwargs)
     response.status_code = code
     return abort(response)
@@ -131,15 +180,13 @@ def abortify(code, **kwargs):
 
 def _get_request_data():
     if not g.user:
-        return abortify(
-            401, message=_('Authorization required.')
-        )
+        return abortify(401)
     if request.json:
         return request.json
     ctype = request.headers.get('CONTENT-TYPE')
     if not request.json and ctype == 'application/json':
         return {}
-    return abortify(400, message=_('Only application/json is allowed.'))
+    return abortify(415, message=_('Only application/json is allowed.'))
 
 
 def create_project(owner, name=None):
@@ -166,7 +213,7 @@ def update_project(project, owner, name=None):
     return abortify(406, message=_('Request invalid.'))
 
 
-def create_package(project, version=None):
+def _get_package_data(project, version=None):
     data = _get_request_data()
     if 'version' in data:
         version = data['version']
@@ -189,23 +236,7 @@ def create_package(project, version=None):
     if 'tag' not in dct and _ver.prerelease:
         dct['tag'] = 'unstable'
     dct['project_id'] = project.id
-    pkg = Package(**dct)
-    pkg.save()
-    return pkg
-
-
-def delete_package(project, package):
-    # only owner can delete it
-    if project.account_id == g.user.id:
-        #TODO
-        db.session.delete(package)
-        db.session.commit()
-        return jsonify(status='info', message=_('Package deleted.'))
-    return jsonify(
-        status='error',
-        code=403,
-        message=_('Permission denied.')
-    )
+    return dct
 
 
 def upload_package(project, package, owner):
@@ -214,19 +245,19 @@ def upload_package(project, package, owner):
     if ctype == 'application/x-tar' and encoding == 'x-gzip':
         ctype = 'application/x-tar-gz'
     if ctype not in ('application/x-tar-gz', 'application/x-tgz'):
-        return abortify(400, message=_('Only gziped tar file is allowed.'))
+        return abortify(415, message=_('Only gziped tar file is allowed.'))
 
     force = request.headers.get('X-YUAN-FORCE', False)
     if package.download_url and not force:
-        return abortify(405, message=_('Package existed.'))
+        return abortify(444)
 
     if project.private:
         token = '%s-%s' % (current_app.secret_key, repr(package))
         hsh = hashlib.md5(token).hexdigest()
-        filename = '%s-%s.tgz' % (project.name, hsh)
+        filename = '%s-%s.tar.gz' % (project.name, hsh)
         directory = current_app.config['PACKAGE_STORAGE_PRIVATE']
     else:
-        filename = '%s-%s.tgz' % (project.name, package.version)
+        filename = '%s-%s.tar.gz' % (project.name, package.version)
         directory = current_app.config['PACKAGE_STORAGE_PUBLIC']
     filepath = os.path.join(directory, owner.name, project.name, filename)
     directory = os.path.dirname(filepath)

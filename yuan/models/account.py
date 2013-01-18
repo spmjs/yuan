@@ -30,8 +30,7 @@ class Account(db.Model, SessionMixin):
 
     comment_service = db.Column(db.String(100))
 
-    # if it is an org, role means the owner
-    # if it is a user: 1 - not verified, 2 - verified, > 20 staff > 40 admin
+    # for user: 1 - not verified, 2 - verified, > 20 staff > 40 admin
     role = db.Column(db.Integer, default=1)
 
     created = db.Column(db.DateTime, default=datetime.utcnow)
