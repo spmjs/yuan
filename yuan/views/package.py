@@ -94,6 +94,8 @@ def package(root, pkg, version):
             res = jsonify(status='info', message=_('Package created.'))
             res.status_code = 201
             return res
+        #TODO
+        return jsonify(status='info')
 
     if request.method == 'PUT':
         if not account.permission_write.can():

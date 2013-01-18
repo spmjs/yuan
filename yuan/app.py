@@ -11,7 +11,7 @@ from flask.ext.babel import Babel
 from flask.ext.principal import Principal, Identity, identity_loaded, UserNeed
 from .models import db, cache, TeamNeed
 from .views import front, account, organization, package, admin
-from .helpers import get_current_user, verify_auth_token
+from .helpers import get_current_user
 
 
 def create_app(config=None):
@@ -43,9 +43,6 @@ def create_app(config=None):
     @app.before_request
     def load_current_user():
         g.user = get_current_user()
-        auth = request.headers.get('X-YUAN-AUTH', None)
-        if not g.user and auth:
-            g.user = verify_auth_token(auth)
 
     # babel for i18n
     babel = Babel(app)

@@ -39,8 +39,6 @@ class require_role(object):
 
 require_login = require_role(None)
 require_user = require_role(2)
-require_staff = require_role(6)
-require_admin = require_role(9)
 
 
 def get_current_user():
@@ -51,7 +49,10 @@ def get_current_user():
         if user.token != session['token']:
             return None
         return user
-    # request header
+
+    auth = request.headers.get('X-YUAN-AUTH', None)
+    if auth:
+        return verify_auth_token(auth)
     return None
 
 
