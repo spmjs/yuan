@@ -12,7 +12,7 @@ from ..forms import ProjectForm
 
 __all__ = ['bp']
 
-bp = Blueprint('package', __name__)
+bp = Blueprint('repository', __name__)
 
 
 @bp.route('/')

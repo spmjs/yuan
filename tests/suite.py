@@ -2,8 +2,9 @@
 
 import os
 import tempfile
+from flask import json
 from yuan.app import create_app
-from yuan.models import db
+from yuan.models import db, Account
 
 
 class BaseSuite(object):
@@ -30,3 +31,21 @@ class BaseSuite(object):
 
         if hasattr(self, 'posthook'):
             self.posthook()
+
+    def create_account(self):
+        # create account
+        user = Account(name='lepture', password='demo', email='a@b.c')
+        user.save()
+
+        group = Account(name='yuan', role=user.id)
+        group.save()
+
+    def login_account(self):
+        rv = self.client.post(
+            '/account/login',
+            content_type='application/json',
+            data=json.dumps({'account': 'lepture', 'password': 'demo'})
+        )
+        data = json.loads(rv.data)
+        auth = data['data']['auth']
+        return {'X-YUAN-AUTH': auth}

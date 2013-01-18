@@ -16,7 +16,8 @@ RESERVED_WORDS = [
     'team', 'teams', 'group', 'groups', 'organization',
     'organizations', 'package', 'packages', 'org', 'com', 'net',
     'help', 'doc', 'docs', 'document', 'documentation', 'blog',
-    'bbs', 'forum', 'forums', 'static', 'assets',
+    'bbs', 'forum', 'forums', 'static', 'assets', 'repository',
+    'mac', 'windows', 'ios', 'lab',
 ]
 
 
