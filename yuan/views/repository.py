@@ -7,7 +7,7 @@ from flask import Blueprint, current_app
 from flask import g, request, jsonify, abort
 from distutils.version import StrictVersion
 from flask.ext.babel import gettext as _
-from ..models import Project, Package, Account
+from ..models import Project, Package, Account, cache, db
 from ..forms import ProjectForm
 
 __all__ = ['bp']
@@ -15,16 +15,25 @@ __all__ = ['bp']
 bp = Blueprint('repository', __name__)
 
 
+@cache.memoize(100)
 @bp.route('/')
 def index():
-    #TODO
-    return abort(404)
+    data = db.session.query(Account.name).all()
+    return jsonify(status='success', data=data)
 
 
 @bp.route('/<name>/')
 def account(name):
-    #TODO
-    return abort(404)
+    account = Account.query.filter_by(name=name).first()
+    if not account:
+        return abortify(404, message=_('Account not found.'))
+    if account.permission_read.can():
+        data = db.session.query(Project.name)\
+                .filter_by(account_id=account.id).all()
+    else:
+        data = db.session.query(Project.name)\
+                .filter_by(owner_id=account.id, private=False).all()
+    return jsonify(status='success', data=data)
 
 
 @bp.route('/<name>/<pkg>', methods=['GET', 'POST', 'DELETE'])
@@ -92,6 +101,7 @@ def package(name, pkg, version):
         # POST method will create project
         project = create_project(account, pkg)
 
+    # get information of a package
     if request.method == 'GET':
         if project.private and not account.permission_read.can():
             return abortify(403)
@@ -103,6 +113,7 @@ def package(name, pkg, version):
             data=package.dict_with_project(project)
         )
 
+    # create or update information of a package
     if request.method == 'POST':
         if not account.permission_write.can():
             return abortify(403)
@@ -130,6 +141,7 @@ def package(name, pkg, version):
             data=package.dict_with_project(project)
         )
 
+    # upload files for a package
     if request.method == 'PUT':
         if not account.permission_write.can():
             return abortify(403)
@@ -139,6 +151,7 @@ def package(name, pkg, version):
         upload_package(project, package, account)
         return jsonify(status='info', message=_('Package uploaded.'))
 
+    # delete a package
     if account.permission_admin.can():
         package.delete()
         return jsonify(status='info', message=_('Package deleted.'))
