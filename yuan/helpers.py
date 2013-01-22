@@ -59,9 +59,10 @@ def get_current_user():
 def login_user(user, permanent=False):
     if not user:
         return None
-    session.permanent = permanent
     session['id'] = user.id
     session['token'] = user.token
+    if permanent:
+        session.permanent = True
     return user
 
 

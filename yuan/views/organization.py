@@ -53,7 +53,9 @@ def team_index(name):
     if form and form.validate_on_submit():
         team = form.save(org)
         return redirect(url_for('.team', name=name, ident=team.id))
-    return render_template('organization/team-index.html', form=form)
+    dct = {'org': org, 'form': form}
+    dct['teams'] = Team.query.filter_by(owner_id=org.id).all()
+    return render_template('organization/team-index.html', **dct)
 
 
 @bp.route('/<name>/team/<int:ident>', methods=['GET', 'POST', 'DELETE'])
@@ -74,4 +76,5 @@ def team(name, ident):
         else:
             flash(_('This user does not exist.'), 'error')
         return redirect(url_for('.team', name=name, ident=ident))
-    return render_template('organization/team.html', team=team)
+    dct = {'org': org, 'team': team}
+    return render_template('organization/team.html', **dct)

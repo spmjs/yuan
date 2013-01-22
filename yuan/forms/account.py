@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from flask.ext.wtf import TextField, PasswordField
+from flask.ext.wtf import TextField, PasswordField, BooleanField
 from flask.ext.wtf import TextAreaField, SelectField
 from flask.ext.wtf.html5 import EmailField
 from flask.ext.wtf import Required, Email, Length, Regexp, Optional
@@ -57,6 +57,7 @@ class SigninForm(BaseForm):
     password = PasswordField(
         _('Password'), validators=[Required()]
     )
+    permanent = BooleanField(_('Remember me for a month.'))
 
     def validate_password(self, field):
         account = self.account.data

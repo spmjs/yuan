@@ -4,8 +4,8 @@
 {% block subtitle %}{{org}}{% endblock %}
 
 {% block whitepaper %}
-<div class="layout-two-columns fn-clear">
-  <div class="small-column fn-left">
+<div class="layout-container fn-clear">
+  <div class="layout-small fn-left">
     {%- if teams %}
     <h3 class="title">{{_('Teams')}}</h3>
     <ul class="sidenav">
@@ -20,7 +20,7 @@
     </div>
   </div>
 
-  <div class="large-column fn-left">
+  <div class="layout-large fn-left">
     {%- if form %}
     <form class="single" method="post" action="">
       {{ form.csrf_token }}

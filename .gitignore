@@ -3,7 +3,6 @@
 *.egg-info
 *.mo
 *.log
-*.tgz
 *.tmp.*
 __pycache__
 bin
@@ -19,7 +18,7 @@ docs/_build
 
 messages.pot
 
-data/elasticsearch/
-logs/elasticsearch/
+data/
+logs/
 
 yuan/_static/sea-modules/

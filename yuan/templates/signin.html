@@ -9,6 +9,10 @@
   {{ render_field(form.account, 'long') }}
   {{ render_field(form.password, 'long') }}
 
+  <div class="checkbox-form">
+    {{form.permanent()}} {{form.permanent.label()}}
+  </div>
+
   <div class="form-submit">
     <button class="classy">Submit</button>
   </div>

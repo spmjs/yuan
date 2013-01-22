@@ -47,7 +47,7 @@ def signin():
         return redirect(next_url)
     form = SigninForm()
     if form.validate_on_submit():
-        login_user(form.user)
+        login_user(form.user, form.permanent.data)
         return redirect(next_url)
     return render_template('signin.html', form=form)
 

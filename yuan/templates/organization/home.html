@@ -4,10 +4,10 @@
 {% block subtitle %}{{_('Organizations')}}{% endblock %}
 
 {% block whitepaper %}
-<div class="layout-two-columns fn-clear">
-  <div class="small-column fn-left">
-    {%- if orgs %}
+<div class="layout-container fn-clear">
+  <div class="layout-small fn-left">
     <h3>{{_('Organizations')}}</h3>
+    {%- if orgs %}
     <ul class="sidenav">
       {%- for org in orgs %}
       <li><a href="{{url_for('organization.detail', name=org.name)}}">{{org}}</a></li>
@@ -15,7 +15,7 @@
     </ul>
     {%- endif %}
   </div>
-  <div class="large-column fn-left">
+  <div class="layout-large fn-left">
     <form class="single" method="post" action="">
       {{ form.csrf_token }}
       {{ render_field(form.name, 'long') }}

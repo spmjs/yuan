@@ -16,17 +16,17 @@ html, body {
   padding: 0 14px;
 }
 /* layout */
-.layout-two-columns .small-column {
+.layout-container .layout-small {
   min-width: 300px;
 }
-.layout-two-columns .large-column {
+.layout-container .layout-large {
   width: 600px;
 }
-.layout-two-columns .title a {
+.layout-container .title a {
   color: #666;
   text-decoration: none;
 }
-.layout-two-columns .title a:hover {
+.layout-container .title a:hover {
   color: #444;
 }
 
