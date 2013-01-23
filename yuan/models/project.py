@@ -20,7 +20,6 @@ class Project(db.Model, SessionMixin):
     homepage = db.Column(db.String(200))
     repository = db.Column(db.String(400))
 
-    screen_name = db.Column(db.String(80))
     description = db.Column(db.String(400))
 
     private = db.Column(db.Boolean, default=False)
@@ -51,7 +50,7 @@ class Project(db.Model, SessionMixin):
         ).order_by(Package.id.desc()).all()
 
         data = self.to_dict(
-            'name', 'homepage', 'repository', 'screen_name', 'description',
+            'name', 'homepage', 'repository', 'description',
             'created', 'updated',
         )
 
@@ -115,7 +114,7 @@ class Package(db.Model, SessionMixin):
             project = self.project
 
         data = project.to_dict(
-            'name', 'homepage', 'repository', 'screen_name', 'description',
+            'name', 'homepage', 'repository', 'description',
             'created', 'updated', 'private',
         )
         data['version'] = self.version

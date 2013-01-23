@@ -134,7 +134,7 @@ def package(name, pkg, version):
             return abortify(444)
         data = _get_package_data(project, version)
         for key in data:
-            setattr(package, data[key])
+            setattr(package, key, data[key])
             package.save()
         return jsonify(
             status='success',
@@ -206,6 +206,14 @@ def create_project(owner, name=None):
     data = _get_request_data()
     if name and 'name' not in data:
         data['name'] = name
+
+    if 'repository' in data and isinstance(data['repository'], dict):
+        repo = data['repository']
+        if 'url' in repo:
+            data['repository'] = repo['url']
+        else:
+            data['repository'] = None
+
     data = werkzeug.datastructures.MultiDict(data)
     form = ProjectForm(data, csrf_enabled=False, owner=owner)
     if form.validate():
@@ -233,7 +241,8 @@ def _get_package_data(project, version=None):
     try:
         _ver = StrictVersion(version)
     except:
-        return abortify(406, message=_('Invalid version.'))
+        return abortify(406, message=_(
+            'Invalid version %(version)s.', version=version))
     dependencies = data.get('dependencies', [])
     if not isinstance(dependencies, list):
         return abortify(406, message=_('Invalid dependencies.'))

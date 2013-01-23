@@ -19,9 +19,6 @@ class ProjectForm(BaseForm):
     repository = TextField(
         _('Repository'), validators=[Optional()]
     )
-    screen_name = TextField(
-        _('Display Name'), validators=[Optional(), Length(max=80)]
-    )
     description = TextField(
         _('Description'), validators=[Optional(), Length(max=400)]
     )
