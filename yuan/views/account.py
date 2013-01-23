@@ -95,7 +95,7 @@ def login():
             user = Account.query.filter_by(name=account).first()
         if user and user.check_password(data['password']):
             auth = create_auth_token(user)
-            return jsonify(status='success', data={'auth': auth})
+            return jsonify(status='success', data=auth)
         response = jsonify(
             status='error',
             message=_('Wrong account or password')

@@ -47,5 +47,5 @@ class BaseSuite(object):
             data=json.dumps({'account': 'lepture', 'password': 'demo'})
         )
         data = json.loads(rv.data)
-        auth = data['data']['auth']
+        auth = data['data']
         return {'Authorization': 'Yuan ' + auth}
