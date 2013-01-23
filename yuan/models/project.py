@@ -1,7 +1,9 @@
 # coding: utf-8
 
+from flask import current_app
 from datetime import datetime
 from werkzeug import cached_property
+from distutils.version import StrictVersion
 from ._base import db, cache, YuanQuery, SessionMixin
 
 __all__ = ['Project', 'Package']
@@ -47,7 +49,9 @@ class Project(db.Model, SessionMixin):
     def tagged_project(self, tag):
         packages = Package.query.filter_by(
             project_id=self.id, tag=tag
-        ).order_by(Package.id.desc()).all()
+        ).all()
+        packages = sorted(
+            packages, key=lambda o: StrictVersion(o.version), reverse=True)
 
         data = self.to_dict(
             'name', 'homepage', 'repository', 'description',
@@ -59,6 +63,12 @@ class Project(db.Model, SessionMixin):
             dct['md5'] = pkg.md5value
             dct['dependencies'] = pkg.dependency_list
             return dct
+
+        config = current_app.config
+        if self.private:
+            data['download_base'] = config['PRIVATE_DOWNLOAD_URL']
+        else:
+            data['download_base'] = config['PUBLIC_DOWNLOAD_URL']
 
         data['packages'] = map(_to_dict, packages)
         return data
@@ -119,6 +129,11 @@ class Package(db.Model, SessionMixin):
         )
         data['version'] = self.version
         data['download_url'] = self.download_url
+        config = current_app.config
+        if project.private:
+            data['download_base'] = config['PRIVATE_DOWNLOAD_URL']
+        else:
+            data['download_base'] = config['PUBLIC_DOWNLOAD_URL']
         data['tag'] = self.tag
         data['md5'] = self.md5value
         data['dependencies'] = self.dependency_list

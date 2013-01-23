@@ -36,7 +36,7 @@ def account(name):
     return jsonify(status='success', data=data)
 
 
-@bp.route('/<name>/<pkg>', methods=['GET', 'POST', 'DELETE'])
+@bp.route('/<name>/<pkg>/', methods=['GET', 'POST', 'DELETE'])
 def project(name, pkg):
     """Create, delete, and get information of a project on these conditions:
 
@@ -60,6 +60,7 @@ def project(name, pkg):
             return abortify(403)
         tag = request.args.get('tag', 'stable')
         data = project.tagged_project(tag)
+        data['account'] = name
         return jsonify(status='success', data=data)
 
     if request.method == 'POST':
@@ -108,10 +109,9 @@ def package(name, pkg, version):
         package = Package.get_by_version(project.id, version)
         if not package:
             return abortify(404, message=_('Package not found.'))
-        return jsonify(
-            status='success',
-            data=package.dict_with_project(project)
-        )
+        data = package.dict_with_project(project)
+        data['account'] = name
+        return jsonify(status='success', data=data)
 
     # create or update information of a package
     if request.method == 'POST':

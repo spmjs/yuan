@@ -33,3 +33,6 @@ CACHE_TYPE = 'simple'
 PACKAGE_STORAGE_PUBLIC = 'data/public'
 PACKAGE_STORAGE_PRIVATE = 'data/private'
 PACKAGE_STORAGE_DOCUMENT = 'data/document'
+
+PUBLIC_DOWNLOAD_URL = 'http://public.example.com'
+PRIVATE_DOWNLOAD_URL = 'http://private.example.com'

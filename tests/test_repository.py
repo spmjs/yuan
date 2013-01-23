@@ -46,7 +46,7 @@ class TestNoProjectCase(BaseSuite):
         assert "not found" in rv.data
 
     def test_post(self):
-        rv = self.client.post('/repository/lepture/arale')
+        rv = self.client.post('/repository/lepture/arale/')
         assert "Authorization required" in rv.data
 
         headers = self.login_account()
