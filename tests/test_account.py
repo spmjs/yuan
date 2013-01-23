@@ -25,4 +25,4 @@ class TestAccount(BaseSuite):
 
         auth = data['data']['auth']
         assert auth
-        self.client.get('/', headers={'X-YUAN-AUTH': auth})
+        self.client.get('/', headers={'Authorization': 'Yuan ' + auth})

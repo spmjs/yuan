@@ -129,7 +129,7 @@ def package(name, pkg, version):
             )
             res.status_code = 201
             return res
-        isforce = request.headers.get('X-YUAN-FORCE', False)
+        isforce = request.headers.get('X-Yuan-Force', False)
         if not isforce:
             return abortify(444)
         data = _get_package_data(project, version)
@@ -196,7 +196,7 @@ def _get_request_data():
         return abortify(401)
     if request.json:
         return request.json
-    ctype = request.headers.get('CONTENT-TYPE')
+    ctype = request.headers.get('Content-Type')
     if not request.json and ctype == 'application/json':
         return {}
     return abortify(415, message=_('Only application/json is allowed.'))
@@ -253,14 +253,14 @@ def _get_package_data(project, version=None):
 
 
 def upload_package(project, package, owner):
-    encoding = request.headers.get('CONTENT-ENCODING')
-    ctype = request.headers.get('CONTENT-TYPE')
+    encoding = request.headers.get('Content-Encoding')
+    ctype = request.headers.get('Content-Type')
     if ctype == 'application/x-tar' and encoding == 'x-gzip':
         ctype = 'application/x-tar-gz'
     if ctype not in ('application/x-tar-gz', 'application/x-tgz'):
         return abortify(415, message=_('Only gziped tar file is allowed.'))
 
-    force = request.headers.get('X-YUAN-FORCE', False)
+    force = request.headers.get('X-Yuan-Force', False)
     if package.download_url and not force:
         return abortify(444)
 

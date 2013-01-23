@@ -48,4 +48,4 @@ class BaseSuite(object):
         )
         data = json.loads(rv.data)
         auth = data['data']['auth']
-        return {'X-YUAN-AUTH': auth}
+        return {'Authorization': 'Yuan ' + auth}

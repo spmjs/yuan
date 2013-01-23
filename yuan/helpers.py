@@ -50,9 +50,10 @@ def get_current_user():
             return None
         return user
 
-    auth = request.headers.get('X-YUAN-AUTH', None)
-    if auth:
-        return verify_auth_token(auth)
+    auth = request.headers.get('Authorization', None)
+    if auth and auth.startswith('Yuan '):
+        code = auth.replace('Yuan ', '', 1)
+        return verify_auth_token(code)
     return None
 
 
