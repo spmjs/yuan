@@ -5,6 +5,7 @@
     <title>{% block title %}{{config.SITE_TITLE}} - {% block subtitle %}{% endblock %}{% endblock %}</title>
     <link rel="stylesheet" href="{{url_for('static', filename='yue.tmp.css')}}" />
     <link rel="stylesheet" href="{{url_for('static', filename='site.css')}}" />
+    {%- block afterstyle %}{% endblock %}
   </head>
   <body>
     <header id="header">

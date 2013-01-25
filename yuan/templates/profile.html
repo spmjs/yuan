@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{%- block subtitle %}{{account}}{%- endblock %}
+
+{%- block afterstyle %}
+<style type="text/css">
+  .projects {
+    padding: 60px 0;
+  }
+  .projects .group {
+    float: left;
+    margin: 6px 10px;
+    height: 100px;
+  }
+</style>
+{%- endblock %}
+
+{%- block mainbody %}
+<div class="projects container fn-clear">
+  {%- for item in projects %}
+  <div class="group">
+    <header><a href="#">{{item.name}}</a></header>
+    <div class="group-body">{{item.description}}</div>
+  </div>
+  {%- endfor %}
+</div>
+{%- endblock %}

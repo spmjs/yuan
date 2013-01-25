@@ -60,7 +60,7 @@ class Account(db.Model, SessionMixin):
         return self.screen_name or self.name
 
     def __repr__(self):
-        return '<Account: %s>' % self
+        return '<Account: %s>' % self.name
 
     @cached_property
     def avatar(self):
