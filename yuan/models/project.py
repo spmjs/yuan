@@ -23,6 +23,7 @@ class Project(db.Model, SessionMixin):
     repository = db.Column(db.String(400))
 
     description = db.Column(db.String(400))
+    # TODO keywords
 
     private = db.Column(db.Boolean, default=False)
     created = db.Column(db.DateTime, default=datetime.utcnow)

@@ -29,10 +29,11 @@ def account(name):
         return abortify(404, message=_('Account not found.'))
     if account.permission_read.can():
         data = db.session.query(Project.name)\
-                .filter_by(account_id=account.id).all()
+                .filter_by(owner_id=account.id).all()
     else:
         data = db.session.query(Project.name)\
                 .filter_by(owner_id=account.id, private=False).all()
+    data = map(lambda o: o[0], data)
     return jsonify(status='success', data=data)
 
 
