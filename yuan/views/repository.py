@@ -112,13 +112,14 @@ def package(name, pkg, version):
             return abortify(404, message=_('Package not found.'))
         data = package.dict_with_project(project)
         data['account'] = name
+        # TODO: analyse hits
         return jsonify(status='success', data=data)
 
+    package = Package.get_by_version(project.id, version)
     # create or update information of a package
     if request.method == 'POST':
         if not account.permission_write.can():
             return abortify(403)
-        package = Package.get_by_version(project.id, version)
         if not package:
             data = _get_package_data(project, version)
             package = Package(**data)
@@ -136,7 +137,7 @@ def package(name, pkg, version):
         data = _get_package_data(project, version)
         for key in data:
             setattr(package, key, data[key])
-            package.save()
+        package.save()
         return jsonify(
             status='success',
             data=package.dict_with_project(project)
@@ -146,7 +147,6 @@ def package(name, pkg, version):
     if request.method == 'PUT':
         if not account.permission_write.can():
             return abortify(403)
-        package = Package.get_by_version(project.id, version)
         if not package:
             return abortify(404, message=_('Package not found.'))
         upload_package(project, package, account)
@@ -154,7 +154,8 @@ def package(name, pkg, version):
 
     # delete a package
     if account.permission_admin.can():
-        package.delete()
+        if package:
+            package.delete()
         return jsonify(status='info', message=_('Package deleted.'))
     return abortify(403)
 
@@ -273,6 +274,11 @@ def upload_package(project, package, owner):
     force = request.headers.get('X-Yuan-Force', False)
     if package.download_url and not force:
         return abortify(444)
+
+    package.md5value = hashlib.md5(request.data).hexdigest()
+    md5 = request.headers.get('X-Package-MD5', None)
+    if md5 and md5 != package.md5value:
+        return abortify(400, message=_('MD5 does not match.'))
 
     if project.private:
         token = '%s-%s' % (current_app.secret_key, repr(package))
