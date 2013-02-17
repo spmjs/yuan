@@ -2,7 +2,7 @@
 .PHONY: clean-pyc clean-build docs
 
 all: install
-	@cp githooks/* .git/hooks/
+	@cp data/githooks/* .git/hooks/
 	@chmod -R +x .git/hooks/
 
 # Development
