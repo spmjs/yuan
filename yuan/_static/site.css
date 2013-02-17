@@ -11,23 +11,15 @@ html, body {
   border-bottom: 1px solid #ccc;
 }
 .container {
-  max-width: 980px;
+  max-width: 650px;
   margin: 0 auto;
   padding: 0 14px;
 }
-/* layout */
-.layout-container .layout-small {
-  min-width: 300px;
+.section {
+  margin-bottom: 40px;
 }
-.layout-container .layout-large {
-  width: 600px;
-}
-.layout-container .title a {
-  color: #666;
-  text-decoration: none;
-}
-.layout-container .title a:hover {
-  color: #444;
+.section h3 {
+  font-size: 16px;
 }
 
 /* header */
@@ -49,11 +41,4 @@ html, body {
 #header .flashes {
   width: 400px;
   margin: 0 auto;
-}
-
-
-form.single {
-  max-width: 560px;
-  margin: 0 auto;
-  padding: 20px 0 40px;
 }

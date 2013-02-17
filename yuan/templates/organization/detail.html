@@ -4,43 +4,55 @@
 {% block subtitle %}{{org}}{% endblock %}
 
 {% block whitepaper %}
-<div class="layout-container fn-clear">
-  <div class="layout-small fn-left">
-    {%- if teams %}
-    <h3 class="title">{{_('Teams')}}</h3>
-    <ul class="sidenav">
-      {%- for team in teams %}
-      <li><a href="{{url_for('organization.team', name=org.name, ident=team.id)}}">{{team.name}}</a></li>
-      {%- endfor %}
-    </ul>
-    {%- endif %}
-    <br />
-    <div>
-      <a class="button-classy" href="{{url_for('organization.team_index', name=org.name)}}">{{_('Create a Team')}}</a>
-    </div>
-  </div>
-
-  <div class="layout-large fn-left">
-    {%- if form %}
-    <form class="single" method="post" action="">
-      {{ form.csrf_token }}
-      {{ render_field(form.name, 'long') }}
-      {{ render_field(form.screen_name, 'long') }}
-      {{ render_field(form.email, 'long') }}
-      {{ render_field(form.description, 'long') }}
-
-      <dl class="form{% if form.comment_service_id.errors %} error{% endif %}">
-        <dt>{{form.comment_service_name.label}}</dt>
-        <dd>{{form.comment_service_name()}} {{form.comment_service_id(class_='text')}}</dd>
-        {{ render_errors(form.comment_service_id.errors) }}
-        {{ render_errors(form.comment_service_name.errors) }}
-      </dl>
-
-      <div class="form-submit">
-        <button class="classy">{{_('Update Information')}}</button>
-      </div>
-    </form>
-    {%- endif %}
-  </div>
+<div class="section">
+  {%- if teams %}
+  <h3 class="title">{{_('Teams')}}</h3>
+  <ul class="items fn-clear">
+    {%- for team in teams %}
+    <li><a href="{{url_for('organization.team', name=org.name, ident=team.id)}}">{{team.name}}</a></li>
+    {%- endfor %}
+  </ul>
+  {%- endif %}
 </div>
+
+{%- if teamform %}
+<div class="section">
+  <h3 class="title">{{_('Create Team')}}</h3>
+  <form method="post" action="">
+    {{ render_field(teamform.name, 'long') }}
+    {{ render_field(teamform.permission, 'long') }}
+
+    {{ teamform.csrf_token }}
+    {{ render_errors(teamform.csrf_token.errors) }}
+
+    <div class="form-submit">
+      <button class="classy">{{_('Create Team')}}</button>
+    </div>
+  </form>
+</div>
+{%- endif %}
+
+{%- if orgform %}
+<div class="section">
+  <h3 class="title">{{_('Edit Organization')}}</h3>
+  <form class="single" method="post" action="">
+    {{ orgform.csrf_token }}
+    {{ render_field(orgform.name, 'long') }}
+    {{ render_field(orgform.screen_name, 'long') }}
+    {{ render_field(orgform.email, 'long') }}
+    {{ render_field(orgform.description, 'long') }}
+
+    <dl class="form{% if orgform.comment_service_id.errors %} error{% endif %}">
+      <dt>{{orgform.comment_service_name.label}}</dt>
+      <dd>{{orgform.comment_service_name()}} {{orgform.comment_service_id(class_='text')}}</dd>
+      {{ render_errors(orgform.comment_service_id.errors) }}
+      {{ render_errors(orgform.comment_service_name.errors) }}
+    </dl>
+
+    <div class="form-submit">
+      <button class="classy">{{_('Update Information')}}</button>
+    </div>
+  </form>
+</div>
+{%- endif %}
 {% endblock %}

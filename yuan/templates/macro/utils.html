@@ -11,7 +11,7 @@
 
 {%- macro render_navigation(user, active=None) %}
 {%- if user %}
-<li><a href="/{{user.name}}">{{user.name}}</a></li>
+<li><a href="/{{user.name}}/">{{user.name}}</a></li>
 <li{%- if active == 'organization' %} class="active"{%- endif %}><a href="{{url_for('organization.home')}}">{{_('Organization')}}</a></li>
 <li><a href="{{url_for('account.setting')}}">{{_('Settings')}}</a></li>
 <li><a href="{{url_for('account.signout')}}">{{_('Log Out')}}</a></li>

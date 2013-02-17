@@ -30,32 +30,23 @@ def detail(name):
     if org.account_type != 'org':
         return abort(404)
     if org.permission_admin.can():
-        form = OrgForm(obj=org)
+        orgform = OrgForm(obj=org)
+        teamform = TeamForm()
     else:
-        form = None
-    if form and form.validate_on_submit():
-        form.populate_obj(org)
+        orgform = None
+        teamform = None
+
+    if 'permission' in request.form and teamform and \
+       teamform.validate_on_submit():
+        team = teamform.save(org)
+        return redirect(url_for('.team', name=name, ident=team.id))
+    if orgform and orgform.validate_on_submit():
+        orgform.populate_obj(org)
         org.save()
         return redirect(url_for('.detail', name=org.name))
-    dct = {'org': org, 'form': form}
+    dct = {'org': org, 'orgform': orgform, 'teamform': teamform}
     dct['teams'] = Team.query.filter_by(owner_id=org.id).all()
     return render_template('organization/detail.html', **dct)
-
-
-@bp.route('/<name>/team/', methods=['GET', 'POST'])
-@require_user
-def team_index(name):
-    org = Account.query.filter_by(name=name).first_or_404()
-    if org.permission_admin.can():
-        form = TeamForm()
-    else:
-        form = None
-    if form and form.validate_on_submit():
-        team = form.save(org)
-        return redirect(url_for('.team', name=name, ident=team.id))
-    dct = {'org': org, 'form': form}
-    dct['teams'] = Team.query.filter_by(owner_id=org.id).all()
-    return render_template('organization/team-index.html', **dct)
 
 
 @bp.route('/<name>/team/<int:ident>', methods=['GET', 'POST', 'DELETE'])

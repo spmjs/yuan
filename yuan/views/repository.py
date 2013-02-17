@@ -7,7 +7,7 @@ from flask import Blueprint, current_app
 from flask import g, request, jsonify, abort
 from distutils.version import StrictVersion
 from flask.ext.babel import gettext as _
-from ..models import Project, Package, Account, cache, db
+from ..models import Project, Package, Account, db
 from ..forms import ProjectForm
 
 __all__ = ['bp']
@@ -15,10 +15,11 @@ __all__ = ['bp']
 bp = Blueprint('repository', __name__)
 
 
-@cache.memoize(100)
 @bp.route('/')
 def index():
+    #TODO pagination
     data = db.session.query(Account.name).all()
+    data = map(lambda o: o[0], data)
     return jsonify(status='success', data=data)
 
 
@@ -59,7 +60,7 @@ def project(name, pkg):
             return abortify(404, message=_('Project not found.'))
         if project.private and not account.permission_read.can():
             return abortify(403)
-        tag = request.args.get('tag', 'stable')
+        tag = request.args.get('tag', None)
         data = project.tagged_project(tag)
         data['account'] = name
         return jsonify(status='success', data=data)
@@ -219,7 +220,11 @@ def create_project(owner, name=None):
     data = werkzeug.datastructures.MultiDict(data)
     form = ProjectForm(data, csrf_enabled=False, owner=owner)
     if form.validate():
-        return form.save()
+        proj = form.save()
+        if 'keywords' in data and isinstance(data['keywords'], list):
+            proj.keywords = ' '.join(data['keywords'])
+            proj.save()
+        return proj
     return abortify(406, message=_('Request invalid.'))
 
 
@@ -231,6 +236,8 @@ def update_project(project, owner, name=None):
     form = ProjectForm(data, csrf_enabled=False, obj=project, owner=owner)
     if form.validate():
         form.populate_obj(project)
+        if 'keywords' in data and isinstance(data['keywords'], list):
+            project.keywords = ' '.join(data['keywords'])
         project.save()
         return project
     return abortify(406, message=_('Request invalid.'))

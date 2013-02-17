@@ -1,13 +1,61 @@
 {% extends "layout.html" %}
 
-{% block title %}{% endblock %}
+{% block title %}{{config.SITE_TITLE}}{% endblock %}
 
-{% block mainbody %}
-{%- if g.user %}
-hello {{g.user.name}}, <a href="/account/signout">signout</a>
-{%- else %}
-<a class="button-nicely" href="/account/signin">signin</a>
-<a class="button-nicely" href="/account/signup">signup</a>
-{%- endif %}
+{%- block afterstyle %}
+<style type="text/css">
+  .search-form {
+    margin: 40px 0;
+    text-align: center;
+  }
+  .search-form input.text {
+    font-size: 24px;
+  }
+  .search-form button.search {
+    vertical-align: middle;
+    font-size: 24px;
+  }
+  .numbers {
+    width: 520px;
+  }
+  .numbers li {
+    display: inline-block;
+    list-style-type: none;
+    text-align: left;
+    width: 30%;
+  }
+  .columns .item {
+    float: left;
+    width: 45%;
+    margin-right: 5%;
+  }
+</style>
+{%- endblock %}
+
+{% block whitepaper %}
+<div class="search-form">
+  <form class="form long" method="get" action="/search">
+    <input class="text" type="search" name="q" />
+    <button class="classy search">{{_('Search')}}</button>
+  </form>
+  <ul class="numbers fn-clear">
+    <li>{{count.projects}} {{_('projects')}}</li>
+    <li>{{count.users}} {{_('users')}}</li>
+    <li>{{count.organizations}} {{_('organizations')}}</li>
+  </ul>
+</div>
+<div class="columns fn-clear">
+  <div class="item">
+    <h4>{{_('Recently Updated')}}</h4>
+    <ul>
+    </ul>
+  </div>
+
+  <div class="item">
+    <h4>{{_('Recommendations')}}</h4>
+    <ul>
+    </ul>
+  </div>
+</div>
 {% endblock %}
 

@@ -3,13 +3,19 @@
 {% block title %}{% endblock %}
 
 {% block whitepaper %}
-<ul>
-  {%- for user in team.members %}
-  <li>{{user.name}}</li>
-  {%- endfor %}
-</ul>
-<form class="form" method="post" action="">
-  <input type="text" class="text" placeholder="{{_('Username or email')}}" name="username" />
-  <button class="classy">{{_('Add')}}</button>
-</form>
+<div class="section">
+  <h3 class="title">{{_('Members')}}</h3>
+  <ul>
+    {%- for user in team.members %}
+    <li>{{user.name}}</li>
+    {%- endfor %}
+  </ul>
+</div>
+<div class="section">
+  <h3 class="title">{{_('Add Member')}}</h3>
+  <form class="form" method="post" action="">
+    <input type="text" class="text" placeholder="{{_('Username or email')}}" name="username" />
+    <button class="classy">{{_('Add')}}</button>
+  </form>
+</div>
 {% endblock %}

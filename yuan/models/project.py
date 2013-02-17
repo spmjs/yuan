@@ -4,7 +4,7 @@ from flask import current_app
 from datetime import datetime
 from werkzeug import cached_property
 from distutils.version import StrictVersion
-from ._base import db, cache, YuanQuery, SessionMixin
+from ._base import db, YuanQuery, SessionMixin
 
 __all__ = ['Project', 'Package']
 
@@ -23,7 +23,7 @@ class Project(db.Model, SessionMixin):
     repository = db.Column(db.String(400))
 
     description = db.Column(db.String(400))
-    # TODO keywords
+    keywords = db.Column(db.Text)
 
     private = db.Column(db.Boolean, default=False)
     created = db.Column(db.DateTime, default=datetime.utcnow)
@@ -38,7 +38,12 @@ class Project(db.Model, SessionMixin):
     def __repr__(self):
         return '<Project: %s>' % self
 
-    @cache.memoize(100)
+    @cached_property
+    def keyword_list(self):
+        if not self.keywords:
+            return []
+        return self.keywords.split()
+
     def package(self):
         pkg = Package.query.filter_by(project_id=self.id)\
                 .filter_by(tag='stable')\
@@ -46,11 +51,14 @@ class Project(db.Model, SessionMixin):
                 .first()
         return pkg
 
-    @cache.memoize(100)
-    def tagged_project(self, tag):
-        packages = Package.query.filter_by(
-            project_id=self.id, tag=tag
-        ).all()
+    def tagged_project(self, tag=None):
+        if tag:
+            packages = Package.query.filter_by(
+                project_id=self.id, tag=tag
+            ).all()
+        else:
+            packages = Package.query.filter_by(project_id=self.id).all()
+
         packages = sorted(
             packages, key=lambda o: StrictVersion(o.version), reverse=True)
 
@@ -58,9 +66,10 @@ class Project(db.Model, SessionMixin):
             'name', 'homepage', 'repository', 'description',
             'created', 'updated',
         )
+        data['keywords'] = self.keyword_list
 
         def _to_dict(pkg):
-            dct = pkg.to_dict('version', 'download_url', 'created')
+            dct = pkg.to_dict('tag', 'version', 'download_url', 'created')
             dct['md5'] = pkg.md5value
             dct['dependencies'] = pkg.dependency_list
             return dct
@@ -99,7 +108,6 @@ class Package(db.Model, SessionMixin):
     def __repr__(self):
         return '<Package: %s>' % self
 
-    @cache.memoize(100)
     def project(self):
         return Project.query.get(self.project_id)
 
@@ -115,7 +123,6 @@ class Package(db.Model, SessionMixin):
         return self.readme
 
     @classmethod
-    @cache.memoize(100)
     def get_by_version(cls, project_id, version):
         q = cls.query.filter_by(project_id=project_id, version=version)
         return q.first()
@@ -137,5 +144,6 @@ class Package(db.Model, SessionMixin):
             data['download_base'] = config['PUBLIC_DOWNLOAD_URL']
         data['tag'] = self.tag
         data['md5'] = self.md5value
+        data['readme'] = self.readme
         data['dependencies'] = self.dependency_list
         return data

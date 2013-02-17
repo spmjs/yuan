@@ -4,37 +4,37 @@
 {% block subtitle %}{{_('Organizations')}}{% endblock %}
 
 {% block whitepaper %}
-<div class="layout-container fn-clear">
-  <div class="layout-small fn-left">
-    <h3>{{_('Organizations')}}</h3>
-    {%- if orgs %}
-    <ul class="sidenav">
-      {%- for org in orgs %}
-      <li><a href="{{url_for('organization.detail', name=org.name)}}">{{org}}</a></li>
-      {%- endfor %}
-    </ul>
-    {%- endif %}
-  </div>
-  <div class="layout-large fn-left">
-    <form class="single" method="post" action="">
-      {{ form.csrf_token }}
-      {{ render_field(form.name, 'long') }}
-      {{ render_field(form.screen_name, 'long') }}
-      {{ render_field(form.email, 'long') }}
-      {{ render_field(form.description, 'long') }}
+<div class="section">
+  <h3>{{_('Organizations')}}</h3>
+  {%- if orgs %}
+  <ul class="items fn-clear">
+    {%- for org in orgs %}
+    <li><a href="{{url_for('organization.detail', name=org.name)}}">{{org}}</a></li>
+    {%- endfor %}
+  </ul>
+  {%- endif %}
+</div>
 
-      <dl class="form{% if form.comment_service_id.errors %} error{% endif %}">
-        <dt>{{form.comment_service_name.label}}</dt>
-        <dd>{{form.comment_service_name()}} {{form.comment_service_id(class_='text')}}</dd>
-        {{ render_errors(form.comment_service_id.errors) }}
-        {{ render_errors(form.comment_service_name.errors) }}
-      </dl>
-      {{ render_errors(form.csrf_token.errors) }}
+<div class="section">
+  <h3>{{_('Create Organization')}}</h3>
+  <form method="post" action="">
+    {{ form.csrf_token }}
+    {{ render_field(form.name, 'long') }}
+    {{ render_field(form.screen_name, 'long') }}
+    {{ render_field(form.email, 'long') }}
+    {{ render_field(form.description, 'long') }}
 
-      <div class="form-submit">
-        <button class="classy">{{_('Create Organization')}}</button>
-      </div>
-    </form>
-  </div>
+    <dl class="form{% if form.comment_service_id.errors %} error{% endif %}">
+      <dt>{{form.comment_service_name.label}}</dt>
+      <dd>{{form.comment_service_name()}} {{form.comment_service_id(class_='text')}}</dd>
+      {{ render_errors(form.comment_service_id.errors) }}
+      {{ render_errors(form.comment_service_name.errors) }}
+    </dl>
+    {{ render_errors(form.csrf_token.errors) }}
+
+    <div class="form-submit">
+      <button class="classy">{{_('Create Organization')}}</button>
+    </div>
+  </form>
 </div>
 {% endblock %}
