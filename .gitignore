@@ -19,6 +19,6 @@ docs/_build
 .tox
 
 data/
-logs/
+etc/
 
 yuan/_static/sea-modules/

@@ -1,12 +1,13 @@
 # coding: utf-8
 
+import os
 import gevent.monkey
 gevent.monkey.patch_all()
 
 from flask.ext.script import Manager
 from yuan.app import create_app
 
-CONFIG = '_config/development.py'
+CONFIG = os.path.abspath('./etc/config.py')
 
 app = create_app(CONFIG)
 manager = Manager(app)

@@ -5,7 +5,9 @@
 all:
 	@pip install -r conf/reqs-dev.txt
 	@cp conf/githooks/* .git/hooks/
+	@cp yuan/_config/development.py etc/config.py
 	@chmod -R +x .git/hooks/
+
 
 install:
 	@pip install -r conf/reqs-pro.txt
