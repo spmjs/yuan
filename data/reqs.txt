@@ -1,0 +1,30 @@
+# This requirements is for production
+
+Flask
+misaka
+pygments
+gevent
+
+# database
+Flask-SQLAlchemy
+MySQL-python
+
+# cache support
+Flask-Cache
+#python-memcached
+
+# i18n and l10n
+Flask-Babel
+
+# form support
+WTForms
+Flask-WTF
+
+# mail support
+Flask-Mail
+
+# Access control
+Flask-Principal
+
+# admin site
+Flask-Admin

@@ -1,13 +1,15 @@
 # Makefile for project yuan
 .PHONY: clean-pyc clean-build docs
 
-all: install
+# Development
+all:
+	@pip install -r data/dev-reqs.txt
 	@cp data/githooks/* .git/hooks/
 	@chmod -R +x .git/hooks/
 
-# Development
 install:
-	@pip install -r dev-reqs.txt
+	@pip install -r data/reqs.txt
+
 
 server:
 	@python manager.py runserver
@@ -18,16 +20,16 @@ database:
 
 # translate
 babel-extract:
-	@pybabel extract -F babel.cfg -o messages.pot .
+	@pybabel extract -F data/babel.cfg -o data/messages.pot .
 
 babel-init:
-	@pybabel init -i messages.pot -d yuan/translations -l zh
+	@pybabel init -i data/messages.pot -d yuan/translations -l zh
 
 babel-compile:
 	@pybabel compile -d yuan/translations
 
 babel-update: babel-extract
-	@pybabel update -i messages.pot -d yuan/translations
+	@pybabel update -i data/messages.pot -d yuan/translations
 
 # Common Task
 clean: clean-build clean-pyc
