@@ -22,8 +22,9 @@ def signup_mail(user):
         _("Signup for %(site)s", site=config['SITE_TITLE']),
         recipients=[user.email]
     )
+    host = config.get('SITE_SECURE_URL', '') or config.get('SITE_URL', '')
     dct = {
-        'host': config.get('SITE_SECURE_URL', '').rstrip('/'),
+        'host': host.rstrip('/'),
         'path': url_for('.signup'),
         'token': create_auth_token(user)
     }
