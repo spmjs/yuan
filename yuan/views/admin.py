@@ -7,7 +7,7 @@ from ..models import db, Account, Project, Team, Package
 
 
 class BaseView(ModelView):
-    list_display_pk = True
+    column_display_pk = True
     can_create = False
     can_edit = False
 
@@ -38,12 +38,12 @@ class HomeView(AdminIndexView):
 
 class UserView(BaseView):
     can_edit = True
-    excluded_list_columns = ('password', 'token', 'description')
-    excluded_form_columns = ('password', 'created', 'token')
+    column_excluded_list = ('password', 'token', 'description')
+    form_excluded_columns = ('password', 'created', 'token')
 
 
 class PackageView(BaseView):
-    excluded_list_columns = ('readme')
+    column_excluded_list = ('readme')
 
 
 admin = Admin(name='Yuan', index_view=HomeView())
