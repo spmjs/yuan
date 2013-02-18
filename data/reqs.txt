@@ -4,6 +4,8 @@ Flask
 misaka
 pygments
 gevent
+gunicorn
+supervisor
 
 # database
 Flask-SQLAlchemy
