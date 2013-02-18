@@ -29,12 +29,19 @@ def account(name):
     if not account:
         return abortify(404, message=_('Account not found.'))
     if account.permission_read.can():
-        data = db.session.query(Project.name)\
+        projects = db.session.query(Project.name)\
                 .filter_by(owner_id=account.id).all()
     else:
-        data = db.session.query(Project.name)\
+        projects = db.session.query(Project.name)\
                 .filter_by(owner_id=account.id, private=False).all()
-    data = map(lambda o: o[0], data)
+    projects = map(lambda o: o[0], projects)
+    data = {
+        'account': {
+            'name': name,
+            'type': account.account_type,
+        },
+        'projects': projects,
+    }
     return jsonify(status='success', data=data)
 
 
@@ -139,6 +146,8 @@ def package(name, pkg, version):
         for key in data:
             setattr(package, key, data[key])
         package.save()
+        # update project information
+        update_project(project, account, pkg)
         return jsonify(
             status='success',
             data=package.dict_with_project(project)
@@ -198,6 +207,13 @@ def _get_request_data():
     if not g.user:
         return abortify(401)
     if request.json:
+        if 'repository' in request.json and \
+           isinstance(request.json['repository'], dict):
+            repo = request.json['repository']
+            if 'url' in repo:
+                request.json['repository'] = repo['url']
+            else:
+                request.json['repository'] = None
         return request.json
     ctype = request.headers.get('Content-Type')
     if not request.json and ctype == 'application/json':
@@ -210,20 +226,13 @@ def create_project(owner, name=None):
     if name and 'name' not in data:
         data['name'] = name
 
-    if 'repository' in data and isinstance(data['repository'], dict):
-        repo = data['repository']
-        if 'url' in repo:
-            data['repository'] = repo['url']
-        else:
-            data['repository'] = None
-
     data = werkzeug.datastructures.MultiDict(data)
     form = ProjectForm(data, csrf_enabled=False, owner=owner)
     if form.validate():
         proj = form.save()
         if 'keywords' in data and isinstance(data['keywords'], list):
             proj.keywords = ' '.join(data['keywords'])
-            proj.save()
+        proj.save()
         return proj
     return abortify(406, message=_('Request invalid.'))
 
