@@ -20,8 +20,14 @@ def signup_mail(user):
     config = current_app.config
     msg = Message(
         _("Signup for %(site)s", site=config['SITE_TITLE']),
-        recipients=[user.email]
+        recipients=[user.email],
+        extra_headers={
+            'Category': 'signup'
+        },
     )
+    reply_to = config.get('MAIL_REPLY_TO', '')
+    if reply_to:
+        msg.reply_to = reply_to
     host = config.get('SITE_SECURE_URL', '') or config.get('SITE_URL', '')
     dct = {
         'host': host.rstrip('/'),
