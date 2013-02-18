@@ -7,4 +7,4 @@ from yuan.app import create_app
 
 __all__ = ['app']
 
-app = create_app(os.path.abspath('./data/config.py'))
+app = create_app(os.path.abspath('./etc/config.py'))
