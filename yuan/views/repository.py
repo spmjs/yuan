@@ -211,14 +211,18 @@ def _get_request_data():
     if not g.user:
         return abortify(401)
     if request.json:
-        if 'repository' in request.json and \
-           isinstance(request.json['repository'], dict):
-            repo = request.json['repository']
+        data = request.json
+        if 'repository' in data and isinstance(data['repository'], dict):
+            repo = data['repository']
             if 'url' in repo:
-                request.json['repository'] = repo['url']
+                data['repository'] = repo['url']
             else:
-                request.json['repository'] = None
-        return request.json
+                data['repository'] = None
+
+        if 'keywords' in data and isinstance(data['keywords'], list):
+            data['keywords'] = ' '.join(data['keywords'])
+
+        return data
     ctype = request.headers.get('Content-Type')
     if not request.json and ctype == 'application/json':
         return {}
@@ -234,9 +238,6 @@ def create_project(owner, name=None):
     form = ProjectForm(data, csrf_enabled=False, owner=owner)
     if form.validate():
         proj = form.save()
-        if 'keywords' in data and isinstance(data['keywords'], list):
-            proj.keywords = ' '.join(data['keywords'])
-        proj.save()
         return proj
     return abortify(406, message=_('Request invalid.'))
 
@@ -249,8 +250,6 @@ def update_project(project, owner, name=None):
     form = ProjectForm(data, csrf_enabled=False, obj=project, owner=owner)
     if form.validate():
         form.populate_obj(project)
-        if 'keywords' in data and isinstance(data['keywords'], list):
-            project.keywords = ' '.join(data['keywords'])
         project.save()
         return project
     return abortify(406, message=_('Request invalid.'))

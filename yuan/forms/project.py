@@ -26,6 +26,7 @@ class ProjectForm(BaseForm):
         _('This is a private project.'),
         description=_('We encourage public projects.')
     )
+    keywords = TextField(_('Keywords'))
 
     def __init__(self, *args, **kwargs):
         self._owner = kwargs.get('owner', None)

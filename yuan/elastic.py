@@ -2,6 +2,7 @@
 
 import json
 import requests
+import gevent
 from flask import _app_ctx_stack
 from flask_sqlalchemy import models_committed
 from .models import Account, Project
@@ -72,7 +73,7 @@ elastic = ElasticSearch()
 def update_model(sender, changes):
     for model, operation in changes:
         if isinstance(model, Project):
-            update_project(model, operation)
+            gevent.spawn(update_project, model, operation)
 
 
 def update_project(item, operation):
