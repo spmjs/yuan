@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block subtitle %}{{_('Search')}}{% endblock %}
+
+{%- block afterstyle %}
+<style type="text/css">
+  .search-form {
+    margin: 40px 0;
+    text-align: center;
+  }
+  .search-form input.text {
+    font-size: 24px;
+  }
+  .search-form button.search {
+    vertical-align: middle;
+    font-size: 24px;
+  }
+</style>
+{%- endblock %}
+
+{% block whitepaper %}
+<div class="search-form">
+  <form class="form long" method="get" action="/search">
+    <input class="text" type="search" name="q" value="{{request.args.get('q', '')}}" />
+    <button class="classy search">{{_('Search')}}</button>
+  </form>
+</div>
+<div class="results fn-clear">
+  {% if data %}
+  <p>{{data.total}} results</p>
+  <ul>
+    {% for item in data.results %}
+    <li><a href="/{{item.account}}/{{item.name}}">{{item.account}}/{{item.name}}</a></li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>No results</p>
+  {% endif %}
+</div>
+{% endblock %}
+
+

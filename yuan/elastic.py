@@ -95,6 +95,8 @@ def update_project(item, operation):
 
 
 def search_project(query):
+    if not query:
+        return None
     size = 30
     dct = {
         "query": {

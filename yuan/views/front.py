@@ -1,8 +1,10 @@
 # coding: utf-8
 
 from flask import Blueprint
+from flask import request
 from flask import render_template, abort
 from ..models import Project, Account
+from ..elastic import search_project
 
 
 bp = Blueprint('front', __name__)
@@ -40,3 +42,10 @@ def project(name, pkg):
         dct = {'account': account, 'project': project}
         return render_template('project.html', **dct)
     return abort(403)
+
+
+@bp.route('/search')
+def search():
+    q = request.args.get('q')
+    data = search_project(q)
+    return render_template('search.html', data=data)
