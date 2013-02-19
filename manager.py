@@ -38,5 +38,14 @@ def createdb():
     db.create_all()
 
 
+@manager.command
+def initsearch():
+    from yuan.models import Project
+    from yuan.elastic import update_project
+
+    for item in Project.query.all():
+        update_project(item, 'update')
+
+
 if __name__ == '__main__':
     manager.run()
