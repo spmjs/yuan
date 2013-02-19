@@ -19,7 +19,7 @@
 <div class="projects container fn-clear">
   {%- for item in projects %}
   <div class="group">
-    <header><a href="#">{{item.name}}</a></header>
+    <header><a href="{{url_for('front.project', name=account.name, pkg=item.name)}}">{{item.name}}</a></header>
     <div class="group-body">{{item.description}}</div>
   </div>
   {%- endfor %}

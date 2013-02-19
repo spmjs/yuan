@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>{% block title %}{{config.SITE_TITLE}} - {% block subtitle %}{% endblock %}{% endblock %}</title>
+    <title>{% block title %}{% block subtitle %}{% endblock %} - {{config.SITE_TITLE}}{% endblock %}</title>
     <link rel="stylesheet" href="{{url_for('static', filename='yue.tmp.css')}}" />
     <link rel="stylesheet" href="{{url_for('static', filename='site.css')}}" />
     {%- block afterstyle %}{% endblock %}

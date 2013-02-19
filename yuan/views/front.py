@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from flask import Blueprint
-from flask import render_template
+from flask import render_template, abort
 from ..models import Project, Account
 
 
@@ -29,3 +29,14 @@ def profile(name):
                 filter_by(owner_id=account.id, private=False).all()
     dct = {'projects': items, 'account': account}
     return render_template('profile.html', **dct)
+
+
+@bp.route('/<name>/<pkg>')
+def project(name, pkg):
+    account = Account.query.filter_by(name=name).first_or_404()
+    project = Project.query.filter_by(
+        owner_id=account.id, name=pkg).first_or_404()
+    if account.permission_read.can() or project.private is False:
+        dct = {'account': account, 'project': project}
+        return render_template('project.html', **dct)
+    return abort(403)
