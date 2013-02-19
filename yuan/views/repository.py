@@ -9,6 +9,7 @@ from distutils.version import StrictVersion
 from flask.ext.babel import gettext as _
 from ..models import Project, Package, Account, db
 from ..forms import ProjectForm
+from ..elastic import search_project
 
 __all__ = ['bp']
 
@@ -172,8 +173,11 @@ def package(name, pkg, version):
 
 @bp.route('/search')
 def search():
-    #TODO
-    return abort(404)
+    q = request.args.get('q', None)
+    if not q:
+        return abortify(404)
+    data = search_project(q)
+    return jsonify(status='success', data=data)
 
 
 # helpers

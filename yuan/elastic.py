@@ -3,6 +3,8 @@
 import json
 import requests
 from flask import _app_ctx_stack
+from flask_sqlalchemy import models_committed
+from .models import Account, Project
 
 
 class ElasticSearch(object):
@@ -62,3 +64,70 @@ class ElasticSearch(object):
         if req.status_code == 200:
             return json.loads(req.text)
         raise ValueError('response error %d' % req.status_code)
+
+
+elastic = ElasticSearch()
+
+
+def update_model(sender, changes):
+    for model, operation in changes:
+        if isinstance(model, Project):
+            update_project(model, operation)
+
+
+def update_project(item, operation):
+    if operation == 'delete':
+        elastic.delete('project/%d', item.id)
+        return
+    account = Account.query.get(item.owner_id)
+    if not account:
+        return
+    dct = {
+        "name": item.name,
+        "account": account.name,
+        "homepage": item.homepage,
+        "description": item.description,
+        "keywords": item.keyword_list,
+        "created": item.created.strftime('%Y-%m-%dT%H:%M:%S'),
+    }
+    elastic.post('project/%d' % item.id, dct)
+
+
+def search_project(query):
+    size = 30
+    dct = {
+        "query": {
+            "multi_match": {
+                "query": query,
+                "fields": ["name", "account", "keywords", "description"]
+            }
+        },
+        "highlight": {
+            "order": "score",
+            "pre_tags": ["<i class='highlight'>"],
+            "post_tags": ["</i>"],
+            "fields": {
+                "content": {"number_of_fragments": 1}
+            }
+        },
+        "fields": [
+            "name", "account", "homepage", "description", "keywords",
+            "created"
+        ],
+        "size": size
+    }
+    content = elastic.post('project/_search', dct)
+    hits = content['hits']
+
+    def _format(item):
+        fields = item['fields']
+        fields['id'] = item['_id']
+        return fields
+
+    results = map(_format, hits['hits'])
+    hits['results'] = results
+    del hits['hits']
+    return hits
+
+
+models_committed.connect(update_model)

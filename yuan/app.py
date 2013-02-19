@@ -12,6 +12,7 @@ from flask.ext.principal import Principal, Identity, identity_loaded, UserNeed
 from .models import db, cache, TeamNeed
 from .views import front, account, organization, repository, admin
 from .helpers import get_current_user
+from .elastic import elastic
 
 
 def create_app(config=None):
@@ -30,6 +31,7 @@ def create_app(config=None):
     db.init_app(app)
     db.app = app
 
+    elastic.init_app(app)
     cache.init_app(app)
 
     admin.admin.init_app(app)

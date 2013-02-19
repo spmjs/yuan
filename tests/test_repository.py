@@ -51,7 +51,7 @@ class TestNoProjectCase(BaseSuite):
 
         headers = self.login_account()
         rv = self.client.post(
-            '/repository/lepture/arale', headers=headers,
+            '/repository/lepture/arale/', headers=headers,
             content_type='application/json',
             data=json.dumps(dict())
         )
