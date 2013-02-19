@@ -38,12 +38,12 @@ class HomeView(AdminIndexView):
 
 class UserView(BaseView):
     can_edit = True
-    column_excluded_list = ('password', 'token', 'description')
+    column_exclude_list = ('password', 'token', 'description')
     form_excluded_columns = ('password', 'created', 'token')
 
 
 class PackageView(BaseView):
-    column_excluded_list = ('readme')
+    column_exclude_list = ('readme')
 
 
 admin = Admin(name='Yuan', index_view=HomeView())
