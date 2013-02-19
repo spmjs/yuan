@@ -1,0 +1,11 @@
+cluster:
+    name: elasticsearch_yuan
+
+path:
+    data: ./data/elasticsearch/
+    logs: ./data/logs/
+
+network:
+    host: 127.0.0.1
+
+transport.tcp.port: 9300

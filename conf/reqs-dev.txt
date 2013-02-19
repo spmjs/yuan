@@ -4,6 +4,7 @@ Flask
 misaka
 pygments
 gevent
+requests
 
 # database
 Flask-SQLAlchemy
