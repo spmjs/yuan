@@ -1,16 +1,13 @@
 # coding: utf-8
 
 import datetime
-from functools import partial
 from flask.signals import Namespace
 from flask.ext.sqlalchemy import SQLAlchemy, BaseQuery
-from flask.ext.principal import Need, UserNeed
 from flask.ext.cache import Cache
 
 __all__ = [
     'db', 'cache', 'YuanQuery', 'SessionMixin',
     'model_created', 'model_updated', 'model_deleted',
-    'create_user_needs', 'TeamNeed',
 ]
 
 signals = Namespace()
@@ -20,16 +17,6 @@ model_deleted = signals.signal('model-deleted')
 
 db = SQLAlchemy()
 cache = Cache()
-TeamNeed = partial(Need, 'team')
-
-
-def create_user_needs(owner_id, permission):
-    rv = db.session.execute(
-        'SELECT account_id FROM team_member '
-        'JOIN team ON team_member.team_id=team.id '
-        'AND team.owner_id=:id AND team._permission>:permission '
-        'GROUP BY account_id', {'id': owner_id, 'permission': permission})
-    return map(lambda o: UserNeed(o[0]), rv)
 
 
 class YuanQuery(BaseQuery):

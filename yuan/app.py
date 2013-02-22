@@ -9,7 +9,7 @@ from flask import Flask
 from flask import request, g
 from flask.ext.babel import Babel
 from flask.ext.principal import Principal, Identity, identity_loaded, UserNeed
-from .models import db, cache, TeamNeed
+from .models import db, cache
 from .views import front, account, organization, repository, admin
 from .helpers import get_current_user
 from .elastic import elastic
@@ -69,10 +69,5 @@ def create_app(config=None):
         if not g.user:
             return
         identity.provides.add(UserNeed(g.user.id))
-        rv = db.session.execute(
-            'SELECT team_id FROM team_member WHERE account_id=:id',
-            {'id': g.user.id}
-        )
-        map(lambda o: identity.provides.add(TeamNeed(o[0])), rv)
 
     return app

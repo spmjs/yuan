@@ -102,24 +102,11 @@ class SettingForm(BaseForm):
             obj.comment_service = '%s-%s' % (csn.data, csi.data)
 
 
-class OrgForm(SettingForm):
-    name = TextField(
-        _('Name'), validators=[
-            Required(), Length(min=3, max=20), Regexp('[a-z0-9A-Z]+')
-        ], description=_('English Characters Only.'),
-    )
+class OrgSettingForm(SettingForm):
     email = EmailField(
         _('Gravatar Email'), validators=[Optional(), Email()],
         description=_('Avatar of your organization.'),
     )
-
-    def validate_name(self, field):
-        if field.data.lower() in RESERVED_WORDS:
-            raise ValueError(_('This name is a reserved name.'))
-        if self._obj and self._obj.name == field.data.lower():
-            return
-        if Account.query.filter_by(name=field.data.lower()).count():
-            raise ValueError(_('This name has been registered.'))
 
     def validate_email(self, field):
         if self._obj and self._obj.email == field.data.lower():
@@ -128,7 +115,21 @@ class OrgForm(SettingForm):
             if Account.query.filter_by(email=field.data.lower()).count():
                 raise ValueError(_('This email has been registered.'))
 
-    def save(self, user):
+
+class OrgForm(OrgSettingForm):
+    name = TextField(
+        _('Name'), validators=[
+            Required(), Length(min=3, max=20), Regexp('[a-z0-9A-Z]+')
+        ], description=_('English Characters Only.'),
+    )
+
+    def validate_name(self, field):
+        if field.data.lower() in RESERVED_WORDS:
+            raise ValueError(_('This name is a reserved name.'))
+        if Account.query.filter_by(name=field.data.lower()).count():
+            raise ValueError(_('This name has been registered.'))
+
+    def save(self, user_id):
         data = dict(self.data)
         csn = data.pop('comment_service_name')
         csi = data.pop('comment_service_id')
@@ -139,7 +140,7 @@ class OrgForm(SettingForm):
         if email:
             data['email'] = email
         data['account_type'] = 'org'
-        data['org_owner_id'] = user.id
+        data['org_owner_id'] = user_id
         org = Account(**data)
         org.save()
         return org
