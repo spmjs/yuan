@@ -5,10 +5,9 @@ import random
 from datetime import datetime
 from werkzeug import cached_property
 from flask.ext.principal import Permission, UserNeed
-from ._base import db, YuanQuery, SessionMixin, model_created
-from ._base import TeamNeed
+from ._base import db, YuanQuery, SessionMixin
 
-__all__ = ['Account', 'Team', 'get_user_organizations']
+__all__ = ['Account', 'Member']
 
 
 class Account(db.Model, SessionMixin):
@@ -37,8 +36,6 @@ class Account(db.Model, SessionMixin):
     token = db.Column(db.String(20))
 
     def __init__(self, **kwargs):
-        model_created.connect(create_owner_team, sender=self)
-
         self.token = self.create_token(16)
 
         if 'password' in kwargs:
@@ -83,44 +80,18 @@ class Account(db.Model, SessionMixin):
         return None
 
     @cached_property
-    def permission_read(self):
-        if self.account_type == 'user':
-            return Permission(UserNeed(self.id))
-        # organization
-        rv = Team.query.filter_by(owner_id=self.id)\
-                .filter(Team._permission > 0).values('id')
-        needs = map(lambda o: TeamNeed(o[0]), rv)
-        return Permission(UserNeed(self.org_owner_id), *needs)
-
-    @cached_property
     def permission_write(self):
         if self.account_type == 'user':
             return Permission(UserNeed(self.id))
-        # organization
-        rv = Team.query.filter_by(owner_id=self.id)\
-                .filter(Team._permission > 1).values('id')
-        needs = map(lambda o: TeamNeed(o[0]), rv)
+        q = db.session.query(Member.user_id).filter_by(org_id=self.id)
+        needs = map(lambda o: UserNeed(o[0]), q.all())
         return Permission(UserNeed(self.org_owner_id), *needs)
 
     @cached_property
     def permission_admin(self):
         if self.account_type == 'user':
             return Permission(UserNeed(self.id))
-        # organization
-        rv = Team.query.filter_by(owner_id=self.id)\
-                .filter(Team._permission > 2).values('id')
-        needs = map(lambda o: TeamNeed(o[0]), rv)
-        return Permission(UserNeed(self.org_owner_id), *needs)
-
-    @cached_property
-    def permission_own(self):
-        if self.account_type == 'user':
-            return Permission(UserNeed(self.id))
-        # organization
-        rv = Team.query.filter_by(owner_id=self.id)\
-                .filter(Team._permission > 3).values('id')
-        needs = map(lambda o: TeamNeed(o[0]), rv)
-        return Permission(UserNeed(self.org_owner_id), *needs)
+        return Permission(UserNeed(self.org_owner_id))
 
     @staticmethod
     def create_password(raw):
@@ -148,78 +119,41 @@ class Account(db.Model, SessionMixin):
         verify = hashlib.sha1(passwd).hexdigest()
         return verify == hsh
 
+    @property
+    def organizations(self):
+        if self.account_type == 'org':
+            return []
+        q = db.session.query(Account).\
+                filter_by(account_type='org').\
+                join(Member, Member.user_id == self.id)
+        data = q.all()
+        return data
 
-class Team(db.Model, SessionMixin):
+    @property
+    def members(self):
+        if self.account_type == 'user':
+            return []
+        q = db.session.query(Account).\
+                filter_by(account_type='user').\
+                join(Member, Member.org_id == self.id)
+        return q.all()
+
+
+class Member(db.Model, SessionMixin):
     query_class = YuanQuery
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    # 1: read, 2: write, 3: admin, > 3 own
-    _permission = db.Column(db.Integer, default=2)
-
-    # belong to an organization
-    owner_id = db.Column(
+    org_id = db.Column(
         db.Integer,
-        db.ForeignKey('account.id', ondelete='CASCADE'),
-        nullable=False
+        db.ForeignKey('account.id', ondelete='CASCADE')
     )
-
-    # contain members
-    members = db.relationship(
-        Account,
-        secondary=lambda: team_member,
-        lazy='dynamic',
+    user_id = db.Column(
+        db.Integer,
+        db.ForeignKey('account.id', ondelete='CASCADE')
     )
 
     def __str__(self):
-        return self.name
+        return self.id
 
     def __repr__(self):
-        return '<Team: %s>' % self
-
-    @cached_property
-    def permission(self):
-        if self._permission < 2:
-            return 'read'
-        if self._permission < 3:
-            return 'write'
-        if self._permission < 4:
-            return 'admin'
-        if self._permission > 3:
-            return 'own'
-        return 'none'
-
-
-team_member = db.Table(
-    'team_member', db.Model.metadata,
-    db.Column(
-        'account_id', db.Integer,
-        db.ForeignKey('account.id', ondelete='CASCADE'),
-        primary_key=True,
-    ),
-    db.Column(
-        'team_id', db.Integer,
-        db.ForeignKey('team.id', ondelete='CASCADE'),
-        primary_key=True,
-    )
-)
-
-
-def create_owner_team(sender, model=None):
-    if not model:
-        return
-    if model.account_type != 'org':
-        return
-    user = Account.query.get(model.org_owner_id)
-    if not user:
-        return
-    team = Team(name='Owner', _permission=4, owner_id=model.id)
-    team.members.append(user)
-    return team.save()
-
-
-def get_user_organizations(user_id):
-    q = db.session.query(Account).\
-            join(team_member, team_member.c.account_id == user_id).\
-            join(Team, Team.owner_id == Account.id)
-    return q.all()
+        return '<Member %s-%s>' % (self.org_id, self.user_id)

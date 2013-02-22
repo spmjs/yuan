@@ -8,7 +8,7 @@ from flask.ext.babel import lazy_gettext as _
 from wtforms.compat import iteritems
 
 from ._base import BaseForm
-from ..models import Account, Team
+from ..models import Account
 
 RESERVED_WORDS = [
     'root', 'admin', 'bot', 'robot', 'master', 'webmaster',
@@ -143,32 +143,3 @@ class OrgForm(SettingForm):
         org = Account(**data)
         org.save()
         return org
-
-
-class TeamForm(BaseForm):
-    name = TextField(
-        _('Name'), validators=[
-            Required(), Length(min=3, max=100)
-        ], description=_('3 to 100 characters.')
-    )
-    permission = SelectField(
-        _('Permission'),
-        choices=[
-            ('write', 'Read & Write'),
-            ('read', 'Read Only'),
-            ('admin', 'Administractive'),
-        ]
-    )
-
-    def save(self, org):
-        data = dict(self.data)
-        data['owner_id'] = org.id
-        permission = data.pop('permission')
-        if permission in ('read', 'write', 'admin'):
-            dct = {'read': 1, 'write': 2, 'admin': 3}
-            data['_permission'] = dct[permission]
-        else:
-            data['_permission'] = 1
-        team = Team(**data)
-        team.save()
-        return team

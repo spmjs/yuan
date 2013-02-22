@@ -1,12 +1,11 @@
 # coding: utf-8
 
 from flask import Blueprint
-from flask import g, url_for, request, flash
+from flask import g, url_for
 from flask import render_template, redirect, abort
-from flask.ext.babel import gettext as _
 from ..helpers import require_user
-from ..models import Account, Team, get_user_organizations
-from ..forms import OrgForm, TeamForm
+from ..models import Account
+from ..forms import OrgForm
 
 bp = Blueprint('organization', __name__)
 
@@ -18,9 +17,7 @@ def home():
     if form.validate_on_submit():
         org = form.save(g.user)
         return redirect(url_for('.detail', name=org.name))
-    orgs = get_user_organizations(g.user.id)
-    dct = {'orgs': orgs, 'form': form}
-    return render_template('organization/home.html', **dct)
+    return render_template('organization/home.html', form=form)
 
 
 @bp.route('/<name>', methods=['GET', 'POST', 'DELETE'])
@@ -30,42 +27,8 @@ def detail(name):
     if org.account_type != 'org':
         return abort(404)
     if org.permission_admin.can():
-        orgform = OrgForm(obj=org)
-        teamform = TeamForm()
+        form = OrgForm(obj=org)
     else:
-        orgform = None
-        teamform = None
+        form = None
 
-    if 'permission' in request.form and teamform and \
-       teamform.validate_on_submit():
-        team = teamform.save(org)
-        return redirect(url_for('.team', name=name, ident=team.id))
-    if orgform and orgform.validate_on_submit():
-        orgform.populate_obj(org)
-        org.save()
-        return redirect(url_for('.detail', name=org.name))
-    dct = {'org': org, 'orgform': orgform, 'teamform': teamform}
-    dct['teams'] = Team.query.filter_by(owner_id=org.id).all()
-    return render_template('organization/detail.html', **dct)
-
-
-@bp.route('/<name>/team/<int:ident>', methods=['GET', 'POST', 'DELETE'])
-@require_user
-def team(name, ident):
-    org = Account.query.filter_by(name=name).first_or_404()
-    team = Team.query.get_or_404(ident)
-    if team.owner_id != org.id:
-        return abort(404)
-    if request.method == 'POST' and org.permission_admin.can():
-        username = request.form.get('username', None)
-        user = None
-        if username:
-            user = Account.query.filter_by(name=username).first()
-        if user and user.account_type == 'user':
-            team.members.append(user)
-            team.save()
-        else:
-            flash(_('This user does not exist.'), 'error')
-        return redirect(url_for('.team', name=name, ident=ident))
-    dct = {'org': org, 'team': team}
-    return render_template('organization/team.html', **dct)
+    return render_template('organization/detail.html', form=form)
