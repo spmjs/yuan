@@ -1,12 +1,16 @@
 # coding: utf-8
 
 
-from yuan.models import Account, Member
+from yuan.models import Account, Member, Project
 
 from .suite import BaseSuite
 
 
-class TestAccount(BaseSuite):
+class TestModel(BaseSuite):
+    def test_account(self):
+        user = Account(name='spm')
+        user.save()
+
     def test_membership(self):
         user = Account(name='lepture')
         user.save()
@@ -21,7 +25,4 @@ class TestAccount(BaseSuite):
         member = Member(org_id=org.id, user_id=user.id)
         member.save()
 
-        print Account.query.all()
-        print Member.query.all()
-        print user.organizations
         assert len(user.organizations) == 1

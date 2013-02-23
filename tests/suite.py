@@ -11,6 +11,7 @@ class BaseSuite(object):
     def setUp(self):
         config = {'TESTING': True}
         config['SECRET_KEY'] = 'secret-key-for-test'
+        config['PACKAGE_STORAGE'] = 'data'
 
         self.db_fd, self.db_file = tempfile.mkstemp()
         config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///%s' % self.db_file

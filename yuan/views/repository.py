@@ -24,151 +24,87 @@ def index():
     return jsonify(status='success', data=data)
 
 
-@bp.route('/<name>/')
-def account(name):
-    account = Account.query.filter_by(name=name).first()
+@bp.route('/<family>/')
+def family(family):
+    account = Account.query.filter_by(name=family).first()
     if not account:
-        return abortify(404, message=_('Account not found.'))
-    if account.permission_read.can():
-        projects = db.session.query(Project.name)\
-                .filter_by(owner_id=account.id).all()
-    else:
-        projects = db.session.query(Project.name)\
-                .filter_by(owner_id=account.id, private=False).all()
+        return abortify(404, message=_('Family not found.'))
+    projects = db.session.query(Project.name)\
+            .filter_by(family=family).all()
     projects = map(lambda o: o[0], projects)
     data = {
         'account': {
-            'name': name,
+            'name': family,
             'type': account.account_type,
         },
         'projects': projects,
     }
-    return jsonify(status='success', data=data)
+    return jsonify(data)
 
 
-@bp.route('/<name>/<pkg>/', methods=['GET', 'POST', 'DELETE'])
-def project(name, pkg):
-    """Create, delete, and get information of a project on these conditions:
-
-        1. Public projects can be read by all users.
-        2. Private projects can be only accessable by group members.
-        3. Projects can be only created by users who has write permission.
-        4. Projects can be only deleted by users who has admin permission.
-    """
-
-    # account can be a user or organization
-    account = Account.query.filter_by(name=name).first()
-    if not account:
-        return abortify(404, message=_('Account not found.'))
-
-    #TODO: cache it
-    project = Project.query.filter_by(owner_id=account.id, name=pkg).first()
-    if request.method == 'GET':
-        if not project:
-            return abortify(404, message=_('Project not found.'))
-        if project.private and not account.permission_read.can():
-            return abortify(403)
-        tag = request.args.get('tag', None)
-        data = project.tagged_project(tag)
-        data['account'] = name
-        return jsonify(status='success', data=data)
-
-    if request.method == 'POST':
-        if project and account.permission_write.can():
-            update_project(project, account, pkg)
-            return jsonify(status='info', message=_('Project updated.'))
-        if not project and account.permission_admin.can():
-            create_project(account, pkg)
-            res = jsonify(status='info', message=_('Project created.'))
-            res.status_code = 201
-            return res
-        return abortify(403)
-
+@bp.route('/<family>/<name>/', methods=['GET', 'DELETE'])
+def project(family, name):
+    project = Project.query.filter_by(family=family, name=name).first()
     if not project:
         return abortify(404, message=_('Project not found.'))
 
-    if account.permission_admin.can():
-        project.delete()
-        return jsonify(status='info', message=_('Project deleted.'))
-    return abortify(403)
+    if request.method == 'GET':
+        return jsonify(project.json)
+
+    account = Account.query.filter_by(name=family).first()
+    if not account:
+        return abortify(404, message=_('Family not found.'))
+
+    if not account.permission_write.can():
+        return abortify(403)
+    project.delete()
+    return jsonify(status='info', message=_('Project is deleted.'))
 
 
-@bp.route('/<name>/<pkg>/<version>', methods=['GET', 'POST', 'PUT', 'DELETE'])
-def package(name, pkg, version):
+@bp.route(
+    '/<family>/<name>/<version>',
+    methods=['GET', 'POST', 'PUT', 'DELETE'])
+def package(family, name, version):
     """Create, delete, upload, and get information of a package."""
 
-    # account can be a user or organization
-    account = Account.query.filter_by(name=name).first()
-    if not account:
-        return abortify(404, message=_('Account not found.'))
+    project = Project.query.filter_by(family=family, name=name).first()
 
-    project = Project.query.filter_by(owner_id=account.id, name=pkg).first()
     if not project and request.method != 'POST':
         return abortify(404, message=_('Project not found.'))
 
-    if not project:
-        if not account.permission_admin.can():
-            return abortify(403)
-        # POST method will create project
-        project = create_project(account, pkg)
-
     # get information of a package
     if request.method == 'GET':
-        if project.private and not account.permission_read.can():
-            return abortify(403)
-        package = Package.get_by_version(project.id, version)
-        if not package:
+        package = Package(family=family, name=name, version=version)
+        if not package.read():
             return abortify(404, message=_('Package not found.'))
-        data = package.dict_with_project(project)
-        data['account'] = name
-        # TODO: analyse hits
-        return jsonify(status='success', data=data)
+        return jsonify(package)
 
-    package = Package.get_by_version(project.id, version)
-    # create or update information of a package
+    # account can be a user or organization
+    account = Account.query.filter_by(name=family).first()
+    if not account:
+        return abortify(404, message=_('Account not found.'))
+
+    if not account.permission_write.can():
+        return abortify(403)
+
     if request.method == 'POST':
-        if not account.permission_write.can():
-            return abortify(403)
-        if not package:
-            data = _get_package_data(project, version)
-            package = Package(**data)
-            package.save()
-
-            res = jsonify(
-                status='success',
-                data=package.dict_with_project(project)
-            )
-            res.status_code = 201
-            return res
-        isforce = request.headers.get('X-Yuan-Force', False)
-        if not isforce:
+        force = request.headers.get('X-Yuan-Force', False)
+        if project and not force:
             return abortify(444)
-        data = _get_package_data(project, version)
-        for key in data:
-            setattr(package, key, data[key])
-        package.save()
-        # update project information
-        update_project(project, account, pkg)
-        return jsonify(
-            status='success',
-            data=package.dict_with_project(project)
-        )
+
+        if not project:
+            # TODO create project
+            pass
+        # TODO create package
 
     # upload files for a package
     if request.method == 'PUT':
-        if not account.permission_write.can():
-            return abortify(403)
         if not package:
             return abortify(404, message=_('Package not found.'))
         upload_package(project, package, account)
         return jsonify(status='info', message=_('Package uploaded.'))
-
-    # delete a package
-    if account.permission_admin.can():
-        if package:
-            package.delete()
-        return jsonify(status='info', message=_('Package deleted.'))
-    return abortify(403)
+    # TODO delete package
+    package.delete()
 
 
 @bp.route('/search')

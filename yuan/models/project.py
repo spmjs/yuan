@@ -1,9 +1,11 @@
 # coding: utf-8
 
+import os
+from flask import json
 from flask import current_app
 from datetime import datetime
 from werkzeug import cached_property
-from distutils.version import StrictVersion
+from collections import OrderedDict
 from ._base import db, YuanQuery, SessionMixin
 
 __all__ = ['Project', 'Package']
@@ -13,137 +15,162 @@ class Project(db.Model, SessionMixin):
     query_class = YuanQuery
 
     id = db.Column(db.Integer, primary_key=True)
-    owner_id = db.Column(
-        db.Integer,
-        db.ForeignKey('account.id', ondelete='CASCADE'),
-    )
+    family = db.Column(db.String(40), nullable=False, index=True)
+    name = db.Column(db.String(40), nullable=False, index=True)
 
-    name = db.Column(db.String(40), index=True)
-    homepage = db.Column(db.String(200))
-    repository = db.Column(db.String(400))
-
-    description = db.Column(db.String(400))
-    keywords = db.Column(db.Text)
-
-    private = db.Column(db.Boolean, default=False)
-    created = db.Column(db.DateTime, default=datetime.utcnow)
-    updated = db.Column(db.DateTime, default=datetime.utcnow,
-                        onupdate=datetime.utcnow)
-
-    packages = db.relationship('Package', lazy='dynamic')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow,
+                           onupdate=datetime.utcnow)
 
     def __str__(self):
-        return self.name
+        return '%s/%s' % (self.family, self.name)
 
     def __repr__(self):
         return '<Project: %s>' % self
 
+    def __file__(self):
+        storage = current_app.config['PACKAGE_STORAGE']
+        return os.path.join(storage, self.family, self.name, 'index.json')
+
     @cached_property
-    def keyword_list(self):
-        if not self.keywords:
-            return []
-        return self.keywords.split()
-
-    def package(self):
-        pkg = Package.query.filter_by(project_id=self.id)\
-                .filter_by(tag='stable')\
-                .order_by(Package.id.desc())\
-                .first()
-        return pkg
-
-    def tagged_project(self, tag=None):
-        if tag:
-            packages = Package.query.filter_by(
-                project_id=self.id, tag=tag
-            ).all()
+    def json(self):
+        now = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+        if self.created_at:
+            created_at = self.created_at.strftime('%Y-%m-%dT%H:%M:%SZ')
         else:
-            packages = Package.query.filter_by(project_id=self.id).all()
+            created_at = now
 
-        packages = sorted(
-            packages, key=lambda o: StrictVersion(o.version), reverse=True)
+        if self.updated_at:
+            updated_at = self.updated_at.strftime('%Y-%m-%dT%H:%M:%SZ')
+        else:
+            updated_at = now
 
-        data = self.to_dict(
-            'name', 'homepage', 'repository', 'description',
-            'created', 'updated',
-        )
-        data['keywords'] = self.keyword_list
+        fpath = self.__file__()
+        if not os.path.exists(fpath):
+            return {
+                'family': self.family,
+                'name': self.name,
+                'created_at': created_at,
+                'updated_at': updated_at,
+            }
 
-        def _to_dict(pkg):
-            dct = pkg.to_dict('tag', 'version', 'download_url', 'created')
-            dct['md5'] = pkg.md5value
-            dct['dependencies'] = pkg.dependency_list
+        with open(fpath, 'r') as f:
+            content = f.read()
+            return json.loads(content)
+
+    @cached_property
+    def versions(self):
+        if 'versions' in self.json:
+            return self.json['versions']
+        return []
+
+    def write(self, dct):
+        fpath = self.__file__()
+        directory = os.path.dirname(fpath)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        with open(fpath, 'w') as f:
+            f.write(json.dumps(dct))
             return dct
 
-        config = current_app.config
-        if self.private:
-            data['download_base'] = config['PRIVATE_DOWNLOAD_URL']
-        else:
-            data['download_base'] = config['PUBLIC_DOWNLOAD_URL']
+    def update(self, dct):
+        pkg = Package(**dct)
+        pkg.write()
 
-        data['packages'] = map(_to_dict, packages)
+        vers = OrderedDict()
+        for v in self.versions:
+            if v['version'] == dct['version']:
+                vers[v['version']] = dct
+            else:
+                vers[v['version']] = v
+
+        versions = vers.items()
+        if dct['version'] not in vers:
+            versions.insert(0, dct)
+
+        data = self.json
+        data['versions'] = versions
+
+        self.write(data)
         return data
 
+    def remove(self, version):
+        pass
 
-class Package(db.Model, SessionMixin):
-    query_class = YuanQuery
 
-    id = db.Column(db.Integer, primary_key=True)
-    project_id = db.Column(
-        db.Integer,
-        db.ForeignKey('project.id', ondelete='CASCADE'),
-    )
-    version = db.Column(db.String(50), nullable=False)
-    tag = db.Column(db.String(20), default='stable')
-    readme = db.Column(db.Text)
+def to_unicode(value):
+    if isinstance(value, unicode):
+        return value
+    if isinstance(value, basestring):
+        return value.decode('utf-8')
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, bytes):
+        return value.decode('utf-8')
+    return value
 
-    download_url = db.Column(db.String(400))
-    dependencies = db.Column(db.Text)
-    md5value = db.Column(db.String(50), unique=True)
 
-    created = db.Column(db.DateTime, default=datetime.utcnow)
+class Package(dict):
+    def __init__(self, **kwargs):
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
 
     def __str__(self):
-        return '%s - %s' % (self.project_id, self.version)
+        return '%s/%s@%s' % (self.family, self.name, self.version)
 
     def __repr__(self):
-        return '<Package: %s>' % self
+        return '<Project: %s>' % self
 
-    def project(self):
-        return Project.query.get(self.project_id)
+    def __getattr__(self, key):
+        try:
+            return to_unicode(self[key])
+        except KeyError:
+            return None
 
-    @cached_property
-    def dependency_list(self):
-        if not self.dependencies:
-            return []
-        return self.dependencies.split()
+    def __setattr__(self, key, value):
+        self[key] = to_unicode(value)
 
-    @cached_property
-    def html(self):
-        #TODO markdown
-        return self.readme
+    def __getitem__(self, key):
+        return to_unicode(super(Package, self).__getitem__(key))
 
-    @classmethod
-    def get_by_version(cls, project_id, version):
-        q = cls.query.filter_by(project_id=project_id, version=version)
-        return q.first()
+    def __setitem__(self, key, value):
+        return super(Package, self).__setitem__(key, to_unicode(value))
 
-    def dict_with_project(self, project=None):
-        if not project:
-            project = self.project
-
-        data = project.to_dict(
-            'name', 'homepage', 'repository', 'description',
-            'created', 'updated', 'private',
+    def __file__(self):
+        storage = current_app.config['PACKAGE_STORAGE']
+        fpath = os.path.join(
+            storage, self.family, self.name, self.version,
+            'package.json'
         )
-        data['version'] = self.version
-        data['download_url'] = self.download_url
-        config = current_app.config
-        if project.private:
-            data['download_base'] = config['PRIVATE_DOWNLOAD_URL']
-        else:
-            data['download_base'] = config['PUBLIC_DOWNLOAD_URL']
-        data['tag'] = self.tag
-        data['md5'] = self.md5value
-        data['readme'] = self.readme
-        data['dependencies'] = self.dependency_list
-        return data
+        return fpath
+
+    def read(self):
+        fpath = self.__file__()
+        if not os.path.exists(fpath):
+            return None
+
+        with open(fpath, 'r') as f:
+            content = f.read()
+            data = json.loads(content)
+            for key in data:
+                if not key.startswith('_') and not hasattr(self, key):
+                    self[key] = data[key]
+            return self
+
+    def write(self):
+        fpath = self.__file__()
+
+        directory = os.path.dirname(fpath)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        with open(fpath, 'w') as f:
+            now = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+            self.created_at = now
+            self.updated_at = now
+            f.write(json.dumps(self))
+            return self
+
+    def delete(self):
+        directory = os.path.dirname(self.__file__())
+        return os.removedirs(directory)

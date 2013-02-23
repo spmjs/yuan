@@ -33,11 +33,8 @@ class Account(db.Model, SessionMixin):
     role = db.Column(db.Integer, default=1)
 
     created = db.Column(db.DateTime, default=datetime.utcnow)
-    token = db.Column(db.String(20))
 
     def __init__(self, **kwargs):
-        self.token = self.create_token(16)
-
         if 'password' in kwargs:
             raw = kwargs.pop('password')
             self.password = self.create_password(raw)

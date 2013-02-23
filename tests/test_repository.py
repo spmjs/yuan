@@ -9,7 +9,7 @@ class TestNoAccountCase(BaseSuite):
     def test_get(self):
         rv = self.client.get('/repository/lepture/arale/1.0.1')
         assert rv.status_code == 404
-        assert "Account not found" in rv.data
+        assert "Project not found" in rv.data
 
     def test_post(self):
         rv = self.client.post('/repository/lepture/arale/1.0.1')
@@ -19,11 +19,12 @@ class TestNoAccountCase(BaseSuite):
     def test_put(self):
         rv = self.client.put('/repository/lepture/arale/1.0.1')
         assert rv.status_code == 404
-        assert "Account not found" in rv.data
+        assert "Project not found" in rv.data
 
     def test_delete(self):
         rv = self.client.delete('/repository/lepture/arale/1.0.1')
         assert rv.status_code == 404
+        assert "Project not found" in rv.data
 
 
 class TestNoProjectCase(BaseSuite):
@@ -46,18 +47,19 @@ class TestNoProjectCase(BaseSuite):
         assert "not found" in rv.data
 
     def test_post(self):
-        rv = self.client.post('/repository/lepture/arale/')
+        rv = self.client.post('/repository/lepture/arale/1.0.1')
         assert "Authorization required" in rv.data
 
         headers = self.login_account()
         rv = self.client.post(
-            '/repository/lepture/arale/', headers=headers,
+            '/repository/lepture/arale/1.0.1', headers=headers,
             content_type='application/json',
             data=json.dumps(dict())
         )
         print rv.data
 
 
+"""
 class TestUploadCase(BaseSuite):
     def prehook(self):
         self.create_account()
@@ -80,3 +82,4 @@ class TestUploadCase(BaseSuite):
             data='a'
         )
         print rv.data
+"""
