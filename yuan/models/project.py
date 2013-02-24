@@ -36,6 +36,27 @@ class Project(db.Model, SessionMixin):
         )
 
     @staticmethod
+    def list(family):
+        storage = current_app.config['WWW_ROOT']
+        directory = os.path.join(storage, 'repository', family)
+        if not os.path.exists(directory):
+            return None
+
+        def isdir(name):
+            return os.path.isdir(os.path.join(directory, name))
+        names = filter(isdir, os.listdir(directory))
+
+        def render(name):
+            stat = os.stat(os.path.join(directory, name))
+            mtime = datetime.fromtimestamp(stat.st_mtime)
+            return {
+                'family': family,
+                'name': name,
+                'updated_at': mtime.strftime('%Y-%m-%dT%H:%M:%SZ')
+            }
+        return map(render, names)
+
+    @staticmethod
     def read(family, name):
         storage = current_app.config['WWW_ROOT']
         fpath = os.path.join(

@@ -18,7 +18,7 @@ bp = Blueprint('repository', __name__)
 
 @bp.route('/')
 def index():
-    projects = Project.query.all()
+    projects = Project.query.order_by(Project.updated_at.desc()).all()
 
     if projects:
         projects = map(lambda p: p.to_dict(), projects)
@@ -30,13 +30,15 @@ def index():
 
 @bp.route('/<family>/')
 def family(family):
-    projects = Project.query.filter_by(family=family).all()
-
+    projects = Project.query.filter_by(family=family)\
+            .order_by(Project.updated_at.desc()).all()
     if projects:
         projects = map(lambda p: p.to_dict(), projects)
-    else:
-        projects = []
+        return Response(json.dumps(projects), content_type='application/json')
 
+    projects = Project.list(family)
+    if not projects:
+        return abortify(404, message=_('Family not found.'))
     return Response(json.dumps(projects), content_type='application/json')
 
 
