@@ -32,5 +32,4 @@ CACHE_TYPE = 'simple'
 #CACHE_REDIS_PASSWORD
 
 #: file storage
-PACKAGE_STORAGE = 'data'
-DOWNLOAD_BASE = ''
+WWW_ROOT = 'data'

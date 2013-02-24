@@ -5,7 +5,6 @@ from flask import json
 from flask import current_app
 from datetime import datetime
 from werkzeug import cached_property
-from collections import OrderedDict
 from ._base import db, YuanQuery, SessionMixin
 
 __all__ = ['Project', 'Package']
@@ -20,17 +19,13 @@ class Project(db.Model, SessionMixin):
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow,
-                           onupdate=datetime.utcnow)
+                           onupdate=datetime.utcnow, index=True)
 
     def __str__(self):
         return '%s/%s' % (self.family, self.name)
 
     def __repr__(self):
         return '<Project: %s>' % self
-
-    def __file__(self):
-        storage = current_app.config['PACKAGE_STORAGE']
-        return os.path.join(storage, self.family, self.name, 'index.json')
 
     def to_dict(self):
         return dict(
@@ -40,53 +35,68 @@ class Project(db.Model, SessionMixin):
             updated_at=self.updated_at.strftime('%Y-%m-%dT%H:%M:%SZ')
         )
 
-    @cached_property
-    def json(self):
-        fpath = self.__file__()
+    @staticmethod
+    def read(family, name):
+        storage = current_app.config['WWW_ROOT']
+        fpath = os.path.join(
+            storage, 'repository', family, name, 'index.json'
+        )
         if not os.path.exists(fpath):
-            return self.to_dict()
+            return None
 
         with open(fpath, 'r') as f:
             content = f.read()
             return json.loads(content)
 
+    @staticmethod
+    def write(family, name, data):
+        storage = current_app.config['WWW_ROOT']
+        directory = os.path.join(storage, 'repository', family, name)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        fpath = os.path.join(directory, 'index.json')
+        with open(fpath, 'w') as f:
+            f.write(json.dumps(data))
+            return data
+
+    @cached_property
+    def json(self):
+        data = self.read(self.family, self.name)
+        if data:
+            return data
+        return self.to_dict()
+
     @cached_property
     def versions(self):
         if 'versions' in self.json:
             return self.json['versions']
-        return []
+        return {}
 
-    def write(self, dct):
-        fpath = self.__file__()
-        directory = os.path.dirname(fpath)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        with open(fpath, 'w') as f:
-            f.write(json.dumps(dct))
-            return dct
+    def update(self, **kwargs):
+        if 'version' not in kwargs:
+            return False
+        if 'family' in kwargs and kwargs['family'] != self.family:
+            return False
+        if 'name' in kwargs and kwargs['name'] != self.name:
+            return False
 
-    def update(self, dct):
         self.updated_at = datetime.utcnow()
+        self.save()
 
-        pkg = Package(**dct)
+        kwargs['family'] = self.family
+        kwargs['name'] = self.name
+
+        pkg = Package(**kwargs)
         pkg.save()
 
-        vers = OrderedDict()
-        print self.versions
-        for v in self.versions:
-            if v['version'] == dct['version']:
-                vers[v['version']] = dct
-            else:
-                vers[v['version']] = v
-
-        versions = vers.items()
-        if dct['version'] not in vers:
-            versions.insert(0, dct)
+        versions = self.versions
+        versions[pkg.version] = pkg
 
         data = self.json
         data['versions'] = versions
 
-        self.write(data)
+        self.write(self.family, self.name, data)
         return data
 
     def remove(self, version):
@@ -131,16 +141,20 @@ class Package(dict):
     def __setitem__(self, key, value):
         return super(Package, self).__setitem__(key, to_unicode(value))
 
-    def __file__(self):
-        storage = current_app.config['PACKAGE_STORAGE']
-        fpath = os.path.join(
-            storage, self.family, self.name, self.version,
-            'index.json'
+    @cached_property
+    def directory(self):
+        storage = current_app.config['WWW_ROOT']
+        directory = os.path.join(
+            storage, 'repository', self.family, self.name, self.version
         )
-        return fpath
+        return directory
+
+    @cached_property
+    def index_file(self):
+        return os.path.join(self.directory, 'index.json')
 
     def read(self):
-        fpath = self.__file__()
+        fpath = self.index_file
         if not os.path.exists(fpath):
             return None
 
@@ -148,24 +162,26 @@ class Package(dict):
             content = f.read()
             data = json.loads(content)
             for key in data:
-                if not key.startswith('_') and not hasattr(self, key):
+                if not key.startswith('_'):
                     self[key] = data[key]
             return self
 
     def save(self):
-        fpath = self.__file__()
+        fpath = self.index_file
 
-        directory = os.path.dirname(fpath)
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+        if not os.path.exists(self.directory):
+            os.makedirs(self.directory)
+
+        now = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+        if 'created_at' not in self:
+            self.created_at = now
 
         with open(fpath, 'w') as f:
-            now = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-            self.created_at = now
             self.updated_at = now
             f.write(json.dumps(self))
             return self
 
     def delete(self):
-        directory = os.path.dirname(self.__file__())
-        return os.removedirs(directory)
+        if os.path.exists(self.directory):
+            return os.removedirs(self.directory)
+        return None
