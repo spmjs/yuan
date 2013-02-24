@@ -4,27 +4,24 @@ from flask import json
 from .suite import BaseSuite
 
 
-class TestNoAccountCase(BaseSuite):
+class TestNoFamilyCase(BaseSuite):
     """We didn't have any user"""
     def test_get(self):
-        rv = self.client.get('/repository/lepture/arale/1.0.1')
+        rv = self.client.get('/repository/lepture/arale/1.0.1/')
         assert rv.status_code == 404
         assert "Project not found" in rv.data
 
     def test_post(self):
-        rv = self.client.post('/repository/lepture/arale/1.0.1')
-        assert rv.status_code == 404
-        assert "Account not found" in rv.data
+        rv = self.client.post('/repository/lepture/arale/1.0.1/')
+        assert rv.status_code == 401
 
     def test_put(self):
-        rv = self.client.put('/repository/lepture/arale/1.0.1')
+        rv = self.client.put('/repository/lepture/arale/1.0.1/')
         assert rv.status_code == 404
-        assert "Project not found" in rv.data
 
     def test_delete(self):
-        rv = self.client.delete('/repository/lepture/arale/1.0.1')
+        rv = self.client.delete('/repository/lepture/arale/1.0.1/')
         assert rv.status_code == 404
-        assert "Project not found" in rv.data
 
 
 class TestNoProjectCase(BaseSuite):
@@ -32,34 +29,33 @@ class TestNoProjectCase(BaseSuite):
         self.create_account()
 
     def test_get(self):
-        rv = self.client.get('/repository/lepture/arale/1.0.1')
+        rv = self.client.get('/repository/lepture/arale/1.0.1/')
         assert rv.status_code == 404
         assert "not found" in rv.data
 
     def test_put(self):
-        rv = self.client.put('/repository/lepture/arale/1.0.1')
+        rv = self.client.put('/repository/lepture/arale/1.0.1/')
         assert rv.status_code == 404
         assert "not found" in rv.data
 
     def test_delete(self):
-        rv = self.client.delete('/repository/lepture/arale/1.0.1')
+        rv = self.client.delete('/repository/lepture/arale/1.0.1/')
         assert rv.status_code == 404
         assert "not found" in rv.data
 
     def test_post(self):
-        rv = self.client.post('/repository/lepture/arale/1.0.1')
+        rv = self.client.post('/repository/lepture/arale/1.0.1/')
         assert "Authorization required" in rv.data
 
         headers = self.login_account()
         rv = self.client.post(
-            '/repository/lepture/arale/1.0.1', headers=headers,
+            '/repository/lepture/arale/1.0.1/', headers=headers,
             content_type='application/json',
             data=json.dumps(dict())
         )
         print rv.data
 
 
-"""
 class TestUploadCase(BaseSuite):
     def prehook(self):
         self.create_account()
@@ -67,8 +63,9 @@ class TestUploadCase(BaseSuite):
     def test_upload(self):
         # 1. create project
         headers = self.login_account()
+        headers['X-Yuan-Force'] = 'true'
         rv = self.client.post(
-            '/repository/lepture/arale/1.0.0', headers=headers,
+            '/repository/lepture/arale/1.0.0/', headers=headers,
             content_type='application/json',
             data=json.dumps(dict())
         )
@@ -77,9 +74,8 @@ class TestUploadCase(BaseSuite):
 
         headers['CONTENT-ENCODING'] = 'x-gzip'
         rv = self.client.put(
-            '/repository/lepture/arale/1.0.0', headers=headers,
+            '/repository/lepture/arale/1.0.0/', headers=headers,
             content_type='application/x-tar',
             data='a'
         )
         print rv.data
-"""

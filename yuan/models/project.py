@@ -32,27 +32,19 @@ class Project(db.Model, SessionMixin):
         storage = current_app.config['PACKAGE_STORAGE']
         return os.path.join(storage, self.family, self.name, 'index.json')
 
+    def to_dict(self):
+        return dict(
+            family=self.family,
+            name=self.name,
+            created_at=self.created_at.strftime('%Y-%m-%dT%H:%M:%SZ'),
+            updated_at=self.updated_at.strftime('%Y-%m-%dT%H:%M:%SZ')
+        )
+
     @cached_property
     def json(self):
-        now = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-        if self.created_at:
-            created_at = self.created_at.strftime('%Y-%m-%dT%H:%M:%SZ')
-        else:
-            created_at = now
-
-        if self.updated_at:
-            updated_at = self.updated_at.strftime('%Y-%m-%dT%H:%M:%SZ')
-        else:
-            updated_at = now
-
         fpath = self.__file__()
         if not os.path.exists(fpath):
-            return {
-                'family': self.family,
-                'name': self.name,
-                'created_at': created_at,
-                'updated_at': updated_at,
-            }
+            return self.to_dict()
 
         with open(fpath, 'r') as f:
             content = f.read()
@@ -74,10 +66,13 @@ class Project(db.Model, SessionMixin):
             return dct
 
     def update(self, dct):
+        self.updated_at = datetime.utcnow()
+
         pkg = Package(**dct)
-        pkg.write()
+        pkg.save()
 
         vers = OrderedDict()
+        print self.versions
         for v in self.versions:
             if v['version'] == dct['version']:
                 vers[v['version']] = dct
@@ -140,7 +135,7 @@ class Package(dict):
         storage = current_app.config['PACKAGE_STORAGE']
         fpath = os.path.join(
             storage, self.family, self.name, self.version,
-            'package.json'
+            'index.json'
         )
         return fpath
 
@@ -157,7 +152,7 @@ class Package(dict):
                     self[key] = data[key]
             return self
 
-    def write(self):
+    def save(self):
         fpath = self.__file__()
 
         directory = os.path.dirname(fpath)

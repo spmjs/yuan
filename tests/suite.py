@@ -2,12 +2,13 @@
 
 import os
 import tempfile
+import unittest
 from flask import json
 from yuan.app import create_app
 from yuan.models import db, Account
 
 
-class BaseSuite(object):
+class BaseSuite(unittest.TestCase):
     def setUp(self):
         config = {'TESTING': True}
         config['SECRET_KEY'] = 'secret-key-for-test'

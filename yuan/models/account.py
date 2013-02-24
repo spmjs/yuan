@@ -38,6 +38,8 @@ class Account(db.Model, SessionMixin):
         if 'password' in kwargs:
             raw = kwargs.pop('password')
             self.password = self.create_password(raw)
+        else:
+            self.account_type = 'org'
 
         if 'name' in kwargs:
             name = kwargs.pop('name')

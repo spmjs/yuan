@@ -1,14 +1,13 @@
 # coding: utf-8
 
 import os
-import werkzeug
 import hashlib
 from flask import Blueprint, current_app
 from flask import g, request, jsonify, abort
+from flask import json, Response
 from distutils.version import StrictVersion
 from flask.ext.babel import gettext as _
-from ..models import Project, Package, Account, db
-from ..forms import ProjectForm
+from ..models import Project, Package, Account
 from ..elastic import search_project
 
 __all__ = ['bp']
@@ -18,28 +17,26 @@ bp = Blueprint('repository', __name__)
 
 @bp.route('/')
 def index():
-    #TODO pagination
-    data = db.session.query(Account.name).all()
-    data = map(lambda o: o[0], data)
-    return jsonify(status='success', data=data)
+    projects = Project.query.all()
+
+    if projects:
+        projects = map(lambda p: p.to_dict(), projects)
+    else:
+        projects = []
+
+    return Response(json.dumps(projects), content_type='application/json')
 
 
 @bp.route('/<family>/')
 def family(family):
-    account = Account.query.filter_by(name=family).first()
-    if not account:
-        return abortify(404, message=_('Family not found.'))
-    projects = db.session.query(Project.name)\
-            .filter_by(family=family).all()
-    projects = map(lambda o: o[0], projects)
-    data = {
-        'account': {
-            'name': family,
-            'type': account.account_type,
-        },
-        'projects': projects,
-    }
-    return jsonify(data)
+    projects = Project.query.filter_by(family=family).all()
+
+    if projects:
+        projects = map(lambda p: p.to_dict(), projects)
+    else:
+        projects = []
+
+    return Response(json.dumps(projects), content_type='application/json')
 
 
 @bp.route('/<family>/<name>/', methods=['GET', 'DELETE'])
@@ -62,7 +59,7 @@ def project(family, name):
 
 
 @bp.route(
-    '/<family>/<name>/<version>',
+    '/<family>/<name>/<version>/',
     methods=['GET', 'POST', 'PUT', 'DELETE'])
 def package(family, name, version):
     """Create, delete, upload, and get information of a package."""
@@ -79,6 +76,10 @@ def package(family, name, version):
             return abortify(404, message=_('Package not found.'))
         return jsonify(package)
 
+    # verify permissions and request data
+    if not g.user:
+        return abortify(401)
+
     # account can be a user or organization
     account = Account.query.filter_by(name=family).first()
     if not account:
@@ -87,15 +88,26 @@ def package(family, name, version):
     if not account.permission_write.can():
         return abortify(403)
 
+    force = request.headers.get('X-Yuan-Force', False)
+    package = Package(family=family, name=name, version=version)
+    if package.read() and not force:
+        return abortify(444)
+
     if request.method == 'POST':
-        force = request.headers.get('X-Yuan-Force', False)
-        if project and not force:
-            return abortify(444)
+        ctype = request.headers.get('Content-Type')
+        if not request.json and ctype != 'application/json':
+            return abortify(
+                415,
+                message=_('Only application/json is allowed.')
+            )
 
         if not project:
-            # TODO create project
-            pass
-        # TODO create package
+            project = Project(family=family, name=name)
+            project.save()
+
+        package.update(request.json or {})
+        project.update(package)
+        return jsonify(project.json)
 
     # upload files for a package
     if request.method == 'PUT':
@@ -147,48 +159,11 @@ def _get_request_data():
     if not g.user:
         return abortify(401)
     if request.json:
-        data = request.json
-        if 'repository' in data and isinstance(data['repository'], dict):
-            repo = data['repository']
-            if 'url' in repo:
-                data['repository'] = repo['url']
-            else:
-                data['repository'] = None
-
-        if 'keywords' in data and isinstance(data['keywords'], list):
-            data['keywords'] = ' '.join(data['keywords'])
-
-        return data
+        return request.json
     ctype = request.headers.get('Content-Type')
     if not request.json and ctype == 'application/json':
         return {}
     return abortify(415, message=_('Only application/json is allowed.'))
-
-
-def create_project(owner, name=None):
-    data = _get_request_data()
-    if name and 'name' not in data:
-        data['name'] = name
-
-    data = werkzeug.datastructures.MultiDict(data)
-    form = ProjectForm(data, csrf_enabled=False, owner=owner)
-    if form.validate():
-        proj = form.save()
-        return proj
-    return abortify(406, message=_('Request invalid.'))
-
-
-def update_project(project, owner, name=None):
-    data = _get_request_data()
-    if name and 'name' not in data:
-        data['name'] = name
-    data = werkzeug.datastructures.MultiDict(data)
-    form = ProjectForm(data, csrf_enabled=False, obj=project, owner=owner)
-    if form.validate():
-        form.populate_obj(project)
-        project.save()
-        return project
-    return abortify(406, message=_('Request invalid.'))
 
 
 def _get_package_data(project, version=None):
