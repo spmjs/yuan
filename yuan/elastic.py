@@ -42,28 +42,28 @@ class ElasticSearch(object):
         req = requests.get(url)
         if req.status_code == 200 or req.status_code == 201:
             return json.loads(req.text)
-        raise ValueError('response error %d' % req.status_code)
+        raise ValueError('response error %d:%s' % (req.status_code, req.text))
 
     def post(self, path, data=None):
         url = '%s/%s' % (self.request_base(), path)
         req = requests.post(url, data=json.dumps(data))
         if req.status_code == 200 or req.status_code == 201:
             return json.loads(req.text)
-        raise ValueError('response error %d' % req.status_code)
+        raise ValueError('response error %d:%s' % (req.status_code, req.text))
 
     def put(self, path, data=None):
         url = '%s/%s' % (self.request_base(), path)
         req = requests.put(url, data=json.dumps(data))
         if req.status_code == 200 or req.status_code == 201:
             return json.loads(req.text)
-        raise ValueError('response error %d' % req.status_code)
+        raise ValueError('response error %d:%s' % (req.status_code, req.text))
 
     def delete(self, path):
         url = '%s/%s' % (self.request_base(), path)
         req = requests.delete(url)
         if req.status_code == 200:
             return json.loads(req.text)
-        raise ValueError('response error %d' % req.status_code)
+        raise ValueError('response error %d:%s' % (req.status_code, req.text))
 
 
 elastic = ElasticSearch()
@@ -83,6 +83,17 @@ def update_project(project, operation):
         return
 
     package = project.versions[list(project.versions)[0]]
+    dct = dict(
+        family=project.family,
+        name=project.name,
+        created_at=project.created_at.strftime('%Y-%m-%dT%H:%M:%SZ'),
+        updated_at=project.updated_at.strftime('%Y-%m-%dT%H:%M:%SZ'),
+    )
+    if 'keywords' in package and isinstance(package['keywords'], list):
+        dct['keywords'] = package['keywords']
+
+    if 'description' in package:
+        dct['description'] = package['description']
     elastic.post('project/%d' % project.id, package)
 
 
