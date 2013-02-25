@@ -133,4 +133,4 @@ def search_project(query):
     return hits
 
 
-models_committed.connect(update_model)
+#models_committed.connect(update_model)

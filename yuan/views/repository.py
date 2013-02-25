@@ -105,7 +105,7 @@ def package(family, name, version):
 
     force = request.headers.get('X-Yuan-Force', False)
     package = Package(family=family, name=name, version=version)
-    if package.read() and not force:
+    if package.read() and package.md5 and not force:
         return abortify(444)
 
     # register package information
@@ -128,14 +128,15 @@ def package(family, name, version):
             data['tag'] = 'stable'
 
         package.update(data)
-        project.update(**package)
-        return jsonify(project.json)
+        package.save()
+        return jsonify(package)
 
     # upload files for a package
     if request.method == 'PUT':
         if not package:
             return abortify(404, message=_('Package not found.'))
         upload(package)
+        project.update(**package)
         return jsonify(package)
 
     # TODO delete package
@@ -198,7 +199,7 @@ def abortify(code, **kwargs):
 def upload(package):
     encoding = request.headers.get('Content-Encoding')
     ctype = request.headers.get('Content-Type')
-    if ctype == 'application/x-tar' and encoding == 'x-gzip':
+    if ctype == 'application/x-tar' and encoding == 'gzip':
         ctype = 'application/x-tar-gz'
     if ctype not in ('application/x-tar-gz', 'application/x-tgz'):
         return abortify(415, message=_('Only gziped tar file is allowed.'))

@@ -112,6 +112,8 @@ class Project(db.Model, SessionMixin):
         pkg.save()
 
         versions = self.versions
+        if 'readme' in pkg:
+            del pkg['readme']
         versions[pkg.version] = pkg
 
         data = self.json
