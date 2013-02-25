@@ -5,6 +5,8 @@ from flask import json
 from flask import current_app
 from datetime import datetime
 from werkzeug import cached_property
+from collections import OrderedDict
+from distutils.version import StrictVersion
 from ._base import db, YuanQuery, SessionMixin
 
 __all__ = ['Project', 'Package']
@@ -90,9 +92,15 @@ class Project(db.Model, SessionMixin):
 
     @cached_property
     def versions(self):
-        if 'versions' in self.json:
-            return self.json['versions']
-        return {}
+        if 'versions' not in self.json:
+            return {}
+
+        versions = self.json['versions']
+        o = OrderedDict()
+        for v in sorted(versions.keys(),
+                        key=lambda i: StrictVersion(i), reverse=True):
+            o[v] = versions[v]
+        return o
 
     def update(self, **kwargs):
         if 'version' not in kwargs:

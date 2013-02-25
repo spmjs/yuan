@@ -8,7 +8,7 @@ from flask import g, request, jsonify, abort
 from flask import json, Response
 from distutils.version import StrictVersion
 from flask.ext.babel import gettext as _
-from ..models import Project, Package, Account
+from ..models import Project, Package, Account, package_signal
 from ..elastic import search_project
 
 __all__ = ['bp']
@@ -137,6 +137,7 @@ def package(family, name, version):
             return abortify(404, message=_('Package not found.'))
         upload(package)
         project.update(**package)
+        package_signal.send(current_app, changes=(project, 'update'))
         return jsonify(package)
 
     # TODO delete package

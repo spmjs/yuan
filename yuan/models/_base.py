@@ -7,13 +7,14 @@ from flask.ext.cache import Cache
 
 __all__ = [
     'db', 'cache', 'YuanQuery', 'SessionMixin',
-    'model_created', 'model_updated', 'model_deleted',
+    'model_created', 'model_updated', 'model_deleted', 'package_signal'
 ]
 
 signals = Namespace()
 model_created = signals.signal('model-created')
 model_updated = signals.signal('model-updated')
 model_deleted = signals.signal('model-deleted')
+package_signal = signals.signal('package-signal')
 
 db = SQLAlchemy()
 cache = Cache()

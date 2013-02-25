@@ -4,8 +4,7 @@ import json
 import requests
 import gevent
 from flask import _app_ctx_stack
-from flask_sqlalchemy import models_committed
-from .models import Account, Project
+from .models import package_signal
 
 
 class ElasticSearch(object):
@@ -70,28 +69,21 @@ class ElasticSearch(object):
 elastic = ElasticSearch()
 
 
-def update_model(sender, changes):
-    for model, operation in changes:
-        if isinstance(model, Project):
-            gevent.spawn(update_project, model, operation)
+def update_models(sender, changes):
+    project, operation = changes
+    gevent.spawn(update_project, project, operation)
 
 
-def update_project(item, operation):
+def update_project(project, operation):
     if operation == 'delete':
-        elastic.delete('project/%d', item.id)
+        elastic.delete('project/%d', project.id)
         return
-    account = Account.query.get(item.owner_id)
-    if not account:
+
+    if not project.versions:
         return
-    dct = {
-        "name": item.name,
-        "account": account.name,
-        "homepage": item.homepage,
-        "description": item.description,
-        "keywords": item.keyword_list,
-        "created": item.created.strftime('%Y-%m-%dT%H:%M:%S'),
-    }
-    elastic.post('project/%d' % item.id, dct)
+
+    package = project.versions[list(project.versions)[0]]
+    elastic.post('project/%d' % project.id, package)
 
 
 def search_project(query):
@@ -102,20 +94,14 @@ def search_project(query):
         "query": {
             "multi_match": {
                 "query": query,
-                "fields": ["name", "account", "keywords", "description"]
-            }
-        },
-        "highlight": {
-            "order": "score",
-            "pre_tags": ["<i class='highlight'>"],
-            "post_tags": ["</i>"],
-            "fields": {
-                "content": {"number_of_fragments": 1}
+                "fields": [
+                    "name", "family", "keywords", "description"
+                ]
             }
         },
         "fields": [
-            "name", "account", "homepage", "description", "keywords",
-            "created"
+            "name", "family", "homepage", "description", "keywords",
+            "created_at", "updated_at"
         ],
         "size": size
     }
@@ -133,4 +119,4 @@ def search_project(query):
     return hits
 
 
-#models_committed.connect(update_model)
+package_signal.connect(update_models)
