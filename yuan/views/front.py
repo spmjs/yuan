@@ -2,7 +2,7 @@
 
 from flask import Blueprint
 from flask import request
-from flask import render_template, abort
+from flask import render_template
 from ..models import Project, Account
 from ..elastic import search_project
 
@@ -24,24 +24,18 @@ def home():
 @bp.route('/<name>/')
 def profile(name):
     account = Account.query.filter_by(name=name).first_or_404()
-    if account.permission_read.can():
-        items = Project.query.filter_by(owner_id=account.id).all()
-    else:
-        items = Project.query.\
-                filter_by(owner_id=account.id, private=False).all()
+    items = Project.query.filter_by(family=name).all()
     dct = {'projects': items, 'account': account}
     return render_template('profile.html', **dct)
 
 
-@bp.route('/<name>/<pkg>')
-def project(name, pkg):
-    account = Account.query.filter_by(name=name).first_or_404()
+@bp.route('/<family>/<name>')
+def project(family, name):
     project = Project.query.filter_by(
-        owner_id=account.id, name=pkg).first_or_404()
-    if account.permission_read.can() or project.private is False:
-        dct = {'account': account, 'project': project}
-        return render_template('project.html', **dct)
-    return abort(403)
+        family=family, name=name).first_or_404()
+    account = Account.query.filter_by(name=family).first()
+    dct = {'account': account, 'project': project}
+    return render_template('project.html', **dct)
 
 
 @bp.route('/search')
