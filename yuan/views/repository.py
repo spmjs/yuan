@@ -112,8 +112,15 @@ def package(family, name, version):
     if not account.permission_write.can():
         return abortify(403)
 
-    force = request.headers.get('X-Yuan-Force', False)
     package = Package(family=family, name=name, version=version)
+
+    if request.method == 'DELETE':
+        project.remove(version)
+        package.delete()
+        package_signal.send(current_app, changes=(package, 'delete'))
+        return jsonify(status='info', message=_('Package is deleted.'))
+
+    force = request.headers.get('X-Yuan-Force', False)
     if package.read() and package.md5 and not force:
         return abortify(444)
 
@@ -152,11 +159,6 @@ def package(family, name, version):
         project.update(**package)
         project_signal.send(current_app, changes=(project, 'update'))
         return jsonify(package)
-
-    project.remove(package.version)
-    package.delete()
-    package_signal.send(current_app, changes=(package, 'delete'))
-    return jsonify(status='info', message=_('Package is deleted.'))
 
 
 @bp.route('/<family>/<name>/<version>/<filename>')

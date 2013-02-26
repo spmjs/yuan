@@ -74,7 +74,7 @@ elastic = ElasticSearch()
 
 def index_project(project, operation):
     if operation == 'delete':
-        elastic.delete('project/%d', project.id)
+        elastic.delete('project/%d' % project.id)
         return
 
     if not project.versions:

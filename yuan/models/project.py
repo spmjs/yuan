@@ -2,6 +2,7 @@
 
 import os
 import gevent
+import shutil
 from flask import Flask, json
 from flask import current_app
 from datetime import datetime
@@ -206,7 +207,7 @@ class Package(dict):
 
     def delete(self):
         if os.path.exists(self.directory):
-            return os.removedirs(self.directory)
+            return shutil.rmtree(self.directory)
         return None
 
 
@@ -217,17 +218,21 @@ def index_project(project, operation):
     directory = os.path.join(
         current_app.config['WWW_ROOT'], 'repository', project['family']
     )
+    fpath = os.path.join(directory, 'index.json')
+    data = _read_json(fpath)
+    data = filter(lambda o: o['name'] != project['name'], data)
+
     if operation == 'delete':
+        directory = os.path.join(directory, project['name'])
         if os.path.exists(directory):
-            os.removedirs(directory)
-        return None
+            shutil.rmtree(directory)
+        with open(fpath, 'w') as f:
+            f.write(json.dumps(data))
+        return data
 
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    fpath = os.path.join(directory, 'index.json')
-    data = _read_json(fpath)
-    data = filter(lambda o: o['name'] != project['name'], data)
     data.append(project)
     data = sorted(
         data,
