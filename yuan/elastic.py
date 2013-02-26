@@ -3,8 +3,11 @@
 import json
 import requests
 import gevent
+from flask import Flask, current_app
 from flask import _app_ctx_stack
 from .models import project_signal
+
+__all__ = ['ElasticSearch', 'elastic', 'search_project', 'index_project']
 
 
 class ElasticSearch(object):
@@ -69,12 +72,7 @@ class ElasticSearch(object):
 elastic = ElasticSearch()
 
 
-def update_models(sender, changes):
-    project, operation = changes
-    gevent.spawn(update_project, project, operation)
-
-
-def update_project(project, operation):
+def index_project(project, operation):
     if operation == 'delete':
         elastic.delete('project/%d', project.id)
         return
@@ -94,7 +92,8 @@ def update_project(project, operation):
 
     if 'description' in package:
         dct['description'] = package['description']
-    elastic.post('project/%d' % project.id, package)
+
+    elastic.post('project/%d' % project.id, dct)
 
 
 def search_project(query):
@@ -130,4 +129,16 @@ def search_project(query):
     return hits
 
 
-project_signal.connect(update_models)
+def _connect_project(sender, changes):
+    project, operation = changes
+
+    def _index(config):
+        app = Flask('yuan')
+        app.config = config
+        with app.test_request_context():
+            index_project(project, operation)
+
+    gevent.spawn(_index, current_app.config)
+
+
+project_signal.connect(_connect_project)

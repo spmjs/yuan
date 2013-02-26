@@ -41,10 +41,10 @@ def createdb():
 @manager.command
 def initsearch():
     from yuan.models import Project
-    from yuan.elastic import update_project
+    from yuan.elastic import index_project
 
     for item in Project.query.all():
-        update_project(item, 'update')
+        index_project(item, 'update')
 
 
 @manager.command

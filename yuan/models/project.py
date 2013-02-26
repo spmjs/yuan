@@ -211,8 +211,11 @@ class Package(dict):
 
 
 def index_project(project, operation):
+    if isinstance(project, Project):
+        project = project.to_dict()
+
     directory = os.path.join(
-        current_app.config['WWW_ROOT'], 'repository', project.family
+        current_app.config['WWW_ROOT'], 'repository', project['family']
     )
     if operation == 'delete':
         if os.path.exists(directory):
@@ -224,8 +227,8 @@ def index_project(project, operation):
 
     fpath = os.path.join(directory, 'index.json')
     data = _read_json(fpath)
-    data = filter(lambda o: o['name'] != project.name, data)
-    data.append(project.to_dict())
+    data = filter(lambda o: o['name'] != project['name'], data)
+    data.append(project)
     data = sorted(
         data,
         key=lambda o: datetime.strptime(o['updated_at'], '%Y-%m-%dT%H:%M:%SZ'),
@@ -249,6 +252,7 @@ def _read_json(fpath):
 
 def _connect_project(sender, changes):
     project, operation = changes
+    project = project.to_dict()
 
     def _index(config):
         app = Flask('yuan')
