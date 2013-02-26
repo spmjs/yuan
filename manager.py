@@ -6,6 +6,7 @@ gevent.monkey.patch_all()
 
 from flask.ext.script import Manager
 from yuan.app import create_app
+from yuan.models import Project
 
 CONFIG = os.path.abspath('./etc/config.py')
 
@@ -40,7 +41,7 @@ def createdb():
 
 @manager.command
 def initsearch():
-    from yuan.models import Project
+    """init search engine."""
     from yuan.elastic import index_project
 
     for item in Project.query.all():
@@ -49,10 +50,102 @@ def initsearch():
 
 @manager.command
 def index():
-    from yuan.models import Project, index_project
+    """index projects."""
+    from yuan.models import index_project
 
     for item in Project.query.all():
         index_project(item, 'update')
+
+
+@manager.command
+def mirror(url=None):
+    """sync a mirror site."""
+    import requests
+    import urllib
+    from urlparse import urlparse
+    from yuan.models import index_project, Package
+    if not url:
+        url = app.config['MIRROR_URL']
+
+    print 'mirror:', url
+    rv = requests.get(url)
+    if rv.status_code != 200:
+        raise Exception('%s: %s' % url, rv.status_code)
+
+    data = rv.json()
+
+    rv = urlparse(url)
+    domain = '%s://%s' % (rv.scheme, rv.netloc)
+
+    def _fetch(pkg):
+        url = '%s/repository/%s/%s/%s/' % \
+                (domain, pkg['family'], pkg['name'], pkg['version'])
+        rv = requests.get(url)
+        print 'fetch: ', url
+        if rv.status_code != 200:
+            raise Exception('%s: %s' % url, rv.status_code)
+        pkg = Package(**rv.json()).save()
+
+        url = '%s%s' % (url, pkg['filename'])
+        fpath = os.path.join(pkg.directory, pkg['filename'])
+        print 'save: ', fpath
+        urllib.urlretrieve(url, fpath)
+
+    def _index(project):
+        print 'sync: %(family)s/%(name)s' % project
+        index_project(project, 'update')
+
+        url = '%s/repository/%s/%s/' % \
+                (domain, project['family'], project['name'])
+        rv = requests.get(url)
+        if rv.status_code != 200:
+            raise Exception('%s: %s' % url, rv.status_code)
+        data = rv.json()
+        if 'versions' not in data:
+            data['versions'] = {}
+
+        me = Project.read(project['family'], project['name'])
+        if not me:
+            me = {
+                'family': project['family'],
+                'name': project['name'],
+                'versions': {}
+            }
+
+        versions = me['versions'].copy()
+
+        for v in versions:
+            local = versions[v]
+            server = None
+            if v in data['versions']:
+                server = data['versions'][v]
+
+            if not server:
+                print 'delete: %s/%s@%s' % (me['family'], me['name'], v)
+                pkg = Package(family=me['family'], name=me['name'], version=v)
+                pkg.delete()
+                # remove this version from project
+                Project(**me).remove(v)
+            elif 'md5' in server and \
+                    ('md5' not in local or local['md5'] != server['md5']):
+                print 'create: %s/%s@%s' % (me['family'], me['name'], v)
+                _fetch(server)
+                # add this version to project
+                Project(**me).update(server)
+
+        for v in data['versions']:
+            if v not in versions:
+                pkg = data['versions'][v]
+                print 'create: %s/%s@%s' % (pkg['family'], pkg['name'], v)
+                _fetch(pkg)
+                # add this version to project
+                Project(**me).update(pkg)
+        return True
+
+    for project in data:
+        me = Project.read(project['family'], project['name'])
+        if not me or me['updated_at'] != project['updated_at']:
+            _index(project)
 
 
 if __name__ == '__main__':
