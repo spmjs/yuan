@@ -156,7 +156,8 @@ def package(family, name, version):
         upload(package)
         package_signal.send(current_app, changes=(package, 'upload'))
 
-        project.update(**package)
+        project.update(package)
+        project.save()
         project_signal.send(current_app, changes=(project, 'update'))
         return jsonify(package)
 

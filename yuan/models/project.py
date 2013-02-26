@@ -91,21 +91,20 @@ class Project(db.Model, SessionMixin):
             o[v] = versions[v]
         return o
 
-    def update(self, **kwargs):
-        if 'version' not in kwargs:
+    def update(self, dct):
+        now = datetime.utcnow()
+
+        if 'version' not in dct:
             return False
-        if 'family' in kwargs and kwargs['family'] != self.family:
+        if 'family' in dct and dct['family'] != self.family:
             return False
-        if 'name' in kwargs and kwargs['name'] != self.name:
+        if 'name' in dct and dct['name'] != self.name:
             return False
 
-        self.updated_at = datetime.utcnow()
-        self.save()
-
-        kwargs['family'] = self.family
-        kwargs['name'] = self.name
-
-        pkg = Package(**kwargs)
+        # save package
+        dct['family'] = self.family
+        dct['name'] = self.name
+        pkg = Package(**dct)
         pkg.save()
 
         versions = self.versions
@@ -114,8 +113,10 @@ class Project(db.Model, SessionMixin):
         versions[pkg.version] = pkg
 
         data = self.json
+        data['updated_at'] = now.strftime('%Y-%m-%dT%H:%M:%SZ')
         data['versions'] = versions
 
+        self.updated_at = now
         self.write(self.family, self.name, data)
         return data
 

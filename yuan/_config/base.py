@@ -33,3 +33,4 @@ CACHE_TYPE = 'simple'
 
 #: file storage
 WWW_ROOT = 'data'
+MIRROR_URL = 'http://spmjs.org/repository/'
