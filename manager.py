@@ -1,8 +1,6 @@
 # coding: utf-8
 
 import os
-import gevent.monkey
-gevent.monkey.patch_all()
 
 from flask.ext.script import Manager
 from yuan.app import create_app
@@ -17,6 +15,9 @@ manager = Manager(app)
 @manager.command
 def runserver(port=5000):
     """Runs a development server."""
+    import gevent.monkey
+    gevent.monkey.patch_all()
+
     from gevent.wsgi import WSGIServer
     from werkzeug.serving import run_with_reloader
     from werkzeug.debug import DebuggedApplication
@@ -62,12 +63,13 @@ def mirror(url=None):
     """sync a mirror site."""
     import requests
     import urllib
+    from datetime import datetime
     from urlparse import urlparse
     from yuan.models import index_project, Package
     if not url:
         url = app.config['MIRROR_URL']
 
-    print 'mirror:', url
+    print '  mirror:', url
     rv = requests.get(url)
     if rv.status_code != 200:
         raise Exception('%s: %s' % url, rv.status_code)
@@ -77,22 +79,25 @@ def mirror(url=None):
     rv = urlparse(url)
     domain = '%s://%s' % (rv.scheme, rv.netloc)
 
+    def _strptime(t):
+        return datetime.strptime(t, '%Y-%m-%dT%H:%M:%SZ')
+
     def _fetch(pkg):
         url = '%s/repository/%s/%s/%s/' % \
                 (domain, pkg['family'], pkg['name'], pkg['version'])
         rv = requests.get(url)
-        print 'fetch: ', url
+        print '   fetch:', url
         if rv.status_code != 200:
             raise Exception('%s: %s' % url, rv.status_code)
         pkg = Package(**rv.json()).save()
 
         url = '%s%s' % (url, pkg['filename'])
         fpath = os.path.join(pkg.directory, pkg['filename'])
-        print 'save: ', fpath
+        print '    save:', fpath
         urllib.urlretrieve(url, fpath)
 
     def _index(project):
-        print 'sync: %(family)s/%(name)s' % project
+        print '    sync: %(family)s/%(name)s' % project
         index_project(project, 'update')
 
         url = '%s/repository/%s/%s/' % \
@@ -109,6 +114,8 @@ def mirror(url=None):
             me = {
                 'family': project['family'],
                 'name': project['name'],
+                'updated_at': _strptime(project['updated_at']),
+                'created_at': _strptime(project['created_at']),
                 'versions': {}
             }
 
@@ -121,14 +128,14 @@ def mirror(url=None):
                 server = data['versions'][v]
 
             if not server:
-                print 'delete: %s/%s@%s' % (me['family'], me['name'], v)
+                print '  delete: %s/%s@%s' % (me['family'], me['name'], v)
                 pkg = Package(family=me['family'], name=me['name'], version=v)
                 pkg.delete()
                 # remove this version from project
                 Project(**me).remove(v)
             elif 'md5' in server and \
                     ('md5' not in local or local['md5'] != server['md5']):
-                print 'create: %s/%s@%s' % (me['family'], me['name'], v)
+                print '  create: %s/%s@%s' % (me['family'], me['name'], v)
                 _fetch(server)
                 # add this version to project
                 Project(**me).update(server)
@@ -136,7 +143,7 @@ def mirror(url=None):
         for v in data['versions']:
             if v not in versions:
                 pkg = data['versions'][v]
-                print 'create: %s/%s@%s' % (pkg['family'], pkg['name'], v)
+                print '  create: %s/%s@%s' % (pkg['family'], pkg['name'], v)
                 _fetch(pkg)
                 # add this version to project
                 Project(**me).update(pkg)
@@ -144,7 +151,8 @@ def mirror(url=None):
 
     for project in data:
         me = Project.read(project['family'], project['name'])
-        if not me or me['updated_at'] != project['updated_at']:
+        if not me or \
+           _strptime(me['updated_at']) < _strptime(project['updated_at']):
             _index(project)
 
 

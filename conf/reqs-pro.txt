@@ -6,7 +6,6 @@ pygments
 gevent
 requests
 gunicorn
-supervisor
 
 # database
 Flask-SQLAlchemy
@@ -31,3 +30,6 @@ Flask-Principal
 
 # admin site
 Flask-Admin
+
+# command line tools
+Flask-Script
