@@ -47,5 +47,13 @@ def initsearch():
         update_project(item, 'update')
 
 
+@manager.command
+def index():
+    from yuan.models import Project, index_project
+
+    for item in Project.query.all():
+        index_project(item, 'update')
+
+
 if __name__ == '__main__':
     manager.run()

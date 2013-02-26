@@ -1,15 +1,17 @@
 # coding: utf-8
 
 import os
-from flask import json
+import gevent
+from flask import Flask, json
 from flask import current_app
 from datetime import datetime
 from werkzeug import cached_property
 from collections import OrderedDict
 from distutils.version import StrictVersion
 from ._base import db, YuanQuery, SessionMixin
+from ._base import project_signal
 
-__all__ = ['Project', 'Package']
+__all__ = ['Project', 'Package', 'index_project']
 
 
 class Project(db.Model, SessionMixin):
@@ -39,24 +41,13 @@ class Project(db.Model, SessionMixin):
 
     @staticmethod
     def list(family):
-        storage = current_app.config['WWW_ROOT']
-        directory = os.path.join(storage, 'repository', family)
-        if not os.path.exists(directory):
-            return None
-
-        def isdir(name):
-            return os.path.isdir(os.path.join(directory, name))
-        names = filter(isdir, os.listdir(directory))
-
-        def render(name):
-            stat = os.stat(os.path.join(directory, name))
-            mtime = datetime.fromtimestamp(stat.st_mtime)
-            return {
-                'family': family,
-                'name': name,
-                'updated_at': mtime.strftime('%Y-%m-%dT%H:%M:%SZ')
-            }
-        return map(render, names)
+        fpath = os.path.join(
+            current_app.config['WWW_ROOT'],
+            'repository',
+            family,
+            'index.json'
+        )
+        return _read_json(fpath)
 
     @staticmethod
     def read(family, name):
@@ -66,10 +57,7 @@ class Project(db.Model, SessionMixin):
         )
         if not os.path.exists(fpath):
             return None
-
-        with open(fpath, 'r') as f:
-            content = f.read()
-            return json.loads(content)
+        return _read_json(fpath)
 
     @staticmethod
     def write(family, name, data):
@@ -131,7 +119,14 @@ class Project(db.Model, SessionMixin):
         return data
 
     def remove(self, version):
-        pass
+        versions = self.versions
+        if version in versions:
+            del versions[version]
+
+        data = self.json
+        data['versions'] = versions
+        self.write(self.family, self.name, data)
+        return data
 
 
 def to_unicode(value):
@@ -188,14 +183,11 @@ class Package(dict):
         fpath = self.index_file
         if not os.path.exists(fpath):
             return None
-
-        with open(fpath, 'r') as f:
-            content = f.read()
-            data = json.loads(content)
-            for key in data:
-                if not key.startswith('_'):
-                    self[key] = data[key]
-            return self
+        data = _read_json(fpath)
+        for key in data:
+            if not key.startswith('_'):
+                self[key] = data[key]
+        return self
 
     def save(self):
         fpath = self.index_file
@@ -216,3 +208,55 @@ class Package(dict):
         if os.path.exists(self.directory):
             return os.removedirs(self.directory)
         return None
+
+
+def index_project(project, operation):
+    directory = os.path.join(
+        current_app.config['WWW_ROOT'], 'repository', project.family
+    )
+    if operation == 'delete':
+        if os.path.exists(directory):
+            os.removedirs(directory)
+        return None
+
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    fpath = os.path.join(directory, 'index.json')
+    data = _read_json(fpath)
+    data = filter(lambda o: o['name'] != project.name, data)
+    data.append(project.to_dict())
+    data = sorted(
+        data,
+        key=lambda o: datetime.strptime(o['updated_at'], '%Y-%m-%dT%H:%M:%SZ'),
+        reverse=True
+    )
+    with open(fpath, 'w') as f:
+        f.write(json.dumps(data))
+        return data
+
+
+def _read_json(fpath):
+    if not os.path.exists(fpath):
+        return {}
+    with open(fpath, 'r') as f:
+        content = f.read()
+        try:
+            return json.loads(content)
+        except:
+            return {}
+
+
+def _connect_project(sender, changes):
+    project, operation = changes
+
+    def _index(config):
+        app = Flask('yuan')
+        app.config = config
+        with app.test_request_context():
+            index_project(project, operation)
+
+    gevent.spawn(_index, current_app.config)
+
+
+project_signal.connect(_connect_project)

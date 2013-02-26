@@ -4,7 +4,7 @@ import json
 import requests
 import gevent
 from flask import _app_ctx_stack
-from .models import package_signal
+from .models import project_signal
 
 
 class ElasticSearch(object):
@@ -130,4 +130,4 @@ def search_project(query):
     return hits
 
 
-package_signal.connect(update_models)
+project_signal.connect(update_models)

@@ -3,12 +3,14 @@
 import os
 import hashlib
 import mimetypes
+from datetime import datetime
 from flask import Blueprint, current_app
 from flask import g, request, jsonify, abort
 from flask import json, Response
 from distutils.version import StrictVersion
 from flask.ext.babel import gettext as _
-from ..models import Project, Package, Account, package_signal
+from ..models import Project, Package, Account
+from ..models import project_signal, package_signal
 from ..elastic import search_project
 
 __all__ = ['bp']
@@ -18,24 +20,30 @@ bp = Blueprint('repository', __name__)
 
 @bp.route('/')
 def index():
-    projects = Project.query.order_by(Project.updated_at.desc()).all()
+    repo = os.path.join(current_app.config['WWW_ROOT'], 'repository')
+    if not os.path.exists(repo):
+        return Response('[]', content_type='application/json')
 
-    if projects:
-        projects = map(lambda p: p.to_dict(), projects)
-    else:
-        projects = []
+    def list_projects():
+        def isdir(name):
+            return os.path.isdir(os.path.join(repo, name))
+        for name in filter(isdir, os.listdir(repo)):
+            yield Project.list(name)
 
+    projects = []
+    for proj in list_projects():
+        projects.extend(proj)
+
+    projects = sorted(
+        projects,
+        key=lambda o: datetime.strptime(o['updated_at'], '%Y-%m-%dT%H:%M:%SZ'),
+        reverse=True
+    )
     return Response(json.dumps(projects), content_type='application/json')
 
 
 @bp.route('/<family>/')
 def family(family):
-    projects = Project.query.filter_by(family=family)\
-            .order_by(Project.updated_at.desc()).all()
-    if projects:
-        projects = map(lambda p: p.to_dict(), projects)
-        return Response(json.dumps(projects), content_type='application/json')
-
     projects = Project.list(family)
     if not projects:
         return abortify(404, message=_('Family not found.'))
@@ -62,8 +70,9 @@ def project(family, name):
 
     if not account.permission_write.can():
         return abortify(403)
-    #TODO
+
     project.delete()
+    project_signal.send(current_app, changes=(project, 'delete'))
     return jsonify(status='info', message=_('Project is deleted.'))
 
 
@@ -120,6 +129,7 @@ def package(family, name, version):
         if not project:
             project = Project(family=family, name=name)
             project.save()
+            project_signal.send(current_app, changes=(project, 'create'))
 
         data = request.json or {}
         if 'tag' not in data and _ver.prerelease:
@@ -129,6 +139,7 @@ def package(family, name, version):
 
         package.update(data)
         package.save()
+        package_signal.send(current_app, changes=(package, 'update'))
         return jsonify(package)
 
     # upload files for a package
@@ -136,16 +147,23 @@ def package(family, name, version):
         if not package:
             return abortify(404, message=_('Package not found.'))
         upload(package)
+        package_signal.send(current_app, changes=(package, 'upload'))
+
         project.update(**package)
-        package_signal.send(current_app, changes=(project, 'update'))
+        project_signal.send(current_app, changes=(project, 'update'))
         return jsonify(package)
 
-    # TODO delete package
+    project.remove(package.version)
     package.delete()
+    package_signal.send(current_app, changes=(package, 'delete'))
+    return jsonify(status='info', message=_('Package is deleted.'))
 
 
 @bp.route('/<family>/<name>/<version>/<filename>')
 def tarball(family, name, version, filename):
+    # this will not work in production
+    # nginx will stop it
+
     root = current_app.config['WWW_ROOT']
     fpath = os.path.join(root, 'repository', family, name, version, filename)
     if not os.path.exists(fpath):
