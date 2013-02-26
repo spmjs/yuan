@@ -9,7 +9,7 @@ class TestNoFamilyCase(BaseSuite):
     def test_get(self):
         rv = self.client.get('/repository/lepture/arale/1.0.1/')
         assert rv.status_code == 404
-        assert "Project not found" in rv.data
+        assert "Package not found" in rv.data
 
     def test_post(self):
         rv = self.client.post('/repository/lepture/arale/1.0.1/')
@@ -47,14 +47,6 @@ class TestNoProjectCase(BaseSuite):
         rv = self.client.post('/repository/lepture/arale/1.0.1/')
         assert "Authorization required" in rv.data
 
-        headers = self.login_account()
-        rv = self.client.post(
-            '/repository/lepture/arale/1.0.1/', headers=headers,
-            content_type='application/json',
-            data=json.dumps(dict())
-        )
-        print rv.data
-
 
 class TestUploadCase(BaseSuite):
     def prehook(self):
@@ -70,12 +62,14 @@ class TestUploadCase(BaseSuite):
             data=json.dumps(dict())
         )
         assert rv.status_code in (200, 201)
-        print rv.data
+        assert 'tag' in rv.data
 
-        headers['CONTENT-ENCODING'] = 'x-gzip'
+        headers['Content-Encoding'] = 'gzip'
         rv = self.client.put(
             '/repository/lepture/arale/1.0.0/', headers=headers,
             content_type='application/x-tar',
             data='a'
         )
-        print rv.data
+        assert rv.status_code is 200
+        assert 'filename' in rv.data
+        assert 'md5' in rv.data

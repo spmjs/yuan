@@ -53,6 +53,7 @@ lint:
 
 options =
 testing:
+	@rm -fr tests/data
 	@nosetests ${options}
 
 print-test:
