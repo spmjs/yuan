@@ -1,7 +1,8 @@
 # coding: utf-8
 
+import werkzeug
 from flask import Blueprint
-from flask import g, request, json, flash
+from flask import g, request, flash
 from flask import render_template, redirect, url_for, jsonify
 from flask.ext.babel import gettext as _
 from ..models import Account
@@ -72,21 +73,51 @@ def setting():
     return render_template('setting.html', form=form)
 
 
+@bp.route('/register', methods=['POST'])
+def register():
+    if not request.json:
+        response = jsonify(
+            status='error',
+            message=_('Only application/json is allowed.')
+        )
+        response.status_code = 415
+        return response
+    data = werkzeug.datastructures.MultiDict(request.json)
+    form = SignupForm(data, csrf_enabled=False)
+    if not form.validate():
+        message = []
+        for name in form.errors:
+            errors = form.errors[name]
+            msg = '%s: ' % name
+            for error in errors:
+                msg = '%s %s' % (msg, error)
+            message.append(msg)
+
+        return jsonify(
+            status='error',
+            message='\n'.join(message)
+        )
+
+    user = form.save()
+    signup_mail(user)
+    auth = create_auth_token(user)
+    return jsonify(
+        status='success',
+        data=auth,
+    )
+
+
 @bp.route('/login', methods=['POST'])
 def login():
-    ctype = request.headers.get('CONTENT_TYPE')
-    if ctype != 'application/json':
+    if not request.json:
         response = jsonify(
-            status='error', message=_('Only application/json is allowed.')
+            status='error',
+            message=_('Only application/json is allowed.')
         )
-        response.status_code = 403
+        response.status_code = 415
         return response
-    try:
-        data = json.loads(request.data)
-    except Exception as e:
-        response = jsonify(status='error', message=e)
-        response.status_code = 500
-        return response
+
+    data = request.json
     if 'account' in data and 'password' in data:
         account = data['account']
         if '@' in account:

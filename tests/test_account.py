@@ -26,3 +26,22 @@ class TestAccount(BaseSuite):
         auth = data['data']
         assert auth
         self.client.get('/', headers={'Authorization': 'Yuan ' + auth})
+
+    def test_register(self):
+        rv = self.client.post(
+            '/account/register',
+            content_type='application/json',
+            data=json.dumps(
+                {'name': 'lepture', 'password': '1'}
+            )
+        )
+        assert 'message' in rv.data
+
+        rv = self.client.post(
+            '/account/register',
+            content_type='application/json',
+            data=json.dumps(
+                {'name': 'lepture2', 'email': 'a@me.com', 'password': '1'}
+            )
+        )
+        assert 'data' in rv.data
