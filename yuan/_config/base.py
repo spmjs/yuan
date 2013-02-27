@@ -33,4 +33,7 @@ CACHE_TYPE = 'simple'
 
 #: file storage
 WWW_ROOT = 'data'
+LATEST_DOC_ROOT = 'data/latest'
+TAGGED_DOC_ROOT = 'data/user'
+
 MIRROR_URL = 'http://spmjs.org/repository/'

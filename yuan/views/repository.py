@@ -3,6 +3,10 @@
 import os
 import hashlib
 import mimetypes
+import tarfile
+import werkzeug
+import tempfile
+import shutil
 from datetime import datetime
 from flask import Blueprint, current_app
 from flask import g, request, jsonify, abort
@@ -189,6 +193,59 @@ def search():
         return abortify(404)
     data = search_project(q)
     return jsonify(status='success', data=data)
+
+
+@bp.route('/upload', methods=['POST'])
+def upload():
+    if not g.user:
+        return abortify(401)
+
+    tarball = request.files.get('file')
+    if 'file' not in request.files:
+        return abortify(406, message=_('file is missing.'))
+
+    if tarball.content_type not in ('application/x-gzip'):
+        return abortify(415)
+
+    filename = werkzeug.secure_filename(tarball.filename)
+    fpath = os.path.join(tempfile.gettempdir(), filename)
+
+    def _members(tar):
+        for info in tar:
+            ext = os.path.splitext(info.name)[1]
+            # ignore some danger files
+            if ext in ['.php']:
+                continue
+            # ignore hidden files
+            if info.name.startswith('.'):
+                continue
+            yield info
+
+    tar = tarfile.open(fileobj=tarball, mode='r:gz')
+    tar.extractall(path=fpath, members=_members(tar))
+
+    rootdir = fpath
+    indir = os.listdir(fpath)
+    if len(indir) == 1 and os.path.isdir(os.path.join(fpath, indir[0])):
+        rootdir = os.path.join(fpath, indir[0])
+
+    name = request.form.get('name', g.user.name)
+    tag = request.form.get('tag', 'latest')
+    if tag == 'latest':
+        dest = os.path.join(
+            current_app.config['LATEST_DOC_ROOT'], g.user.name, name
+        )
+    else:
+        dest = os.path.join(
+            current_app.config['TAGGED_DOC_ROOT'], g.user.name, name, tag
+        )
+
+    if os.path.exists(dest):
+        shutil.rmtree(dest)
+
+    shutil.copytree(rootdir, dest)
+    shutil.rmtree(fpath)
+    return tarball.filename
 
 
 # helpers
