@@ -215,17 +215,17 @@ def upload(family):
 
     filename = werkzeug.secure_filename(tarball.filename)
     fpath = os.path.join(tempfile.gettempdir(), filename)
+    if os.path.exists(fpath):
+        shutil.rmtree(fpath)
 
     def _members(tar):
         for info in tar:
+            if os.path.basename(info.name).startswith('.'):
+                continue
             ext = os.path.splitext(info.name)[1]
             # ignore some danger files
-            if ext in ['.php']:
-                continue
-            # ignore hidden files
-            if info.name.startswith('.'):
-                continue
-            yield info
+            if ext not in ['.php'] and not info.name.startswith('.'):
+                yield info
 
     tar.extractall(path=fpath, members=_members(tar))
 
@@ -248,8 +248,7 @@ def upload(family):
     if os.path.exists(dest):
         shutil.rmtree(dest)
 
-    shutil.copytree(rootdir, dest)
-    shutil.rmtree(fpath)
+    shutil.move(rootdir, dest)
     return jsonify(status='info', message=_('upload docs success.'))
 
 
