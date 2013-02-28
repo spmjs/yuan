@@ -157,7 +157,7 @@ def package(family, name, version):
     if request.method == 'PUT':
         if not package:
             return abortify(404, message=_('Package not found.'))
-        upload(package)
+        upload_package(package)
         package_signal.send(current_app, changes=(package, 'upload'))
 
         project.update(package)
@@ -195,16 +195,22 @@ def search():
     return jsonify(status='success', data=data)
 
 
-@bp.route('/upload', methods=['POST'])
-def upload():
+@bp.route('/upload/<family>', methods=['POST'])
+def upload(family):
     if not g.user:
         return abortify(401)
+
+    account = Account.query.filter_by(name=family).first()
+    if not account.permission_write.can():
+        return abortify(403)
 
     tarball = request.files.get('file')
     if 'file' not in request.files:
         return abortify(406, message=_('file is missing.'))
 
-    if tarball.content_type not in ('application/x-gzip'):
+    try:
+        tar = tarfile.open(fileobj=tarball, mode='r:gz')
+    except:
         return abortify(415)
 
     filename = werkzeug.secure_filename(tarball.filename)
@@ -221,7 +227,6 @@ def upload():
                 continue
             yield info
 
-    tar = tarfile.open(fileobj=tarball, mode='r:gz')
     tar.extractall(path=fpath, members=_members(tar))
 
     rootdir = fpath
@@ -229,15 +234,15 @@ def upload():
     if len(indir) == 1 and os.path.isdir(os.path.join(fpath, indir[0])):
         rootdir = os.path.join(fpath, indir[0])
 
-    name = request.form.get('name', g.user.name)
+    name = request.form.get('name', family)
     tag = request.form.get('tag', 'latest')
     if tag == 'latest':
         dest = os.path.join(
-            current_app.config['LATEST_DOC_ROOT'], g.user.name, name
+            current_app.config['DOC_ROOT'], family, '_latest', name
         )
     else:
         dest = os.path.join(
-            current_app.config['TAGGED_DOC_ROOT'], g.user.name, name, tag
+            current_app.config['DOC_ROOT'], family, name, tag
         )
 
     if os.path.exists(dest):
@@ -245,7 +250,7 @@ def upload():
 
     shutil.copytree(rootdir, dest)
     shutil.rmtree(fpath)
-    return tarball.filename
+    return jsonify(status='info', message=_('upload docs success.'))
 
 
 # helpers
@@ -275,7 +280,7 @@ def abortify(code, **kwargs):
     return abort(response)
 
 
-def upload(package):
+def upload_package(package):
     encoding = request.headers.get('Content-Encoding')
     ctype = request.headers.get('Content-Type')
     if ctype == 'application/x-tar' and encoding == 'gzip':
