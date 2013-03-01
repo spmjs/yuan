@@ -99,28 +99,24 @@ def package(family, name, version):
     if not project.created_at and request.method != 'POST':
         return abortify(404, message=_('Project not found.'))
 
-    # verify permissions and request data
-    if not g.user:
-        return abortify(401)
-
     # account can be a user or organization
     account = Account.query.filter_by(name=family).first()
-    if not account:
-        return abortify(404, message=_('Account not found.'))
-
-    if not account.permission_write.can():
+    if account and not account.permission_write.can():
         return abortify(403)
 
     package = Package(family=family, name=name, version=version)
-
     if request.method == 'DELETE':
+        # only registered user can delete a package
+        # we have verified permission above
+        if not g.user:
+            return abortify(401)
         project.remove(version)
         package.delete()
         package_signal.send(current_app, changes=(package, 'delete'))
         return jsonify(status='info', message=_('Package is deleted.'))
 
     force = request.headers.get('X-Yuan-Force', False)
-    if package.read() and package.md5 and not force:
+    if package.md5 and not force:
         return abortify(444)
 
     # register package information
