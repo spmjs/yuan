@@ -15,6 +15,63 @@ from ._base import project_signal
 __all__ = ['Project', 'Package', 'index_project']
 
 
+class Model(dict):
+    def __init__(self, **kwargs):
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
+
+    def __getattr__(self, key):
+        try:
+            return to_unicode(self[key])
+        except KeyError:
+            return None
+
+    def __setattr__(self, key, value):
+        self[key] = to_unicode(value)
+
+    def __getitem__(self, key):
+        return to_unicode(super(Package, self).__getitem__(key))
+
+    def __setitem__(self, key, value):
+        return super(Package, self).__setitem__(key, to_unicode(value))
+
+    @cached_property
+    def datafile(self):
+        raise NotImplementedError
+
+    def read(self):
+        fpath = self.datafile
+        if not os.path.exists(fpath):
+            return None
+        data = _read_json(fpath)
+        for key in data:
+            if not key.startswith('_'):
+                self[key] = data[key]
+        return self
+
+    def save(self):
+        fpath = self.datafile
+
+        directory = os.path.dirname(fpath)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        now = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+        if 'created_at' not in self:
+            self.created_at = now
+
+        with open(fpath, 'w') as f:
+            self.updated_at = now
+            f.write(json.dumps(self))
+            return self
+
+    def delete(self):
+        directory = os.path.dirname(self.datafile)
+        if os.path.exists(directory):
+            return shutil.rmtree(directory)
+        return None
+
+
 class Project(db.Model, SessionMixin):
     query_class = YuanQuery
 
@@ -131,85 +188,21 @@ class Project(db.Model, SessionMixin):
         return data
 
 
-def to_unicode(value):
-    if isinstance(value, unicode):
-        return value
-    if isinstance(value, basestring):
-        return value.decode('utf-8')
-    if isinstance(value, int):
-        return str(value)
-    if isinstance(value, bytes):
-        return value.decode('utf-8')
-    return value
-
-
-class Package(dict):
-    def __init__(self, **kwargs):
-        for key in kwargs:
-            setattr(self, key, kwargs[key])
-
+class Package(Model):
     def __str__(self):
         return '%s/%s@%s' % (self.family, self.name, self.version)
 
     def __repr__(self):
-        return '<Project: %s>' % self
-
-    def __getattr__(self, key):
-        try:
-            return to_unicode(self[key])
-        except KeyError:
-            return None
-
-    def __setattr__(self, key, value):
-        self[key] = to_unicode(value)
-
-    def __getitem__(self, key):
-        return to_unicode(super(Package, self).__getitem__(key))
-
-    def __setitem__(self, key, value):
-        return super(Package, self).__setitem__(key, to_unicode(value))
+        return '<Package: %s>' % self
 
     @cached_property
-    def directory(self):
+    def datafile(self):
         storage = current_app.config['WWW_ROOT']
-        directory = os.path.join(
-            storage, 'repository', self.family, self.name, self.version
+        return os.path.join(
+            storage, 'repository',
+            self.family, self.name, self.version,
+            'index.json'
         )
-        return directory
-
-    @cached_property
-    def index_file(self):
-        return os.path.join(self.directory, 'index.json')
-
-    def read(self):
-        fpath = self.index_file
-        if not os.path.exists(fpath):
-            return None
-        data = _read_json(fpath)
-        for key in data:
-            if not key.startswith('_'):
-                self[key] = data[key]
-        return self
-
-    def save(self):
-        fpath = self.index_file
-
-        if not os.path.exists(self.directory):
-            os.makedirs(self.directory)
-
-        now = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-        if 'created_at' not in self:
-            self.created_at = now
-
-        with open(fpath, 'w') as f:
-            self.updated_at = now
-            f.write(json.dumps(self))
-            return self
-
-    def delete(self):
-        if os.path.exists(self.directory):
-            return shutil.rmtree(self.directory)
-        return None
 
 
 def index_project(project, operation):
@@ -243,6 +236,18 @@ def index_project(project, operation):
     with open(fpath, 'w') as f:
         f.write(json.dumps(data))
         return data
+
+
+def to_unicode(value):
+    if isinstance(value, unicode):
+        return value
+    if isinstance(value, basestring):
+        return value.decode('utf-8')
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, bytes):
+        return value.decode('utf-8')
+    return value
 
 
 def _read_json(fpath):
