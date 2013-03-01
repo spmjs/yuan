@@ -13,7 +13,6 @@ bp = Blueprint('front', __name__)
 @bp.route('/')
 def home():
     count = {
-        'projects': Project.query.count(),
         'users': Account.query.filter_by(account_type='user').count(),
         'organizations': Account.query.filter_by(account_type='org').count(),
     }

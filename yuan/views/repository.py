@@ -56,17 +56,12 @@ def family(family):
 
 @bp.route('/<family>/<name>/', methods=['GET', 'DELETE'])
 def project(family, name):
-    project = Project.query.filter_by(family=family, name=name).first()
+    project = Project(family=family, name=name)
+    if not project.created_at:
+        return abortify(404, message=_('Project not found.'))
 
     if request.method == 'GET':
-        if project:
-            return jsonify(project.json)
-        project = Project.read(family, name)
-        if project:
-            return jsonify(project)
-
-    if not project:
-        return abortify(404, message=_('Project not found.'))
+        return jsonify(project)
 
     account = Account.query.filter_by(name=family).first()
     if not account:
@@ -100,8 +95,8 @@ def package(family, name, version):
             return abortify(404, message=_('Package not found.'))
         return jsonify(package)
 
-    project = Project.query.filter_by(family=family, name=name).first()
-    if not project and request.method != 'POST':
+    project = Project(family=family, name=name)
+    if not project.created_at and request.method != 'POST':
         return abortify(404, message=_('Project not found.'))
 
     # verify permissions and request data
@@ -137,7 +132,7 @@ def package(family, name, version):
                 message=_('Only application/json is allowed.')
             )
 
-        if not project:
+        if not project.created_at:
             project = Project(family=family, name=name)
             project.save()
             project_signal.send(current_app, changes=(project, 'create'))
@@ -297,7 +292,7 @@ def upload_package(package):
         return abortify(400, message=_('MD5 does not match.'))
 
     filename = '%s-%s.tar.gz' % (package.name, package.version)
-    directory = package.directory
+    directory = os.path.dirname(package.datafile)
     if not os.path.exists(directory):
         os.makedirs(directory)
 

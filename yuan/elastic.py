@@ -74,7 +74,7 @@ elastic = ElasticSearch()
 
 def index_project(project, operation):
     if operation == 'delete':
-        elastic.delete('project/%d' % project.id)
+        elastic.delete('project/%s/%s' % (project.family, project.name))
         return
 
     if not project.versions:
@@ -84,8 +84,8 @@ def index_project(project, operation):
     dct = dict(
         family=project.family,
         name=project.name,
-        created_at=project.created_at.strftime('%Y-%m-%dT%H:%M:%SZ'),
-        updated_at=project.updated_at.strftime('%Y-%m-%dT%H:%M:%SZ'),
+        created_at=project.created_at,
+        updated_at=project.updated_at
     )
     if 'keywords' in package and isinstance(package['keywords'], list):
         dct['keywords'] = package['keywords']
@@ -93,7 +93,7 @@ def index_project(project, operation):
     if 'description' in package:
         dct['description'] = package['description']
 
-    elastic.post('project/%d' % project.id, dct)
+    elastic.post('project/%s/%s' % (project.family, project.name), dct)
 
 
 def search_project(query):
