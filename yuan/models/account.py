@@ -5,14 +5,12 @@ import random
 from datetime import datetime
 from werkzeug import cached_property
 from flask.ext.principal import Permission, UserNeed
-from ._base import db, YuanQuery, SessionMixin
+from ._base import db, SessionMixin
 
 __all__ = ['Account', 'Member']
 
 
 class Account(db.Model, SessionMixin):
-    query_class = YuanQuery
-
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(40), unique=True, index=True, nullable=False)
     email = db.Column(db.String(200), index=True)
@@ -22,10 +20,6 @@ class Account(db.Model, SessionMixin):
 
     screen_name = db.Column(db.String(80))
     description = db.Column(db.String(400))
-
-    # user, org
-    account_type = db.Column(db.String(10), default='user')
-    org_owner_id = db.Column(db.Integer)
 
     comment_service = db.Column(db.String(100))
 
@@ -38,8 +32,6 @@ class Account(db.Model, SessionMixin):
         if 'password' in kwargs:
             raw = kwargs.pop('password')
             self.password = self.create_password(raw)
-        else:
-            self.account_type = 'org'
 
         if 'name' in kwargs:
             name = kwargs.pop('name')
@@ -80,17 +72,13 @@ class Account(db.Model, SessionMixin):
 
     @cached_property
     def permission_write(self):
-        if self.account_type == 'user':
-            return Permission(UserNeed(self.id))
-        q = db.session.query(Member.user_id).filter_by(org_id=self.id)
+        q = db.session.query(Member.member_id).filter_by(master_id=self.id)
         needs = map(lambda o: UserNeed(o[0]), q.all())
-        return Permission(UserNeed(self.org_owner_id), *needs)
+        return Permission(UserNeed(self.id), *needs)
 
     @cached_property
     def permission_admin(self):
-        if self.account_type == 'user':
-            return Permission(UserNeed(self.id))
-        return Permission(UserNeed(self.org_owner_id))
+        return Permission(UserNeed(self.id))
 
     @staticmethod
     def create_password(raw):
@@ -119,34 +107,27 @@ class Account(db.Model, SessionMixin):
         return verify == hsh
 
     @property
-    def organizations(self):
-        if self.account_type == 'org':
-            return []
+    def masters(self):
+        # TODO
         q = db.session.query(Account).\
-                filter_by(account_type='org').\
-                join(Member, Member.user_id == self.id)
+                join(Member, Member.member_id == self.id)
         data = q.all()
         return data
 
     @property
     def members(self):
-        if self.account_type == 'user':
-            return []
         q = db.session.query(Account).\
-                filter_by(account_type='user').\
-                join(Member, Member.org_id == self.id)
+                join(Member, Member.master_id == self.id)
         return q.all()
 
 
 class Member(db.Model, SessionMixin):
-    query_class = YuanQuery
-
     id = db.Column(db.Integer, primary_key=True)
-    org_id = db.Column(
+    master_id = db.Column(
         db.Integer,
         db.ForeignKey('account.id', ondelete='CASCADE')
     )
-    user_id = db.Column(
+    member_id = db.Column(
         db.Integer,
         db.ForeignKey('account.id', ondelete='CASCADE')
     )
@@ -155,4 +136,4 @@ class Member(db.Model, SessionMixin):
         return self.id
 
     def __repr__(self):
-        return '<Member %s-%s>' % (self.org_id, self.user_id)
+        return '<Member %s-%s>' % (self.master_id, self.member_id)

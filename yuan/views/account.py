@@ -3,6 +3,7 @@
 import werkzeug
 from flask import Blueprint
 from flask import g, request, flash
+from flask import abort
 from flask import render_template, redirect, url_for, jsonify
 from flask.ext.babel import gettext as _
 from ..models import Account
@@ -73,8 +74,27 @@ def setting():
     return render_template('setting.html', form=form)
 
 
-@bp.route('/register', methods=['POST'])
+@bp.route('/register', methods=['GET', 'POST'])
 def register():
+    token = request.args.get('token')
+    if not token and request.method == 'GET':
+        return abort(403)
+
+    if token and request.method == 'GET':
+        user = verify_auth_token(token, 1)
+        if not user:
+            return jsonify(
+                status='error',
+                message=_('Invalid or expired token.')
+            )
+        user.role = 2
+        user.save()
+        login_user(user)
+        return jsonify(
+            status='info',
+            message=_('This account is verified.')
+        )
+
     if not request.json:
         response = jsonify(
             status='error',
@@ -99,7 +119,7 @@ def register():
         )
 
     user = form.save()
-    signup_mail(user)
+    signup_mail(user, url_for('.register'))
     auth = create_auth_token(user)
     return jsonify(
         status='success',

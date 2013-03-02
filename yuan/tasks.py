@@ -16,8 +16,10 @@ def send_mail(config, msg):
         mail.send(msg)
 
 
-def signup_mail(user):
+def signup_mail(user, path=None):
     config = current_app.config
+    if not config.get('DEFAULT_MAIL_SENDER', None):
+        return
     msg = Message(
         _("Signup for %(site)s", site=config['SITE_TITLE']),
         recipients=[user.email],
@@ -25,15 +27,18 @@ def signup_mail(user):
             'Category': 'signup'
         },
     )
-    reply_to = config.get('MAIL_REPLY_TO', '')
+    reply_to = config.get('MAIL_REPLY_TO', None)
     if reply_to:
         msg.reply_to = reply_to
     host = config.get('SITE_SECURE_URL', '') or config.get('SITE_URL', '')
     dct = {
         'host': host.rstrip('/'),
-        'path': url_for('.signup'),
         'token': create_auth_token(user)
     }
+    if path:
+        dct['path'] = path
+    else:
+        dct['path'] = url_for('account.signup'),
     link = '%(host)s%(path)s?token=%(token)s' % dct
     html = render_template('email/signup.html', user=user, link=link)
     msg.html = html

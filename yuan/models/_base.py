@@ -6,7 +6,7 @@ from flask.ext.sqlalchemy import SQLAlchemy, BaseQuery
 from flask.ext.cache import Cache
 
 __all__ = [
-    'db', 'cache', 'YuanQuery', 'SessionMixin',
+    'db', 'cache', 'SessionMixin',
     'model_created', 'model_updated', 'model_deleted',
     'project_signal', 'package_signal'
 ]
@@ -20,28 +20,6 @@ package_signal = signals.signal('package-signal')
 
 db = SQLAlchemy()
 cache = Cache()
-
-
-class YuanQuery(BaseQuery):
-    def filter_in(self, key, ids):
-        ids = set(ids)
-        if len(ids) == 0:
-            return {}
-        if len(ids) == 1:
-            ident = ids.pop()
-            rv = self.get(ident)
-            if not rv:
-                return {}
-            return {ident: rv}
-        items = self.filter(key.in_(ids))
-        dct = {}
-        for u in items:
-            dct[u.id] = u
-        return dct
-
-    def as_list(self, *columns):
-        columns = map(db.defer, columns)
-        return self.options(map(db.defer, columns))
 
 
 class SessionMixin(object):
