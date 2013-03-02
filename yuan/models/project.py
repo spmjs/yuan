@@ -166,6 +166,14 @@ class Project(Model):
 
 
 class Package(Model):
+    def __init__(self, **kwargs):
+        self.family = kwargs.pop('family')
+        self.name = kwargs.pop('name')
+        self.version = kwargs.pop('version')
+        if not self.read():
+            for key in kwargs:
+                setattr(self, key, kwargs[key])
+
     def __str__(self):
         return '%s/%s@%s' % (self.family, self.name, self.version)
 

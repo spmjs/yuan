@@ -11,7 +11,6 @@
 <div class="yue">
 {%- for item in projects %}
   <h3><a href="{{url_for('front.project', family=item.family, name=item.name)}}">{{item.name}}</a></h3>
-  <p>{{item.description}}</p>
 {%- endfor %}
 </div>
 {%- endblock %}
