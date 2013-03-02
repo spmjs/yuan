@@ -12,11 +12,7 @@ bp = Blueprint('front', __name__)
 
 @bp.route('/')
 def home():
-    count = {
-        'users': Account.query.count(),
-    }
-    dct = {'count': count}
-    return render_template('home.html', **dct)
+    return render_template('home.html')
 
 
 @bp.route('/<name>/')
@@ -29,10 +25,8 @@ def profile(name):
 
 @bp.route('/<family>/<name>')
 def project(family, name):
-    project = Project.query.filter_by(
-        family=family, name=name).first_or_404()
     account = Account.query.filter_by(name=family).first()
-    dct = {'account': account, 'project': project}
+    dct = {'account': account}
     return render_template('project.html', **dct)
 
 

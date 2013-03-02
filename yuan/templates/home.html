@@ -15,20 +15,6 @@
     vertical-align: middle;
     font-size: 24px;
   }
-  .numbers {
-    width: 520px;
-  }
-  .numbers li {
-    display: inline-block;
-    list-style-type: none;
-    text-align: left;
-    width: 30%;
-  }
-  .columns .item {
-    float: left;
-    width: 45%;
-    margin-right: 5%;
-  }
 </style>
 {%- endblock %}
 
@@ -38,11 +24,6 @@
     <input class="text" type="search" name="q" />
     <button class="classy search">{{_('Search')}}</button>
   </form>
-  <ul class="numbers fn-clear">
-    <li>{{count.projects}} {{_('projects')}}</li>
-    <li>{{count.users}} {{_('users')}}</li>
-    <li>{{count.organizations}} {{_('organizations')}}</li>
-  </ul>
 </div>
 <div class="columns fn-clear">
   <div class="item">

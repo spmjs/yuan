@@ -10,7 +10,7 @@ from flask import request, g
 from flask.ext.babel import Babel
 from flask.ext.principal import Principal, Identity, identity_loaded, UserNeed
 from .models import db, cache
-from .views import front, account, organization, repository, admin
+from .views import front, account, repository, admin
 from .helpers import get_current_user
 from .elastic import elastic
 
@@ -39,7 +39,6 @@ def create_app(config=None):
     # register blueprints
     app.register_blueprint(account.bp, url_prefix='/account')
     app.register_blueprint(repository.bp, url_prefix='/repository')
-    app.register_blueprint(organization.bp, url_prefix='/organization')
     app.register_blueprint(front.bp, url_prefix='')
 
     @app.before_request
