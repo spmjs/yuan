@@ -74,7 +74,7 @@ elastic = ElasticSearch()
 
 def index_project(project, operation):
     if operation == 'delete':
-        elastic.delete('project/%s/%s' % (project.family, project.name))
+        elastic.delete('project/%s.%s' % (project.family, project.name))
         return
 
     if not project.versions:
@@ -93,7 +93,7 @@ def index_project(project, operation):
     if 'description' in package:
         dct['description'] = package['description']
 
-    elastic.post('project/%s/%s' % (project.family, project.name), dct)
+    elastic.post('project/%s.%s' % (project.family, project.name), dct)
 
 
 def search_project(query):
