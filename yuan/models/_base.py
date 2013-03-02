@@ -2,11 +2,10 @@
 
 import datetime
 from flask.signals import Namespace
-from flask.ext.sqlalchemy import SQLAlchemy, BaseQuery
-from flask.ext.cache import Cache
+from flask.ext.sqlalchemy import SQLAlchemy
 
 __all__ = [
-    'db', 'cache', 'SessionMixin',
+    'db', 'SessionMixin',
     'model_updated', 'model_deleted',
     'project_signal', 'package_signal'
 ]
@@ -18,7 +17,6 @@ project_signal = signals.signal('project-signal')
 package_signal = signals.signal('package-signal')
 
 db = SQLAlchemy()
-cache = Cache()
 
 
 class SessionMixin(object):

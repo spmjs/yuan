@@ -227,13 +227,14 @@ def upload(family):
 
     name = request.form.get('name', family)
     tag = request.form.get('tag', 'latest')
+
     if tag == 'latest':
         dest = os.path.join(
-            current_app.config['DOC_ROOT'], family, '_latest', name
+            current_app.config['WWW_ROOT'], 'docs', family, name
         )
     else:
         dest = os.path.join(
-            current_app.config['DOC_ROOT'], family, name, tag
+            current_app.config['WWW_ROOT'], 'archive', family, name, tag
         )
 
     if os.path.exists(dest):

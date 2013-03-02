@@ -17,7 +17,7 @@ from flask import request, g, escape
 from flask.ext.babel import Babel
 from flask.ext.principal import Principal, Identity, identity_loaded, UserNeed
 from flask import Markup
-from .models import db, cache
+from .models import db
 from .views import front, account, repository, admin
 from .helpers import get_current_user
 from .elastic import elastic
@@ -52,8 +52,6 @@ def create_app(config=None):
     db.app = app
 
     elastic.init_app(app)
-    cache.init_app(app)
-
     admin.admin.init_app(app)
 
     # register blueprints

@@ -9,10 +9,6 @@ requests
 # database
 Flask-SQLAlchemy
 
-# cache support
-Flask-Cache
-#python-memcached
-
 # i18n and l10n
 Flask-Babel
 

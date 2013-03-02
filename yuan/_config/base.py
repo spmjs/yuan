@@ -4,10 +4,6 @@ TESTING = False
 #: site
 SITE_TITLE = 'Yuan'
 SITE_URL = '/'
-SITE_FEED = ''
-SITE_LOGO = ''
-SITE_FOOTER = ''
-SITE_VERSION = '20130220'
 SITE_GA = None
 
 #: session
@@ -25,14 +21,7 @@ GRAVATAR_EXTRA = ''
 # SQLALCHEMY_POOL_TIMEOUT = 10
 # SQLALCHEMY_POOL_RECYCEL = 3600
 
-#: cache
-CACHE_TYPE = 'simple'
-#CACHE_REDIS_HOST
-#CACHE_REDIS_PORT
-#CACHE_REDIS_PASSWORD
-
 #: file storage
 WWW_ROOT = 'data'
-DOC_ROOT = 'data/docs'
 
 MIRROR_URL = 'http://spmjs.org/repository/'
