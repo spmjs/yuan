@@ -38,7 +38,7 @@ def signup_mail(user, path=None):
     if path:
         dct['path'] = path
     else:
-        dct['path'] = url_for('account.signup'),
+        dct['path'] = url_for('account.signup')
     link = '%(host)s%(path)s?token=%(token)s' % dct
     html = render_template('email/signup.html', user=user, link=link)
     msg.html = html
