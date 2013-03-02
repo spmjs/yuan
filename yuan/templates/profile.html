@@ -17,7 +17,7 @@
   {%- endif %}
   {%- for item in projects %}
   <div class="cell">
-    <h3><a href="{{url_for('front.project', family=item.family, name=item.name)}}">{{item.name}}</a></h3>
+    <h3><a href="{{url_for('front.project', family=item.family, name=item.name)}}">{{item.family}}/{{item.name}}</a></h3>
     <p>{{item.description}}</p>
     <span class="version">{{item.version}}</span>
   </div>
