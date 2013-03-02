@@ -4,7 +4,7 @@ from flask import Blueprint
 from flask import request
 from flask import render_template
 from distutils.version import StrictVersion
-from ..models import Project, Package
+from ..models import Project, Package, Account
 from ..elastic import search_project
 
 
@@ -20,7 +20,8 @@ def home():
 def profile(name):
     items = Project.list(name)
     items = map(_fill_project, items)
-    dct = {'projects': items, 'family': name}
+    account = Account.query.filter_by(name=name).first()
+    dct = {'projects': items, 'family': name, 'account': account}
     return render_template('profile.html', **dct)
 
 
@@ -30,6 +31,7 @@ def project(family, name):
     latest = _fill_project(project)
     package = Package(family=family, name=name, version=latest['version'])
     project['latest'] = package
+    project['versions'] = latest['versions']
     return render_template('project.html', project=project)
 
 

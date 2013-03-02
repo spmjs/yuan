@@ -78,7 +78,7 @@ class SettingForm(BaseForm):
     screen_name = TextField(_('Display Name'), validators=[Length(max=80)])
     description = TextAreaField(
         _('Description'), validators=[Optional(), Length(max=400)],
-        description=_('Markdown is supported.')
+        description=_('Markdown is supported, less than 400 characters.')
     )
     comment_service_name = SelectField(
         _('Comment Service'),

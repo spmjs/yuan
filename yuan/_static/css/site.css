@@ -49,6 +49,22 @@ html, body {
 .mainbody input {
   max-width: 90%;
 }
+
+.search-form {
+  margin: 40px 0;
+  text-align: center;
+}
+.search-form input.text {
+  -webkit-appearance: textfield;
+  font-size: 24px;
+  padding-left: 1px;
+  padding-right: 0;
+}
+.search-form button.search {
+  vertical-align: middle;
+  font-size: 24px;
+}
+
 .footer {
   font: 400 14px/1.6 "Ubuntu", 'Helvetica Neue', 'Xin Gothic', 'Hiragino Sans GB', 'Microsoft YaHei', 'WenQuanYi Micro Hei', 'arial', sans-serif;
   border-top: 1px solid #ddd;
@@ -73,4 +89,33 @@ html, body {
   text-decoration: none;
   color: white;
   opacity: 0.6;
+}
+
+.cell {
+  position: relative;
+  padding: 7px;
+  border: 1px solid #dadada;
+  border-radius: 4px;
+  background-color: #f9f9f7;
+}
+.cell {
+  margin: 14px 0;
+}
+.cell h3 {
+  margin: 0 0 6px;
+}
+.cell p {
+  margin: 0;
+}
+.cell .version {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 2px 4px;
+  color: #d64;
+}
+
+.profile .avatar {
+  float: left;
+  margin-right: 14px;
 }

@@ -2,27 +2,6 @@
 
 {% block title %}{{config.SITE_TITLE}}{% endblock %}
 
-{%- block afterstyle %}
-<style type="text/css">
-  .search-form {
-    margin: 40px 0;
-    text-align: center;
-  }
-  .search-form input.text {
-    -webkit-appearance: textfield;
-    font-size: 24px;
-    padding-left: 1px;
-    padding-right: 0;
-  }
-  .search-form button.search {
-    vertical-align: middle;
-    font-size: 24px;
-  }
-  .links a {
-  }
-</style>
-{%- endblock %}
-
 {% block content %}
 <div class="search-form">
   <form class="form long" method="get" action="/search">

@@ -111,7 +111,7 @@ class Account(db.Model, SessionMixin):
     def masters(self):
         q = db.session.query(Account).\
                 join(Member, Member.member_id == self.id).\
-                filter(Member.master_id==Account.id)
+                filter(Member.master_id == Account.id)
         data = q.all()
         return data
 
@@ -119,7 +119,7 @@ class Account(db.Model, SessionMixin):
     def members(self):
         q = db.session.query(Account).\
                 join(Member, Member.master_id == self.id).\
-                filter(Member.member_id==Account.id)
+                filter(Member.member_id == Account.id)
         return q.all()
 
 

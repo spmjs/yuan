@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import os
+import re
+import datetime
 PROJDIR = os.path.abspath(os.path.dirname(__file__))
 ROOTDIR = os.path.split(PROJDIR)[0]
 CONFDIR = os.path.join(PROJDIR, '_config')
@@ -42,6 +44,9 @@ def create_app(config=None):
     elif config:
         app.config.from_pyfile(config)
 
+    now = datetime.datetime.utcnow()
+    app.config.update({'SITE_VERSION': now.strftime('%Y-%m-%d')})
+
     # prepare for database
     db.init_app(app)
     db.app = app
@@ -81,6 +86,8 @@ def create_app(config=None):
 
         link = url.replace('git@', 'https://', 1)
         link = url.replace('git://', 'https://', 1)
+        link = re.sub(r'.git$', '', link)
+        link = re.sub(r'^git(@|:\/\/)', 'https://', link)
         return Markup('<a href="%s">%s</a>' % (link, url))
 
     @app.before_request

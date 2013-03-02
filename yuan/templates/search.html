@@ -2,41 +2,25 @@
 
 {% block subtitle %}{{_('Search')}}{% endblock %}
 
-{%- block afterstyle %}
-<style type="text/css">
-  .search-form {
-    margin: 40px 0;
-    text-align: center;
-  }
-  .search-form input.text {
-    font-size: 24px;
-  }
-  .search-form button.search {
-    vertical-align: middle;
-    font-size: 24px;
-  }
-</style>
-{%- endblock %}
-
-{% block whitepaper %}
+{% block content %}
 <div class="search-form">
   <form class="form long" method="get" action="/search">
     <input class="text" type="search" name="q" value="{{request.args.get('q', '')}}" />
     <button class="classy search">{{_('Search')}}</button>
   </form>
 </div>
-<div class="results fn-clear">
-  {% if data %}
-  <p>{{data.total}} results</p>
-  <ul>
-    {% for item in data.results %}
-    <li><a href="/{{item.family}}/{{item.name}}">{{item.family}}/{{item.name}}</a></li>
-    {% endfor %}
-  </ul>
-  {% else %}
-  <p>No results</p>
-  {% endif %}
+
+<div class="yue">
+  {%- if data %}
+  {%- for item in data.results %}
+  <div class="cell">
+    <h3><a href="{{url_for('front.project', family=item.family, name=item.name)}}">{{item.name}}</a></h3>
+    <p>{{item.description}}</p>
+    <span class="version">{{item.version}}</span>
+  </div>
+  {%- endfor %}
+  {%- else %}
+  <p>{{ _('No results')}}.</p>
+  {%- endif %}
 </div>
 {% endblock %}
-
-

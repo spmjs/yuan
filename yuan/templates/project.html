@@ -12,7 +12,7 @@
 
 {%- block content %}
 <div class="yue">
-  <h1>{{project.name}}</h1>
+  <h1><a href="/{{project.family}}/">{{project.family}}</a> / {{project.name}}</h1>
   <hr />
   <blockquote><p>{{project.latest.description}}</p></blockquote>
   <pre>spm install {{project.family}}/{{project.name}}</pre>
@@ -20,7 +20,7 @@
   <table class="meta">
     <tr>
       <th>Versions:</th>
-      <td>{{project.versions.keys()|join(',')}}</td>
+      <td>{{project.versions|join(', ')}}</td>
     </tr>
     <tr>
       <th>Updated:</th>
