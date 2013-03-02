@@ -3,30 +3,38 @@
   <head>
     <meta charset="UTF-8">
     <title>{% block title %}{% block subtitle %}{% endblock %} - {{config.SITE_TITLE}}{% endblock %}</title>
-    <link rel="stylesheet" href="{{url_for('static', filename='yue.tmp.css')}}" />
-    <link rel="stylesheet" href="{{url_for('static', filename='site.css')}}" />
+    {%- from "macro/ui.html" import flash_messages, style %}
+    {{ style(True) }}
     {%- block afterstyle %}{% endblock %}
   </head>
   <body>
-    <header id="header">
-      {%- from "macro/utils.html" import flash_messages, render_navigation %}
-      <div class="container fn-clear">
-        <h1 class="brand fn-left"><a href="/">{{config.SITE_TITLE}}</a></h1>
-        <ul class="navigation fn-right">
-          {{ render_navigation(g.user, 'org') }}
-        </ul>
+    <div class="navigation">
+      <div class="container">
+        <a href="/" class="home">{{config.SITE_NAME}}</a>
+        <div class="menu">
+          {%- if g.user %}
+          <a href="{{url_for('account.setting')}}">{{_('Settings')}}</a>
+          <a href="{{url_for('account.signout')}}">{{_('Sign Out')}}</a>
+          {%- else %}
+          <a href="{{url_for('account.signin')}}">{{_('Sign In')}}</a>
+          <a href="{{url_for('account.signup')}}">{{_('Sign Up')}}</a>
+          {%- endif %}
+        </div>
       </div>
-      {%- with messages = get_flashed_messages(with_categories=true) %}
-      {{ flash_messages(messages) }}
-      {%- endwith %}
-    </header>
+    </div>
+
+    {%- with messages = get_flashed_messages(with_categories=true) %}
+    {{ flash_messages(messages) }}
+    {%- endwith %}
+
     {%- block mainbody %}
-    <div class="white-paper">
+    <div class="mainbody">
       <div class="container fn-clear">
-        {% block whitepaper %}{% endblock %}
+        {% block content %}{% endblock %}
       </div>
     </div>
     {%- endblock %}
+
     <footer id="footer">
       <div class="container">
         <div>{{config.SITE_FOOTER}}</div>

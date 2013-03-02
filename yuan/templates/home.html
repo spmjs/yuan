@@ -9,7 +9,10 @@
     text-align: center;
   }
   .search-form input.text {
+    -webkit-appearance: textfield;
     font-size: 24px;
+    padding-left: 1px;
+    padding-right: 0;
   }
   .search-form button.search {
     vertical-align: middle;
@@ -18,25 +21,11 @@
 </style>
 {%- endblock %}
 
-{% block whitepaper %}
+{% block content %}
 <div class="search-form">
   <form class="form long" method="get" action="/search">
     <input class="text" type="search" name="q" />
     <button class="classy search">{{_('Search')}}</button>
   </form>
 </div>
-<div class="columns fn-clear">
-  <div class="item">
-    <h4>{{_('Recently Updated')}}</h4>
-    <ul>
-    </ul>
-  </div>
-
-  <div class="item">
-    <h4>{{_('Recommendations')}}</h4>
-    <ul>
-    </ul>
-  </div>
-</div>
 {% endblock %}
-

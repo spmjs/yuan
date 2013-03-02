@@ -3,21 +3,59 @@
 
 {% block subtitle %}{{_('Settings')}}{% endblock %}
 
-{% block whitepaper %}
-<form class="single" method="post" action="">
-  {{ form.csrf_token }}
-  {{ render_field(form.screen_name, 'long') }}
-  {{ render_field(form.description, 'long') }}
+{%- block afterstyle %}
+<style type="text/css">
+  .profile-form {
+    padding-top: 40px;
+  }
+  .members a {
+    display: inline-block;
+    color: white;
+    padding: 1px 6px;
+    background-color: #d64;
+    border-radius: 3px;
+    margin: 10px 6px 10px 0;
+  }
+  .members a:hover {
+    text-decoration: none;
+    color: white;
+    opacity: 0.6;
+  }
+</style>
+{%- endblock %}
 
-  <dl class="form{% if form.comment_service_id.errors %} error{% endif %}">
-    <dt>{{form.comment_service_name.label}}</dt>
-    <dd>{{form.comment_service_name()}} {{form.comment_service_id(class_='text')}}</dd>
-    {{ render_errors(form.comment_service_id.errors) }}
-    {{ render_errors(form.comment_service_name.errors) }}
-  </dl>
-
-  <div class="form-submit">
-    <button class="classy">Submit</button>
+{% block content %}
+<div class="member-form yue">
+  <h3 class="title">Members</h3>
+  <div>People who has write permission on your projects.</div>
+  <div class="members fn-clear">
+    {%- for user in g.user.members %}
+    <a title="{{_('Remove this user')}}" href="{{url_for('account.member')}}?action=delete&name={{user.name}}">{{user}}</a>
+    {%- endfor %}
   </div>
-</form>
+  <form class="form" action="{{url_for('account.member')}}">
+    <input type="text" class="text" name="name" placeholder="{{_('Username')}}" />
+    <button class="classy">{{_('Add User')}}</button>
+  </form>
+</div>
+
+<div class="profile-form yue">
+  <h3 class="title">{{_('Edit Profile')}}</h3>
+  <form method="post" action="">
+    {{ form.csrf_token }}
+    {{ render_field(form.screen_name, 'long') }}
+    {{ render_field(form.description, 'long') }}
+
+    <dl class="form{% if form.comment_service_id.errors %} error{% endif %}">
+      <dt>{{form.comment_service_name.label}}</dt>
+      <dd>{{form.comment_service_name()}} {{form.comment_service_id(class_='text')}}</dd>
+      {{ render_errors(form.comment_service_id.errors) }}
+      {{ render_errors(form.comment_service_name.errors) }}
+    </dl>
+
+    <div class="form-submit">
+      <button class="classy">{{_('Update Profile')}}</button>
+    </div>
+  </form>
+</div>
 {% endblock %}

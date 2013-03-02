@@ -3,7 +3,7 @@
 
 {% block subtitle%}{{_('Signup')}}{% endblock %}
 
-{% block whitepaper %}
+{% block content %}
 <form class="single" method="post" action="">
   {{ form.csrf_token }}
   {{ render_field(form.name, 'long') }}

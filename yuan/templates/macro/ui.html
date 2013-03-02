@@ -1,0 +1,25 @@
+{%- macro flash_messages(messages) %}
+{%- if messages %}
+<div class="container">
+<ul class=flashes>
+  {%- for category, message in messages %}
+  <li class="{{ category }}">{{ message }} <span class="close">×</span></li>
+  {%- endfor %}
+</ul>
+</div>
+{%- endif %}
+{%- endmacro %}
+
+
+{%- macro style(debug=True) %}
+{%- if debug %}
+<link rel="stylesheet" href="{{url_for('static', filename='css/fn.css')}}" />
+<link rel="stylesheet" href="{{url_for('static', filename='css/flashes.css')}}" />
+<link rel="stylesheet" href="{{url_for('static', filename='css/forms.css')}}" />
+<link rel="stylesheet" href="{{url_for('static', filename='css/buttons.css')}}" />
+<link rel="stylesheet" href="{{url_for('static', filename='css/typography.css')}}" />
+<link rel="stylesheet" href="{{url_for('static', filename='css/site.css')}}" />
+{%- else %}
+<link rel="stylesheet" href="{{url_for('static', filename='site.css')}}" />
+{%- endif %}
+{%- endmacro %}

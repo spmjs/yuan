@@ -3,8 +3,8 @@
 
 {% block subtitle %}{{_('Signin')}}{% endblock %}
 
-{% block whitepaper %}
-<form class="single" method="post" action="">
+{% block content %}
+<form method="post" action="">
   {{ form.csrf_token }}
   {{ render_field(form.account, 'long') }}
   {{ render_field(form.password, 'long') }}

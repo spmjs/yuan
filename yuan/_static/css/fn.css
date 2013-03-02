@@ -1,0 +1,19 @@
+.fn-clear {
+  zoom: 1;
+}
+.fn-clear:before,
+.fn-clear:after {
+  content: "";
+  display: table;
+}
+.fn-clear:after {
+  clear: both;
+}
+.fn-left {
+  display: inline;
+  float: left;
+}
+.fn-right {
+  display: inline;
+  float: right;
+}
