@@ -61,6 +61,8 @@ def create_app(config=None):
 
     @app.template_filter('markdown')
     def markdown(text):
+        if not text:
+            return Markup('')
         render = HighlightRender(flags=m.HTML_ESCAPE | m.HTML_USE_XHTML)
         md = m.Markdown(
             render,

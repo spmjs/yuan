@@ -32,7 +32,9 @@
     </tr>
   </table>
 </div>
+{%- if project.latest.readme %}
 <div class="yue">
   {{project.latest.readme|markdown|safe}}
 </div>
+{%- endif %}
 {%- endblock %}
