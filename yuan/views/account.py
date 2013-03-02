@@ -80,14 +80,21 @@ def member():
     name = request.args.get('name')
     user = Account.query.filter_by(name=name).first_or_404()
 
-    relation = Member.query.filter_by(
-        master_id=g.user.id, member_id=user.id
-    ).first()
     action = request.args.get('action', 'add')
+    if action == 'quit':
+        relation = Member.query.filter_by(
+            master_id=user.id, member_id=g.user.id
+        ).first()
+    else:
+        relation = Member.query.filter_by(
+            master_id=g.user.id, member_id=user.id
+        ).first()
     if action == 'add' and not relation:
         relation = Member(master_id=g.user.id, member_id=user.id)
         relation.save()
     elif action == 'remove' and relation:
+        relation.delete()
+    elif action == 'quit' and relation:
         relation.delete()
     return redirect(url_for('.setting'))
 

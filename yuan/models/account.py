@@ -109,16 +109,17 @@ class Account(db.Model, SessionMixin):
 
     @property
     def masters(self):
-        # TODO
         q = db.session.query(Account).\
-                join(Member, Member.member_id == self.id)
+                join(Member, Member.member_id == self.id).\
+                filter(Member.master_id==Account.id)
         data = q.all()
         return data
 
     @property
     def members(self):
         q = db.session.query(Account).\
-                join(Member, Member.master_id == self.id)
+                join(Member, Member.master_id == self.id).\
+                filter(Member.member_id==Account.id)
         return q.all()
 
 

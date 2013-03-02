@@ -26,17 +26,25 @@
 
 {% block content %}
 <div class="member-form yue">
-  <h3 class="title">Members</h3>
-  <div>People who has write permission on your projects.</div>
-  <div class="members fn-clear">
+  <h3 class="title">Membership</h3>
+  <div class="description">People who has write permission on your projects.</div>
+  <div class="members">
     {%- for user in g.user.members %}
-    <a title="{{_('Remove this user')}}" href="{{url_for('account.member')}}?action=delete&name={{user.name}}">{{user}}</a>
+    <a title="{{_('Remove this user')}}" href="{{url_for('account.member')}}?action=remove&name={{user.name}}">{{user}}</a>
     {%- endfor %}
   </div>
   <form class="form" action="{{url_for('account.member')}}">
     <input type="text" class="text" name="name" placeholder="{{_('Username')}}" />
     <button class="classy">{{_('Add User')}}</button>
   </form>
+
+  <h3 class="title">Ownership</h3>
+  <div class="description">You has write permission on these projects.</div>
+  <div class="members">
+    {%- for user in g.user.masters %}
+    <a title="{{_('Quit this family')}}" href="{{url_for('account.member')}}?action=quit&name={{user.name}}">{{user}}</a>
+    {%- endfor %}
+  </div>
 </div>
 
 <div class="profile-form yue">
