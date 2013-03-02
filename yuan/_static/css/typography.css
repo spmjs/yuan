@@ -86,6 +86,9 @@
 .yue li ul ul {
   list-style-type: circle;
 }
+.yue li p {
+  margin: 0.4em 0 0.6em;
+}
 .yue code,
 .yue tt {
   color: #808080;
@@ -107,6 +110,9 @@
 }
 .yue pre code {
   color: #4c4c4c;
+  border: none;
+  background-color: none;
+  padding: auto;
 }
 .yue table {
   border-collapse: collapse;

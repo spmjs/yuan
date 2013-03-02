@@ -85,7 +85,8 @@ class Project(Model):
     def __repr__(self):
         return '<Project: %s>' % self
 
-    def sort(self, versions=None):
+    @classmethod
+    def sort(cls, versions=None):
         if not versions:
             return {}
         o = OrderedDict()

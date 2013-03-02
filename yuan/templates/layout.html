@@ -35,11 +35,13 @@
     </div>
     {%- endblock %}
 
-    <footer id="footer">
+    {%- block footer %}
+    <div class="footer">
       <div class="container">
         <div>{{config.SITE_FOOTER}}</div>
-        <p class="software">powered by <a href="https://github.com/lepture/yuan">yuan</a> {{config.SITE_VERSION}}</p>
+        <p class="software">Powered by <a href="https://github.com/lepture/yuan">yuan</a> {{config.SITE_VERSION}}</p>
       </div>
-    </footer>
+    </div>
+    {%- endblock %}
   </body>
 </html>

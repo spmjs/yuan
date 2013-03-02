@@ -78,7 +78,10 @@ def setting():
 @require_login
 def member():
     name = request.args.get('name')
-    user = Account.query.filter_by(name=name).first_or_404()
+    user = Account.query.filter_by(name=name).first()
+    if not user:
+        flash(_('This user or family does not exist.'), 'warn')
+        return redirect(url_for('.setting'))
 
     action = request.args.get('action', 'add')
     if action == 'quit':

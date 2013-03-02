@@ -2,6 +2,37 @@
 
 {%- block subtitle %}{{project.family}}/{{project.name}}{%- endblock %}
 
+{%- block afterstyle %}
+<style type="text/css">
+  table.meta {
+    width: 100%;
+  }
+</style>
+{%- endblock %}
+
 {%- block content %}
-{{project.name}}
+<div class="yue">
+  <h1>{{project.name}}</h1>
+  <hr />
+  <blockquote><p>{{project.latest.description}}</p></blockquote>
+  <pre>spm install {{project.family}}/{{project.name}}</pre>
+  <p>Latest version: <strong>{{project.latest.version}}</strong></p>
+  <table class="meta">
+    <tr>
+      <th>Versions:</th>
+      <td>{{project.versions.keys()|join(',')}}</td>
+    </tr>
+    <tr>
+      <th>Updated:</th>
+      <td>{{project.updated_at}}</td>
+    </tr>
+    <tr>
+      <th>Repository:</th>
+      <td>{{project.latest.repository|repo_link}}</td>
+    </tr>
+  </table>
+</div>
+<div class="yue">
+  {{project.latest.readme|markdown|safe}}
+</div>
 {%- endblock %}

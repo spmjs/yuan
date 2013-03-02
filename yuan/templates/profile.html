@@ -4,13 +4,40 @@
 
 {%- block afterstyle %}
 <style type="text/css">
+  .cell {
+    position: relative;
+    padding: 7px;
+    border: 1px solid #dadada;
+    border-radius: 4px;
+    background-color: #f9f9f7;
+  }
+  .cell {
+    margin: 14px 0;
+  }
+  .cell h3 {
+    margin: 0;
+  }
+  .cell p {
+    margin: 0;
+  }
+  .version {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 2px 4px;
+    color: #d64;
+  }
 </style>
 {%- endblock %}
 
 {%- block content %}
 <div class="yue">
-{%- for item in projects %}
-  <h3><a href="{{url_for('front.project', family=item.family, name=item.name)}}">{{item.name}}</a></h3>
-{%- endfor %}
+  {%- for item in projects %}
+  <div class="cell">
+    <h3><a href="{{url_for('front.project', family=item.family, name=item.name)}}">{{item.name}}</a></h3>
+    <p>{{item.description}}</p>
+    <span class="version">{{item.version}}</span>
+  </div>
+  {%- endfor %}
 </div>
 {%- endblock %}

@@ -43,10 +43,34 @@ html, body {
   margin-left: 14px;
 }
 
-
 .mainbody {
   padding: 30px 10px;
 }
 .mainbody input {
   max-width: 90%;
+}
+.footer {
+  font: 400 14px/1.6 "Ubuntu", 'Helvetica Neue', 'Xin Gothic', 'Hiragino Sans GB', 'Microsoft YaHei', 'WenQuanYi Micro Hei', 'arial', sans-serif;
+  border-top: 1px solid #ddd;
+}
+.footer .software {
+  text-align: right;
+  color: #696969;
+}
+.footer .software a {
+  color: #565656;
+}
+
+.tags a {
+  display: inline-block;
+  color: white;
+  padding: 1px 6px;
+  background-color: #d64;
+  border-radius: 3px;
+  margin: 10px 6px 10px 0;
+}
+.tags a:hover {
+  text-decoration: none;
+  color: white;
+  opacity: 0.6;
 }
