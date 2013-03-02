@@ -10,7 +10,7 @@
   <body>
     <div class="navigation">
       <div class="container">
-        <a href="/" class="home">{{config.SITE_NAME}}</a>
+        <a href="/" class="home">{{config.SITE_TITLE}}</a>
         <div class="menu">
           {%- if g.user %}
           <a href="{{url_for('account.setting')}}">{{_('Settings')}}</a>

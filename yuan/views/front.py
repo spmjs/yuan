@@ -3,7 +3,7 @@
 from flask import Blueprint
 from flask import request
 from flask import render_template
-from ..models import Project, Account
+from ..models import Project
 from ..elastic import search_project
 
 
@@ -17,17 +17,15 @@ def home():
 
 @bp.route('/<name>/')
 def profile(name):
-    account = Account.query.filter_by(name=name).first_or_404()
-    items = Project.query.filter_by(family=name).all()
-    dct = {'projects': items, 'account': account}
+    items = Project.list(name)
+    dct = {'projects': items, 'family': name}
     return render_template('profile.html', **dct)
 
 
 @bp.route('/<family>/<name>')
 def project(family, name):
-    account = Account.query.filter_by(name=family).first()
-    dct = {'account': account}
-    return render_template('project.html', **dct)
+    project = Project(family=family, name=name)
+    return render_template('project.html', project=project)
 
 
 @bp.route('/search')

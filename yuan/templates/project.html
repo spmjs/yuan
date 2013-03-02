@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
-{%- block subtitle %}{{account}}/{{project}}{%- endblock %}
+{%- block subtitle %}{{project.family}}/{{project.name}}{%- endblock %}
 
-{%- block whitepaper %}
+{%- block content %}
 {{project.name}}
 {%- endblock %}

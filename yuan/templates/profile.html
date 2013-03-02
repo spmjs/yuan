@@ -1,26 +1,17 @@
 {% extends "layout.html" %}
 
-{%- block subtitle %}{{account}}{%- endblock %}
+{%- block subtitle %}{{family}}{%- endblock %}
 
 {%- block afterstyle %}
 <style type="text/css">
-  .projects {
-    padding: 60px 0;
-  }
-  .projects .group {
-    float: left;
-    margin: 6px 10px;
-    height: 100px;
-  }
 </style>
 {%- endblock %}
 
-{%- block mainbody %}
-<div class="projects container fn-clear">
-  {%- for item in projects %}
-  <div class="group">
-    <header><a href="{{url_for('front.project', family=item.family, name=item.name)}}">{{item.name}}</a></header>
-  </div>
-  {%- endfor %}
+{%- block content %}
+<div class="yue">
+{%- for item in projects %}
+  <h3><a href="{{url_for('front.project', family=item.family, name=item.name)}}">{{item.name}}</a></h3>
+  <p>{{item.description}}</p>
+{%- endfor %}
 </div>
 {%- endblock %}
