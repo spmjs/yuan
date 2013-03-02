@@ -6,7 +6,7 @@ from flask import g, request, flash
 from flask import abort
 from flask import render_template, redirect, url_for, jsonify
 from flask.ext.babel import gettext as _
-from ..models import Account
+from ..models import Account, Member
 from ..helpers import login_user, logout_user, require_login
 from ..helpers import create_auth_token, verify_auth_token
 from ..forms import SignupForm, SigninForm, SettingForm
@@ -74,27 +74,26 @@ def setting():
     return render_template('setting.html', form=form)
 
 
+@bp.route('/member')
+@require_login
+def member():
+    name = request.args.get('name')
+    user = Account.query.filter_by(name=name).first_or_404()
+
+    relation = Member.query.filter_by(
+        master_id=g.user.id, member_id=user.id
+    ).first()
+    action = request.args.get('action', 'add')
+    if action == 'add' and not relation:
+        relation = Member(master_id=g.user.id, member_id=user.id)
+        relation.save()
+    elif action == 'remove' and relation:
+        relation.delete()
+    return redirect(url_for('.setting'))
+
+
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
-    token = request.args.get('token')
-    if not token and request.method == 'GET':
-        return abort(403)
-
-    if token and request.method == 'GET':
-        user = verify_auth_token(token, 1)
-        if not user:
-            return jsonify(
-                status='error',
-                message=_('Invalid or expired token.')
-            )
-        user.role = 2
-        user.save()
-        login_user(user)
-        return jsonify(
-            status='info',
-            message=_('This account is verified.')
-        )
-
     if not request.json:
         response = jsonify(
             status='error',
@@ -119,7 +118,7 @@ def register():
         )
 
     user = form.save()
-    signup_mail(user, url_for('.register'))
+    signup_mail(user)
     auth = create_auth_token(user)
     return jsonify(
         status='success',

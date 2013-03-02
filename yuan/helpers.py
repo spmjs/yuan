@@ -28,9 +28,6 @@ class require_role(object):
             if g.user.role == 1:
                 flash(_('Please verify your email'), 'warn')
                 return redirect('/account/settings')
-            if g.user.role < 1:
-                #TODO
-                return redirect('/doc/guideline')
             if g.user.role < self.role:
                 return abort(403)
             return method(*args, **kwargs)

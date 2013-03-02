@@ -5,6 +5,7 @@ import random
 from datetime import datetime
 from werkzeug import cached_property
 from flask.ext.principal import Permission, UserNeed
+from sqlalchemy.orm import relationship
 from ._base import db, SessionMixin
 
 __all__ = ['Account', 'Member']
@@ -122,14 +123,24 @@ class Account(db.Model, SessionMixin):
 
 
 class Member(db.Model, SessionMixin):
-    id = db.Column(db.Integer, primary_key=True)
     master_id = db.Column(
         db.Integer,
-        db.ForeignKey('account.id', ondelete='CASCADE')
+        db.ForeignKey('account.id', ondelete='CASCADE'),
+        primary_key=True,
     )
     member_id = db.Column(
         db.Integer,
-        db.ForeignKey('account.id', ondelete='CASCADE')
+        db.ForeignKey('account.id', ondelete='CASCADE'),
+        primary_key=True,
+    )
+
+    master = relationship(
+        'Account',
+        primaryjoin="and_(Member.master_id==Account.id)",
+    )
+    member = relationship(
+        'Account',
+        primaryjoin="and_(Member.member_id==Account.id)",
     )
 
     def __str__(self):
