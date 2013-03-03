@@ -121,5 +121,6 @@ class FindForm(BaseForm):
 
 class ResetForm(BaseForm):
     password = PasswordField(
-        _('Password'), validators=[Required()]
+        _('Password'), validators=[Required()],
+        description=_('Remember your password')
     )
