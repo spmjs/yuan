@@ -1,9 +1,22 @@
 {% extends "layout.html" %}
 {% from "macro/form.html" import render_field %}
 
-{% block subtitle %}{{_('Signin')}}{% endblock %}
+{%- block subtitle %}{{_('Signin')}}{% endblock %}
 
-{% block content %}
+{%- block afterstyle %}
+<style type="text/css">
+  a.find {
+    font: 500 13px "Ubuntu", 'Helvetica Neue', 'Xin Gothic', 'Hiragino Sans GB', 'Microsoft YaHei', 'WenQuanYi Micro Hei', 'arial', sans-serif;
+    color: #3d8edf;
+    text-decoration: none;
+  }
+  a.find:hover {
+    text-decoration: underline;
+  }
+</style>
+{%- endblock %}
+
+{%- block content %}
 <form method="post" action="">
   {{ form.csrf_token }}
   {{ render_field(form.account, 'long') }}
@@ -15,6 +28,7 @@
 
   <div class="form-submit">
     <button class="classy">{{_('Sign In')}}</button>
+    <a class="find" href="{{url_for('account.find')}}">{{_('Forget your password?')}}</a>
   </div>
 </form>
-{% endblock %}
+{%- endblock %}

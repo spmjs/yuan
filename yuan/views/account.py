@@ -107,6 +107,8 @@ def member():
 
 @bp.route('/find', methods=['GET', 'POST'])
 def find():
+    if g.user:
+        return redirect('/')
     form = FindForm()
     if form.validate_on_submit():
         msg = find_mail(form.user)
@@ -119,6 +121,8 @@ def find():
 
 @bp.route('/reset', methods=['GET', 'POST'])
 def reset():
+    if g.user:
+        return redirect('/')
     token = request.values.get('token')
     if not token:
         flash(_('Token is missing.'), 'error')
