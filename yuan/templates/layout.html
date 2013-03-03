@@ -1,11 +1,25 @@
 <!DOCTYPE HTML>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
     <title>{% block title %}{% block subtitle %}{% endblock %} - {{config.SITE_TITLE}}{% endblock %}</title>
     {%- from "macro/ui.html" import flash_messages, style %}
     {{ style(True) }}
     {%- block afterstyle %}{% endblock %}
+    {%- if config.SITE_GA %}
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', '{{config.SITE_GA}}']);
+      _gaq.push(['_trackPageview']);
+      _gaq.push(['_trackPageLoadTime']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = 'https://ssl.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+    {%- endif %}
   </head>
   <body>
     <div class="navigation">
@@ -13,6 +27,7 @@
         <a href="/" class="home">{{config.SITE_TITLE}}</a>
         <div class="menu">
           {%- if g.user %}
+          <a href="{{url_for('front.profile', name=g.user.name)}}">{{g.user}}</a>
           <a href="{{url_for('account.setting')}}">{{_('Settings')}}</a>
           <a href="{{url_for('account.signout')}}">{{_('Sign Out')}}</a>
           {%- else %}
@@ -39,7 +54,7 @@
     <div class="footer">
       <div class="container">
         <div>{{config.SITE_FOOTER}}</div>
-        <p class="software">Powered by <a href="https://github.com/lepture/yuan">yuan</a> {{config.SITE_VERSION}}</p>
+        <p class="software">Powered by <a href="https://github.com/lepture/yuan">yuan</a> {{config.SITE_TIME.strftime('%Y-%m-%d')}}</p>
       </div>
     </div>
     {%- endblock %}

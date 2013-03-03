@@ -44,8 +44,7 @@ def create_app(config=None):
     elif config:
         app.config.from_pyfile(config)
 
-    now = datetime.datetime.utcnow()
-    app.config.update({'SITE_VERSION': now.strftime('%Y-%m-%d')})
+    app.config.update({'SITE_TIME': datetime.datetime.utcnow()})
 
     # prepare for database
     db.init_app(app)
