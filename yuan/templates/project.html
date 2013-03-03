@@ -30,6 +30,12 @@
       <th>Repository:</th>
       <td>{{project.latest.repository|repo_link}}</td>
     </tr>
+    {%- if project.latest.dependencies %}
+    <tr>
+      <th>Dependencies:</th>
+      <td>{{project.latest.dependencies|join(', ')}}</td>
+    </tr>
+    {%- endif %}
   </table>
 </div>
 {%- if project.latest.readme %}
