@@ -119,3 +119,9 @@ html, body {
   float: left;
   margin-right: 14px;
 }
+table.meta {
+  width: 100%;
+}
+table.meta a {
+  word-wrap: break-word;
+}
