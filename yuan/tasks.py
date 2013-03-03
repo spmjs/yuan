@@ -9,6 +9,8 @@ from .helpers import create_auth_token
 
 
 def send_mail(config, msg):
+    if not config.get('DEFAULT_MAIL_SENDER', None):
+        return
     app = Flask('yuan')
     app.config = config
     with app.test_request_context():
@@ -18,8 +20,6 @@ def send_mail(config, msg):
 
 def signup_mail(user, path=None):
     config = current_app.config
-    if not config.get('DEFAULT_MAIL_SENDER', None):
-        return
     msg = Message(
         _("Signup for %(site)s", site=config['SITE_TITLE']),
         recipients=[user.email],
@@ -43,3 +43,29 @@ def signup_mail(user, path=None):
     html = render_template('email/signup.html', user=user, link=link)
     msg.html = html
     gevent.spawn(send_mail, config, msg)
+    return msg
+
+
+def find_mail(user):
+    config = current_app.config
+    msg = Message(
+        _("Find password for %(site)s", site=config['SITE_TITLE']),
+        recipients=[user.email],
+        extra_headers={
+            'Category': 'signup'
+        },
+    )
+    reply_to = config.get('MAIL_REPLY_TO', None)
+    if reply_to:
+        msg.reply_to = reply_to
+    host = config.get('SITE_SECURE_URL', '') or config.get('SITE_URL', '')
+    dct = {
+        'host': host.rstrip('/'),
+        'path': url_for('account.reset'),
+        'token': create_auth_token(user)
+    }
+    link = '%(host)s%(path)s?token=%(token)s' % dct
+    html = render_template('email/find.html', user=user, link=link)
+    msg.html = html
+    gevent.spawn(send_mail, config, msg)
+    return msg

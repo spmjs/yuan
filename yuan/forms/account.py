@@ -100,3 +100,26 @@ class SettingForm(BaseForm):
         csi = self._fields['comment_service_id']
         if csn and csi:
             obj.comment_service = '%s-%s' % (csn.data, csi.data)
+
+
+class FindForm(BaseForm):
+    account = TextField(
+        _('Account'), validators=[Required(), Length(min=3, max=20)],
+        description=_('Username or email address')
+    )
+
+    def validate_account(self, field):
+        account = field.data
+        if '@' in account:
+            user = Account.query.filter_by(email=account).first()
+        else:
+            user = Account.query.filter_by(name=account).first()
+        if not user:
+            raise ValueError(_('This account does not exist.'))
+        self.user = user
+
+
+class ResetForm(BaseForm):
+    password = PasswordField(
+        _('Password'), validators=[Required()]
+    )
