@@ -24,7 +24,8 @@ RESERVED_WORDS = [
 class SignupForm(BaseForm):
     name = TextField(
         _('Username'), validators=[
-            Required(), Length(min=3, max=20), Regexp('[a-z0-9A-Z]+')
+            Required(), Length(min=3, max=20),
+            Regexp(r'^[a-z0-9A-Z]+$')
         ], description=_('English Characters Only.'),
     )
     email = EmailField(
