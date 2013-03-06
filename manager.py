@@ -61,11 +61,13 @@ def index():
 @manager.command
 def mirror(url=None):
     """sync a mirror site."""
+    import gevent
+    import gevent.monkey
+    gevent.monkey.patch_all()
+
     import requests
-    import urllib
-    from datetime import datetime
     from urlparse import urlparse
-    from yuan.models import index_project, Package
+    from flask import Flask
     if not url:
         url = app.config['MIRROR_URL']
 
@@ -77,82 +79,101 @@ def mirror(url=None):
     data = rv.json()
 
     rv = urlparse(url)
-    domain = '%s://%s' % (rv.scheme, rv.netloc)
+    domain = '%s://%s/repository' % (rv.scheme, rv.netloc)
 
-    def _strptime(t):
-        return datetime.strptime(t, '%Y-%m-%dT%H:%M:%SZ')
+    def index_with_ctx(config, project):
+        app = Flask('mirror')
+        app.config = config
+        with app.test_request_context():
+            _index(project, domain)
 
-    def _fetch(pkg):
-        url = '%s/repository/%s/%s/%s/' % \
-                (domain, pkg['family'], pkg['name'], pkg['version'])
-        rv = requests.get(url)
-        print '   fetch:', url
-        if rv.status_code != 200:
-            raise Exception('%s: %s' % url, rv.status_code)
-        pkg = Package(**rv.json()).save()
-
-        url = '%s%s' % (url, pkg['filename'])
-        fpath = os.path.join(
-            app.config['WWW_ROOT'], 'repository',
-            pkg.family, pkg.name, pkg.version,
-            pkg['filename']
-        )
-        print '    save:', fpath
-        urllib.urlretrieve(url, fpath)
-
-    def _index(project):
-        print '    sync: %(family)s/%(name)s' % project
-        index_project(project, 'update')
-
-        url = '%s/repository/%s/%s/' % \
-                (domain, project['family'], project['name'])
-        rv = requests.get(url)
-        if rv.status_code != 200:
-            raise Exception('%s: %s' % url, rv.status_code)
-        data = rv.json()
-        if 'versions' not in data:
-            data['versions'] = {}
-
-        me = Project(family=project['family'], name=project['name'])
-
-        if 'versions' in me:
-            versions = me['versions'].copy()
-        else:
-            versions = {}
-
-        for v in versions:
-            local = versions[v]
-            server = None
-            if v in data['versions']:
-                server = data['versions'][v]
-
-            if not server:
-                print '  delete: %s/%s@%s' % (me['family'], me['name'], v)
-                pkg = Package(family=me['family'], name=me['name'], version=v)
-                pkg.delete()
-                # remove this version from project
-                Project(**me).remove(v)
-            elif 'md5' in server and \
-                    ('md5' not in local or local['md5'] != server['md5']):
-                print '  create: %s/%s@%s' % (me['family'], me['name'], v)
-                _fetch(server)
-                # add this version to project
-                Project(**me).update(server)
-
-        for v in data['versions']:
-            if v not in versions:
-                pkg = data['versions'][v]
-                print '  create: %s/%s@%s' % (pkg['family'], pkg['name'], v)
-                _fetch(pkg)
-                # add this version to project
-                Project(**me).update(pkg)
-        return True
-
+    jobs = []
     for project in data:
         me = Project(family=project['family'], name=project['name'])
         if 'updated_at' not in me or \
            _strptime(me['updated_at']) < _strptime(project['updated_at']):
-            _index(project)
+            jobs.append(gevent.spawn(index_with_ctx, app.config, project))
+
+    gevent.joinall(jobs)
+
+
+def _strptime(t):
+    from datetime import datetime
+    return datetime.strptime(t, '%Y-%m-%dT%H:%M:%SZ')
+
+
+def _fetch(pkg, domain):
+    import urllib
+    import requests
+    from yuan.models import Package
+
+    url = '%s/%s/%s/%s/' % (
+        domain, pkg['family'], pkg['name'], pkg['version'])
+    rv = requests.get(url)
+    print '   fetch:', url
+    if rv.status_code != 200:
+        raise Exception('%s: %s' % url, rv.status_code)
+    pkg = Package(**rv.json()).save()
+
+    url = '%s%s' % (url, pkg['filename'])
+    fpath = os.path.join(
+        app.config['WWW_ROOT'], 'repository',
+        pkg.family, pkg.name, pkg.version,
+        pkg['filename']
+    )
+    print '    save:', fpath
+    urllib.urlretrieve(url, fpath)
+
+
+def _index(project, domain):
+    import requests
+    from yuan.models import Package, index_project
+
+    print '    sync: %(family)s/%(name)s' % project
+    index_project(project, 'update')
+
+    url = '%s/%s/%s/' % (domain, project['family'], project['name'])
+    rv = requests.get(url)
+    if rv.status_code != 200:
+        raise Exception('%s: %s' % url, rv.status_code)
+    data = rv.json()
+    if 'versions' not in data:
+        data['versions'] = {}
+
+    me = Project(family=project['family'], name=project['name'])
+
+    if 'versions' in me:
+        versions = me['versions'].copy()
+    else:
+        versions = {}
+
+    for v in versions:
+        local = versions[v]
+        server = None
+        if v in data['versions']:
+            server = data['versions'][v]
+
+        if not server:
+            print '  delete: %s/%s@%s' % (me['family'], me['name'], v)
+            pkg = Package(family=me['family'], name=me['name'], version=v)
+            pkg.delete()
+            # remove this version from project
+            Project(**me).remove(v)
+        elif 'md5' in server and \
+                ('md5' not in local or local['md5'] != server['md5']):
+            print '  create: %s/%s@%s' % (me['family'], me['name'], v)
+            _fetch(server, domain)
+            # add this version to project
+            Project(**me).update(server)
+
+    for v in data['versions']:
+        if v not in versions:
+            pkg = data['versions'][v]
+            print '  create: %s/%s@%s' % (pkg['family'], pkg['name'], v)
+            _fetch(pkg, domain)
+            # add this version to project
+            Project(**me).update(pkg)
+    return True
 
 
 if __name__ == '__main__':
