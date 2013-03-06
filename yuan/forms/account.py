@@ -1,5 +1,6 @@
 # coding: utf-8
 
+from flask import current_app
 from flask.ext.wtf import TextField, PasswordField, BooleanField
 from flask.ext.wtf import TextAreaField, SelectField
 from flask.ext.wtf.html5 import EmailField
@@ -17,6 +18,8 @@ RESERVED_WORDS = [
     'organizations', 'package', 'packages', 'org', 'com', 'net',
     'help', 'doc', 'docs', 'document', 'documentation', 'blog',
     'bbs', 'forum', 'forums', 'static', 'assets', 'repository',
+
+    'public', 'private',
     'mac', 'windows', 'ios', 'lab',
 ]
 
@@ -25,8 +28,8 @@ class SignupForm(BaseForm):
     name = TextField(
         _('Username'), validators=[
             Required(), Length(min=3, max=20),
-            Regexp(r'^[a-z0-9A-Z]+$')
-        ], description=_('English Characters Only.'),
+            Regexp(r'^[a-z][a-z0-9\-]+$')
+        ], description=_('Lowercase characters and numbers.'),
     )
     email = EmailField(
         _('Email'), validators=[Required(), Email()]
@@ -36,9 +39,12 @@ class SignupForm(BaseForm):
     )
 
     def validate_name(self, field):
-        if field.data.lower() in RESERVED_WORDS:
+        data = field.data.lower()
+        if data in RESERVED_WORDS:
             raise ValueError(_('This name is a reserved name.'))
-        if Account.query.filter_by(name=field.data.lower()).count():
+        if data in current_app.config.get('RESERVED_WORDS', []):
+            raise ValueError(_('This name is a reserved name.'))
+        if Account.query.filter_by(name=data).count():
             raise ValueError(_('This name has been registered.'))
 
     def validate_email(self, field):
