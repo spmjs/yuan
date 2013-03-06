@@ -114,7 +114,7 @@ def package(family, name, version):
         return jsonify(status='info', message=_('Package is deleted.'))
 
     force = request.headers.get('X-Yuan-Force', False)
-    if package.md5 and not force:
+    if (package.md5 or package.revision) and not force:
         return abortify(444)
 
     # register package information
@@ -140,6 +140,10 @@ def package(family, name, version):
         package.update(data)
         package.save()
         package_signal.send(current_app, changes=(package, 'update'))
+
+        project.update(package)
+        project.save()
+        project_signal.send(current_app, changes=(project, 'update'))
         return jsonify(package)
 
     # upload files for a package
