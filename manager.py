@@ -44,18 +44,18 @@ def createdb():
 def initsearch():
     """init search engine."""
     from yuan.elastic import index_project
-
-    for item in Project.query.all():
-        index_project(item, 'update')
+    for name in Project.all():
+        for item in Project.list(name):
+            index_project(item, 'update')
 
 
 @manager.command
 def index():
     """index projects."""
     from yuan.models import index_project
-
-    for item in Project.query.all():
-        index_project(item, 'update')
+    for name in Project.all():
+        for item in Project.list(name):
+            index_project(item, 'update')
 
 
 @manager.command
