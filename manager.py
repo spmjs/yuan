@@ -92,7 +92,11 @@ def mirror(url=None):
         pkg = Package(**rv.json()).save()
 
         url = '%s%s' % (url, pkg['filename'])
-        fpath = os.path.join(pkg.directory, pkg['filename'])
+        fpath = os.path.join(
+            app.config['WWW_ROOT'], 'repository',
+            pkg.family, pkg.name, pkg.version,
+            pkg['filename']
+        )
         print '    save:', fpath
         urllib.urlretrieve(url, fpath)
 
@@ -109,17 +113,12 @@ def mirror(url=None):
         if 'versions' not in data:
             data['versions'] = {}
 
-        me = Project.read(project['family'], project['name'])
-        if not me:
-            me = {
-                'family': project['family'],
-                'name': project['name'],
-                'updated_at': _strptime(project['updated_at']),
-                'created_at': _strptime(project['created_at']),
-                'versions': {}
-            }
+        me = Project(family=project['family'], name=project['name'])
 
-        versions = me['versions'].copy()
+        if 'versions' in me:
+            versions = me['versions'].copy()
+        else:
+            versions = {}
 
         for v in versions:
             local = versions[v]
@@ -150,8 +149,8 @@ def mirror(url=None):
         return True
 
     for project in data:
-        me = Project.read(project['family'], project['name'])
-        if not me or \
+        me = Project(family=project['family'], name=project['name'])
+        if 'updated_at' not in me or \
            _strptime(me['updated_at']) < _strptime(project['updated_at']):
             _index(project)
 
