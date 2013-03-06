@@ -105,6 +105,16 @@ class Project(Model):
         )
 
     @staticmethod
+    def all():
+        repo = os.path.join(
+            current_app.config['WWW_ROOT'],
+            'repository',
+        )
+        def isdir(name):
+            return os.path.isdir(os.path.join(repo, name))
+        return filter(isdir, os.listdir(repo))
+
+    @staticmethod
     def list(family):
         fpath = os.path.join(
             current_app.config['WWW_ROOT'],

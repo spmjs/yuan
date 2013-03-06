@@ -29,9 +29,7 @@ def index():
         return Response('[]', content_type='application/json')
 
     def list_projects():
-        def isdir(name):
-            return os.path.isdir(os.path.join(repo, name))
-        for name in filter(isdir, os.listdir(repo)):
+        for name in Project.all():
             yield Project.list(name)
 
     projects = []
