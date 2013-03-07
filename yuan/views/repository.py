@@ -206,7 +206,12 @@ def upload(family):
     except:
         return abortify(415)
 
-    filename = werkzeug.secure_filename(tarball.filename)
+    name = request.form.get('name', family)
+    tag = request.form.get('tag', 'latest')
+
+    filename = '%s-%s-%s' % (
+        family, name, werkzeug.secure_filename(tarball.filename)
+    )
     fpath = os.path.join(tempfile.gettempdir(), filename)
     if os.path.exists(fpath):
         shutil.rmtree(fpath)
@@ -226,9 +231,6 @@ def upload(family):
     indir = os.listdir(fpath)
     if len(indir) == 1 and os.path.isdir(os.path.join(fpath, indir[0])):
         rootdir = os.path.join(fpath, indir[0])
-
-    name = request.form.get('name', family)
-    tag = request.form.get('tag', 'latest')
 
     if tag == 'latest':
         dest = os.path.join(
