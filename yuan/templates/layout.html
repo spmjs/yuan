@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>{% block title %}{% block subtitle %}{% endblock %} - {{config.SITE_TITLE}}{% endblock %}</title>
+    <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="{{config.SITE_TITLE}}" />
     {%- from "macro/ui.html" import flash_messages, style %}
     {{ style(True) }}
     {%- block afterstyle %}{% endblock %}
