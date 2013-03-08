@@ -2,7 +2,7 @@
 
 from flask import Blueprint
 from flask import request
-from flask import render_template
+from flask import abort, render_template
 from distutils.version import StrictVersion
 from ..models import Project, Package, Account
 from ..elastic import search_project
@@ -21,6 +21,8 @@ def profile(name):
     items = Project.list(name)
     items = map(_fill_project, items)
     account = Account.query.filter_by(name=name).first()
+    if not account and not items:
+        return abort(404)
     dct = {'projects': items, 'family': name, 'account': account}
     return render_template('profile.html', **dct)
 
@@ -28,6 +30,8 @@ def profile(name):
 @bp.route('/<family>/<name>')
 def project(family, name):
     project = Project(family=family, name=name)
+    if not project.created_at:
+        return abort(404)
     latest = _fill_project(project)
     package = Package(family=family, name=name, version=latest['version'])
     project['latest'] = package

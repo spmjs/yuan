@@ -8,7 +8,7 @@
   <hr />
   <blockquote><p>{{project.latest.description}}</p></blockquote>
   <pre>spm install {{project.family}}/{{project.name}}</pre>
-  <p>Latest version: <strong>{{project.latest.version}}</strong></p>
+  <p>Latest version: <strong>{{project.latest.version}}</strong> <span>~ {{project.latest.tag}}</span></p>
   <table class="meta">
     {%- if project.latest.homepage %}
     <tr>
