@@ -101,8 +101,8 @@ def create_app(config=None):
         app.config.setdefault('BABEL_SUPPORTED_LOCALES', ['en', 'zh'])
         app.config.setdefault('BABEL_DEFAULT_LOCALE', 'en')
         match = app.config['BABEL_SUPPORTED_LOCALES']
-        defautl = app.config['BABEL_DEFAULT_LOCALE']
-        return request.accept_languages.best_match(match, defautl)
+        default = app.config['BABEL_DEFAULT_LOCALE']
+        return request.accept_languages.best_match(match, default)
 
     princi = Principal(app)
 
