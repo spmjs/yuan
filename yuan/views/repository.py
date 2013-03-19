@@ -114,11 +114,13 @@ def package(family, name, version):
         return jsonify(status='info', message=_('Package is deleted.'))
 
     force = request.headers.get('X-Yuan-Force', False)
-    if (package.md5 or package.revision) and not force:
+    if package.md5 and not force:
         return abortify(444)
 
     # register package information
     if request.method == 'POST':
+        if package.revision and not force:
+            return abortify(444)
         ctype = request.headers.get('Content-Type')
         if not request.json and ctype != 'application/json':
             return abortify(
