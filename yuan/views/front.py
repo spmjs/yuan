@@ -36,7 +36,9 @@ def project(family, name):
     package = Package(family=family, name=name, version=latest['version'])
     project['latest'] = package
     project['versions'] = latest['versions']
-    return render_template('project.html', project=project)
+
+    account = Account.query.filter_by(name=family).first()
+    return render_template('project.html', project=project, account=account)
 
 
 @bp.route('/search')

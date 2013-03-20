@@ -41,6 +41,10 @@
 {%- if project.latest.readme %}
 <div class="yue">
   {{project.latest.readme|markdown|safe}}
+  {%- if account and account.comment_service_id %}
+  {%- from "macro/comment.html" import render_comment %}
+  {{ render_comment(account.comment_service_name, account.comment_service_id) }}
+  {%- endif %}
 </div>
 {%- endif %}
 {%- endblock %}

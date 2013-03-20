@@ -64,7 +64,10 @@ html, body {
   vertical-align: middle;
   font-size: 24px;
 }
-
+.comments {
+  margin-top: 30px;
+  padding-top: 30px;
+}
 .footer {
   font: 400 14px/1.6 "Ubuntu", 'Helvetica Neue', 'Xin Gothic', 'Hiragino Sans GB', 'Microsoft YaHei', 'WenQuanYi Micro Hei', 'arial', sans-serif;
   border-top: 1px solid #ddd;

@@ -92,7 +92,7 @@ class SettingForm(BaseForm):
         _('Comment Service'),
         choices=[
             ('disqus', 'Disqus'),
-            ('duoshuo', 'Duoshuo'),
+            #('duoshuo', 'Duoshuo'),
         ]
     )
     comment_service_id = TextField(
