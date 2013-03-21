@@ -44,8 +44,7 @@ class Model(dict):
             return None
         data = _read_json(fpath)
         for key in data:
-            if not key.startswith('_'):
-                self[key] = data[key]
+            self[key] = data[key]
         return self
 
     def save(self):
@@ -56,11 +55,11 @@ class Model(dict):
             os.makedirs(directory)
 
         now = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-        if 'created_at' not in self:
-            self.created_at = now
+        if '__created_at' not in self:
+            self.__created_at = now
 
         with open(fpath, 'w') as f:
-            self.updated_at = now
+            self.__updated_at = now
             f.write(json.dumps(self))
             return self
 
@@ -144,12 +143,15 @@ class Project(Model):
         if 'readme' in pkg:
             del pkg['readme']
         versions[pkg.version] = pkg
+        versions = self.sort(versions)
+        if versions:
+            self.__latest = versions.keys()[0]
 
-        if 'created_at' not in self:
-            self.created_at = now
+        if '__created_at' not in self:
+            self.__created_at = now
 
-        self.versions = self.sort(versions)
-        self.updated_at = now
+        self.__versions = versions
+        self.__updated_at = now
         self.write()
         return self
 
@@ -181,9 +183,9 @@ class Package(Model):
         self.family = kwargs.pop('family')
         self.name = kwargs.pop('name')
         self.version = kwargs.pop('version')
-        if not self.read():
-            for key in kwargs:
-                setattr(self, key, kwargs[key])
+        self.read()
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
 
     def __str__(self):
         return '%s/%s@%s' % (self.family, self.name, self.version)
@@ -220,10 +222,13 @@ def index_project(project, operation):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
+    if '__versions' in project:
+        del project['__versions']
+
     data.append(project)
     data = sorted(
         data,
-        key=lambda o: datetime.strptime(o['updated_at'], '%Y-%m-%dT%H:%M:%SZ'),
+        key=lambda o: datetime.strptime(o['__updated_at'], '%Y-%m-%dT%H:%M:%SZ'),
         reverse=True
     )
     with open(fpath, 'w') as f:

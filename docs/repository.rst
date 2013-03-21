@@ -70,21 +70,40 @@ If the response contains ``message``, client should log the message with a loggi
 Account
 -------
 
-List projects in the account. If client requests with authorization, the response will contain private projects::
+List projects in the account::
 
-    {
-      "status": "success",
-      "data": [
-        "calendar",
-        "base"
-      ]
-    }
+    GET /repository/arale/
+
+    [
+    ]
 
 
 Project
 --------
 
-Get information of a project, it this is a private project, authorization is required::
+Get information of a project::
+
+    GET /repository/arale/class
+
+    {
+        "family": "arale",
+        "name": "class",
+        "description": "xxx",
+        ....
+
+        "__latest": "1.0.0",
+        "__created_at": "2013-03-21T00:00:00Z",
+        "__updated_at": "2013-03-21T00:00:00Z",
+
+        "__versions": {
+            "1.0.0": {
+                ...
+            },
+            "0.9.9": {
+                ...
+            }
+        }
+    }
 
 
 Create a project with **POST** method, authorization is required, content-type should be ``application/json``::
