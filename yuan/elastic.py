@@ -2,10 +2,7 @@
 
 import json
 import requests
-import gevent
-from flask import Flask, current_app
 from flask import _app_ctx_stack
-from .models import project_signal
 
 __all__ = ['ElasticSearch', 'elastic', 'search_project', 'index_project']
 
@@ -77,16 +74,15 @@ def index_project(project, operation):
         elastic.delete('project/%s.%s' % (project.family, project.name))
         return
 
-    if '__versions' not in project:
+    if 'packages' not in project:
         return
 
-    versions = project['__versions']
-    package = versions[project['__latest']]
+    package = project.packages[project.version]
     dct = dict(
         family=project.family,
         name=project.name,
         created_at=project.created_at,
-        updated_at=project.updated_at
+        updated_at=project.updated_at,
     )
     if 'keywords' in package and isinstance(package['keywords'], list):
         dct['keywords'] = package['keywords']
@@ -128,18 +124,3 @@ def search_project(query):
     hits['results'] = results
     del hits['hits']
     return hits
-
-
-def _connect_project(sender, changes):
-    project, operation = changes
-
-    def _index(config):
-        app = Flask('yuan')
-        app.config = config
-        with app.test_request_context():
-            index_project(project, operation)
-
-    gevent.spawn(_index, current_app.config)
-
-
-project_signal.connect(_connect_project)

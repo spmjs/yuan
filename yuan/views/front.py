@@ -29,17 +29,15 @@ def profile(name):
 @bp.route('/<family>/<name>')
 def project(family, name):
     project = Project(family=family, name=name)
-    if '__created_at' not in project:
+    if 'created_at' not in project:
         return abort(404)
-    package = Package(family=family, name=name, version=project.__latest)
+    package = Package(family=family, name=name, version=project.version)
 
     project['latest'] = package
 
-    versions = project.__versions.keys()
+    versions = project.packages.keys()
     versions = sorted(versions, key=lambda i: StrictVersion(i), reverse=True)
     project['versions'] = versions
-
-    project['updated_at'] = project.__updated_at
 
     account = Account.query.filter_by(name=family).first()
     return render_template('project.html', project=project, account=account)

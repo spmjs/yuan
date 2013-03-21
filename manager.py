@@ -47,6 +47,7 @@ def initsearch():
     for name in Project.all():
         for item in Project.list(name):
             print '%(family)s/%(name)s' % item
+            item = Project(family=item['family'], name=item['name'])
             index_project(item, 'update')
 
 

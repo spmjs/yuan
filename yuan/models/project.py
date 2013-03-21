@@ -10,6 +10,8 @@ from werkzeug import cached_property
 from collections import OrderedDict
 from distutils.version import StrictVersion
 from ._base import project_signal
+from ..elastic import index_project as index_search
+
 
 __all__ = ['Project', 'Package', 'index_project']
 
@@ -55,11 +57,11 @@ class Model(dict):
             os.makedirs(directory)
 
         now = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
-        if '__created_at' not in self:
-            self['__created_at'] = now
+        if 'created_at' not in self:
+            self['created_at'] = now
 
         with open(fpath, 'w') as f:
-            self['__updated_at'] = now
+            self['updated_at'] = now
             json.dump(self, f)
             return self
 
@@ -74,9 +76,9 @@ class Project(Model):
     def __init__(self, **kwargs):
         self.family = kwargs.pop('family')
         self.name = kwargs.pop('name')
-        if not self.read():
-            for key in kwargs:
-                setattr(self, key, kwargs[key])
+        self.read()
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
 
     def __str__(self):
         return '%s/%s' % (self.family, self.name)
@@ -85,13 +87,13 @@ class Project(Model):
         return '<Project: %s>' % self
 
     @classmethod
-    def sort(cls, versions=None):
-        if not versions:
+    def sort(cls, packages=None):
+        if not packages:
             return {}
         o = OrderedDict()
-        for v in sorted(versions.keys(),
+        for v in sorted(packages.keys(),
                         key=lambda i: StrictVersion(i), reverse=True):
-            o[v] = versions[v]
+            o[v] = packages[v]
         return o
 
     @cached_property
@@ -144,32 +146,30 @@ class Project(Model):
             if key in dct:
                 self[key] = dct[key]
 
-        if '__versions' in self:
-            versions = self['__versions']
-        else:
-            versions = {}
+        packages = self.packages or {}
         if 'readme' in pkg:
             del pkg['readme']
-        versions[pkg.version] = pkg
-        versions = self.sort(versions)
-        if versions:
-            self['__latest'] = versions.keys()[0]
 
-        if '__created_at' not in self:
-            self['__created_at'] = now
+        packages[pkg.version] = pkg
+        packages = self.sort(packages)
+        if packages:
+            self['version'] = packages.keys()[0]
 
-        self['__versions'] = versions
-        self['__updated_at'] = now
+        if 'created_at' not in self:
+            self['created_at'] = now
+
+        self.packages = packages
+        self['updated_at'] = now
         self.write()
         return self
 
     def remove(self, version):
-        if '__versions' not in self:
+        if 'packages' not in self:
             return self
-        versions = self['__versions'] or {}
-        if version in versions:
-            del versions[version]
-            self['__versions'] = versions
+        packages = self['packages'] or {}
+        if version in packages:
+            del packages[version]
+            self['packages'] = packages
             self.write()
         return self
 
@@ -244,13 +244,13 @@ def index_project(project, operation):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    if '__versions' in project:
-        del project['__versions']
+    if 'packages' in project:
+        del project['packages']
 
     def __sort(item):
-        if '__update_at' in item:
+        if 'update_at' in item:
             return datetime.strptime(
-                item['__updated_at'], '%Y-%m-%dT%H:%M:%SZ'
+                item['updated_at'], '%Y-%m-%dT%H:%M:%SZ'
             )
         return None
 
@@ -294,6 +294,7 @@ def _connect_project(sender, changes):
         app = Flask('yuan')
         app.config = config
         with app.test_request_context():
+            index_search(project, operation)
             index_project(project, operation)
 
     if current_app.testing:

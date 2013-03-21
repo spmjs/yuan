@@ -50,7 +50,7 @@ def family(family):
 @bp.route('/<family>/<name>/', methods=['GET', 'DELETE'])
 def project(family, name):
     project = Project(family=family, name=name)
-    if '__created_at' not in project:
+    if 'created_at' not in project:
         return abortify(404, message=_('Project not found.'))
 
     if request.method == 'GET':
@@ -89,7 +89,7 @@ def package(family, name, version):
         return jsonify(package)
 
     project = Project(family=family, name=name)
-    if '__created_at' not in project and request.method != 'POST':
+    if 'created_at' not in project and request.method != 'POST':
         return abortify(404, message=_('Project not found.'))
 
     # account can be a user or organization
@@ -123,7 +123,7 @@ def package(family, name, version):
                 message=_('Only application/json is allowed.')
             )
 
-        if '__created_at' not in project:
+        if 'created_at' not in project:
             project = Project(family=family, name=name)
             project.save()
             project_signal.send(current_app, changes=(project, 'create'))
@@ -139,7 +139,7 @@ def package(family, name, version):
         package_signal.send(current_app, changes=(package, 'update'))
 
         project.update(package)
-        project.save()
+        project = project.save()
         project_signal.send(current_app, changes=(project, 'update'))
         return jsonify(package)
 
