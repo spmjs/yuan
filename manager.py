@@ -46,6 +46,7 @@ def initsearch():
     from yuan.elastic import index_project
     for name in Project.all():
         for item in Project.list(name):
+            print '%(family)s/%(name)s' % item
             index_project(item, 'update')
 
 
@@ -55,6 +56,7 @@ def index():
     from yuan.models import index_project
     for name in Project.all():
         for item in Project.list(name):
+            print '%(family)s/%(name)s' % item
             index_project(item, 'update')
 
 

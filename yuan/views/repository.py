@@ -36,11 +36,7 @@ def index():
     for proj in list_projects():
         projects.extend(proj)
 
-    projects = sorted(
-        projects,
-        key=lambda o: datetime.strptime(o['__updated_at'], '%Y-%m-%dT%H:%M:%SZ'),
-        reverse=True
-    )
+    projects = map(lambda o: '%(family)s/%(name)s' % o, projects)
     return Response(json.dumps(projects), content_type='application/json')
 
 

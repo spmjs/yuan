@@ -236,10 +236,17 @@ def index_project(project, operation):
     if '__versions' in project:
         del project['__versions']
 
+    def __sort(item):
+        if '__update_at' in item:
+            return datetime.strptime(
+                item['__updated_at'], '%Y-%m-%dT%H:%M:%SZ'
+            )
+        return None
+
     data.append(project)
     data = sorted(
         data,
-        key=lambda o: datetime.strptime(o['__updated_at'], '%Y-%m-%dT%H:%M:%SZ'),
+        key=__sort,
         reverse=True
     )
     with open(fpath, 'w') as f:
