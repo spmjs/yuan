@@ -77,10 +77,11 @@ def index_project(project, operation):
         elastic.delete('project/%s.%s' % (project.family, project.name))
         return
 
-    if not project.versions:
+    if '__versions' not in project:
         return
 
-    package = project.versions[list(project.versions)[0]]
+    versions = project['__versions']
+    package = versions[project['__latest']]
     dct = dict(
         family=project.family,
         name=project.name,
