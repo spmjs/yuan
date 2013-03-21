@@ -109,6 +109,7 @@ class Project(Model):
             current_app.config['WWW_ROOT'],
             'repository',
         )
+
         def isdir(name):
             return os.path.isdir(os.path.join(repo, name))
         return filter(isdir, os.listdir(repo))
@@ -138,6 +139,10 @@ class Project(Model):
         dct['name'] = self.name
         pkg = Package(**dct)
         pkg.save()
+
+        for key in ['homepage', 'description', 'keywords', 'repository']:
+            if key in dct:
+                self[key] = dct[key]
 
         versions = self.versions or {}
         if 'readme' in pkg:

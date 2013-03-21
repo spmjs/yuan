@@ -4,7 +4,7 @@ import werkzeug
 from flask import Blueprint
 from flask import g, request, flash
 from flask import url_for, current_app
-from flask import render_template, redirect, abort, jsonify
+from flask import render_template, redirect, jsonify
 from flask.ext.babel import gettext as _
 from ..models import Account, Member
 from ..helpers import login_user, logout_user, require_login
