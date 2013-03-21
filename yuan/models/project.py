@@ -144,7 +144,10 @@ class Project(Model):
             if key in dct:
                 self[key] = dct[key]
 
-        versions = self.versions or {}
+        if '__versions' in self:
+            versions = self['__versions']
+        else:
+            versions = {}
         if 'readme' in pkg:
             del pkg['readme']
         versions[pkg.version] = pkg
@@ -161,10 +164,13 @@ class Project(Model):
         return self
 
     def remove(self, version):
-        if version in self.versions:
-            del self.versions[version]
-
-        self.write()
+        if '__versions' not in self:
+            return self
+        versions = self['__versions'] or {}
+        if version in versions:
+            del versions[version]
+            self['__versions'] = versions
+            self.write()
         return self
 
     def write(self, data=None):

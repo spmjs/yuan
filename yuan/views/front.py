@@ -3,6 +3,7 @@
 from flask import Blueprint
 from flask import request
 from flask import abort, render_template
+from distutils.version import StrictVersion
 from ..models import Project, Package, Account
 from ..elastic import search_project
 
@@ -33,7 +34,11 @@ def project(family, name):
     package = Package(family=family, name=name, version=project.__latest)
 
     project['latest'] = package
-    project['versions'] = project.__versions.keys()
+
+    versions = project.__versions.keys()
+    versions = sorted(versions, key=lambda i: StrictVersion(i), reverse=True)
+    project['versions'] = versions
+
     project['updated_at'] = project.__updated_at
 
     account = Account.query.filter_by(name=family).first()
