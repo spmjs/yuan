@@ -92,6 +92,8 @@ def mirror(url=None):
 
     jobs = []
     for project in data:
+        if not isinstance(project, dict):
+            raise Exception('Only mirror a selected family')
         me = Project(family=project['family'], name=project['name'])
         if 'updated_at' not in me or \
            _strptime(me['updated_at']) < _strptime(project['updated_at']):
@@ -140,21 +142,21 @@ def _index(project, domain):
     if rv.status_code != 200:
         raise Exception('%s: %s' % url, rv.status_code)
     data = rv.json()
-    if 'versions' not in data:
-        data['versions'] = {}
+    if 'packages' not in data:
+        data['packages'] = {}
 
     me = Project(family=project['family'], name=project['name'])
 
-    if 'versions' in me:
-        versions = me['versions'].copy()
+    if 'packages' in me:
+        packages = me['packages'].copy()
     else:
-        versions = {}
+        packages = {}
 
-    for v in versions:
-        local = versions[v]
+    for v in packages:
+        local = packages[v]
         server = None
-        if v in data['versions']:
-            server = data['versions'][v]
+        if v in data['packages']:
+            server = data['packages'][v]
 
         if not server:
             print '  delete: %s/%s@%s' % (me['family'], me['name'], v)
@@ -169,9 +171,9 @@ def _index(project, domain):
             # add this version to project
             Project(**me).update(server)
 
-    for v in data['versions']:
-        if v not in versions:
-            pkg = data['versions'][v]
+    for v in data['packages']:
+        if v not in packages:
+            pkg = data['packages'][v]
             print '  create: %s/%s@%s' % (pkg['family'], pkg['name'], v)
             _fetch(pkg, domain)
             # add this version to project

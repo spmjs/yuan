@@ -298,7 +298,7 @@ def _connect_project(sender, changes):
             index_project(project, operation)
 
     if current_app.testing:
-        _index(current_app.config)
+        index_project(project, operation)
     else:
         gevent.spawn(_index, current_app.config)
 
