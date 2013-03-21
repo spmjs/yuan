@@ -38,7 +38,7 @@ def index():
 
     projects = sorted(
         projects,
-        key=lambda o: datetime.strptime(o['updated_at'], '%Y-%m-%dT%H:%M:%SZ'),
+        key=lambda o: datetime.strptime(o['__updated_at'], '%Y-%m-%dT%H:%M:%SZ'),
         reverse=True
     )
     return Response(json.dumps(projects), content_type='application/json')
@@ -55,7 +55,7 @@ def family(family):
 @bp.route('/<family>/<name>/', methods=['GET', 'DELETE'])
 def project(family, name):
     project = Project(family=family, name=name)
-    if not project.created_at:
+    if '__created_at' not in project:
         return abortify(404, message=_('Project not found.'))
 
     if request.method == 'GET':
@@ -94,7 +94,7 @@ def package(family, name, version):
         return jsonify(package)
 
     project = Project(family=family, name=name)
-    if not project.created_at and request.method != 'POST':
+    if '__created_at' not in project and request.method != 'POST':
         return abortify(404, message=_('Project not found.'))
 
     # account can be a user or organization
@@ -128,7 +128,7 @@ def package(family, name, version):
                 message=_('Only application/json is allowed.')
             )
 
-        if not project.created_at:
+        if '__created_at' not in project:
             project = Project(family=family, name=name)
             project.save()
             project_signal.send(current_app, changes=(project, 'create'))

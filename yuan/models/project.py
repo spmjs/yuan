@@ -56,11 +56,11 @@ class Model(dict):
 
         now = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
         if '__created_at' not in self:
-            self.__created_at = now
+            self['__created_at'] = now
 
         with open(fpath, 'w') as f:
-            self.__updated_at = now
-            f.write(json.dumps(self))
+            self['__updated_at'] = now
+            json.dump(self, f)
             return self
 
     def delete(self):
@@ -145,13 +145,13 @@ class Project(Model):
         versions[pkg.version] = pkg
         versions = self.sort(versions)
         if versions:
-            self.__latest = versions.keys()[0]
+            self['__latest'] = versions.keys()[0]
 
         if '__created_at' not in self:
-            self.__created_at = now
+            self['__created_at'] = now
 
-        self.__versions = versions
-        self.__updated_at = now
+        self['__versions'] = versions
+        self['__updated_at'] = now
         self.write()
         return self
 
@@ -174,7 +174,7 @@ class Project(Model):
 
         fpath = os.path.join(directory, 'index.json')
         with open(fpath, 'w') as f:
-            f.write(json.dumps(data))
+            json.dump(data, f)
             return data
 
 
@@ -204,9 +204,20 @@ class Package(Model):
 
 
 def index_project(project, operation):
-    directory = os.path.join(
-        current_app.config['WWW_ROOT'], 'repository', project['family']
-    )
+    repo = os.path.join(current_app.config['WWW_ROOT'], 'repository')
+    if operation == 'create':
+        fullname = '%(family)s/%(name)s' % project
+        repofile = os.path.join(repo, 'index.json')
+        if os.path.exists(repofile):
+            repoindex = _read_json(repofile)
+        else:
+            repoindex = []
+        if fullname not in repoindex:
+            repoindex.insert(0, fullname)
+            with open(repofile, 'w') as f:
+                json.dump(repoindex, f)
+
+    directory = os.path.join(repo, project['family'])
     fpath = os.path.join(directory, 'index.json')
     data = _read_json(fpath)
     data = filter(lambda o: o['name'] != project['name'], data)
@@ -216,7 +227,7 @@ def index_project(project, operation):
         if os.path.exists(directory):
             shutil.rmtree(directory)
         with open(fpath, 'w') as f:
-            f.write(json.dumps(data))
+            json.dump(data, f)
         return data
 
     if not os.path.exists(directory):
@@ -232,7 +243,7 @@ def index_project(project, operation):
         reverse=True
     )
     with open(fpath, 'w') as f:
-        f.write(json.dumps(data))
+        json.dump(data, f)
         return data
 
 
@@ -252,9 +263,8 @@ def _read_json(fpath):
     if not os.path.exists(fpath):
         return {}
     with open(fpath, 'r') as f:
-        content = f.read()
         try:
-            return json.loads(content)
+            return json.load(f)
         except:
             return {}
 
@@ -268,7 +278,10 @@ def _connect_project(sender, changes):
         with app.test_request_context():
             index_project(project, operation)
 
-    gevent.spawn(_index, current_app.config)
+    if current_app.testing:
+        _index(current_app.config)
+    else:
+        gevent.spawn(_index, current_app.config)
 
 
 project_signal.connect(_connect_project)
