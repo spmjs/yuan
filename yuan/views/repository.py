@@ -135,6 +135,11 @@ def package(family, name, version):
             data['tag'] = 'stable'
 
         package.update(data)
+
+        if g.user:
+            # record publisher
+            package.publisher = g.user.name
+
         package.save()
         package_signal.send(current_app, changes=(package, 'update'))
 
