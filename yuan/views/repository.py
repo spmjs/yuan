@@ -92,6 +92,10 @@ def package(family, name, version):
     if 'created_at' not in project and request.method != 'POST':
         return abortify(404, message=_('Project not found.'))
 
+    allow_anonymous = current_app.config.get('ALLOW_ANONYMOUS', False)
+    if not allow_anonymous and not g.user:
+        return abortify(401)
+
     # account can be a user or organization
     account = Account.query.filter_by(name=family).first()
     if account and not account.permission_write.can():
