@@ -216,17 +216,21 @@ class Package(Model):
 
 def index_project(project, operation):
     repo = os.path.join(current_app.config['WWW_ROOT'], 'repository')
-    if operation == 'create':
+    if operation == 'create' or operation == 'delete':
         fullname = '%(family)s/%(name)s' % project
         repofile = os.path.join(repo, 'index.json')
         if os.path.exists(repofile):
             repoindex = _read_json(repofile)
         else:
             repoindex = []
-        if fullname not in repoindex:
+
+        if fullname not in repoindex and operation == 'create':
             repoindex.insert(0, fullname)
-            with open(repofile, 'w') as f:
-                json.dump(repoindex, f)
+        elif fullname in repoindex and operation == 'delete':
+            repoindex.remove(fullname)
+
+        with open(repofile, 'w') as f:
+            json.dump(repoindex, f)
 
     directory = os.path.join(repo, project['family'])
     fpath = os.path.join(directory, 'index.json')

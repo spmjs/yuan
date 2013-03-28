@@ -102,6 +102,10 @@ def package(family, name, version):
 
     # account can be a user or organization
     account = Account.query.filter_by(name=family).first()
+
+    if not allow_anonymous and not account:
+        return abortify(404, message=_('Family not found.'))
+
     if account and not account.permission_write.can():
         return abortify(403)
 
