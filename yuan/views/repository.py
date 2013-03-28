@@ -57,12 +57,14 @@ def project(family, name):
         return jsonify(project)
 
     account = Account.query.filter_by(name=family).first()
-    if not account:
+    allow_anonymous = current_app.config.get('ALLOW_ANONYMOUS', False)
+    if not account and not allow_anonymous:
         return abortify(404, message=_('Family not found.'))
 
-    if not account.permission_write.can():
+    if account and not account.permission_write.can():
         return abortify(403)
 
+    # anyone can delete an anonymous project
     project.delete()
     project_signal.send(current_app, changes=(project, 'delete'))
     return jsonify(status='info', message=_('Project is deleted.'))
@@ -88,8 +90,10 @@ def package(family, name, version):
             return abortify(404, message=_('Package not found.'))
         return jsonify(package)
 
+    # verify permission on non-GET request
     project = Project(family=family, name=name)
     if 'created_at' not in project and request.method != 'POST':
+        # POST is to create a project, if not return 404
         return abortify(404, message=_('Project not found.'))
 
     allow_anonymous = current_app.config.get('ALLOW_ANONYMOUS', False)
@@ -103,15 +107,14 @@ def package(family, name, version):
 
     package = Package(family=family, name=name, version=version)
     if request.method == 'DELETE':
-        # only registered user can delete a package
+        # only registered user can delete a non-anonymous package
         # we have verified permission above
-        if not g.user:
-            return abortify(401)
         project.remove(version)
         package.delete()
         package_signal.send(current_app, changes=(package, 'delete'))
         return jsonify(status='info', message=_('Package is deleted.'))
 
+    # POST or PUT. if the package exists, you need --force option
     force = request.headers.get('X-Yuan-Force', False)
     if package.md5 and not force:
         return abortify(444)
@@ -197,6 +200,7 @@ def search():
 @bp.route('/upload/<family>', methods=['POST'])
 def upload(family):
     if not g.user:
+        # documentation are designed for registered users
         return abortify(401)
 
     account = Account.query.filter_by(name=family).first()
