@@ -12,6 +12,7 @@ user = 'lepture'
 
 # maybe you like error
 loglevel = 'warning'
+errorlog = '-'
 
 secure_scheme_headers = {
     'X-SCHEME': 'https',
