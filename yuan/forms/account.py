@@ -14,6 +14,7 @@ from ..models import Account
 RESERVED_WORDS = [
     'root', 'admin', 'bot', 'robot', 'master', 'webmaster',
     'account', 'people', 'user', 'users', 'project', 'projects',
+    'search', 'action', 'favorite', 'like', 'love',
     'team', 'teams', 'group', 'groups', 'organization',
     'organizations', 'package', 'packages', 'org', 'com', 'net',
     'help', 'doc', 'docs', 'document', 'documentation', 'blog',
