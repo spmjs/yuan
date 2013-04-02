@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{%- block subtitle %}{{package.family}}/{{package.name}}@{{package.version}}{%- endblock %}
+
+{%- block content %}
+<div class="yue">
+  <h1><a href="/{{package.family}}/">{{package.family}}</a> / {{package.name}}</h1>
+  <hr />
+  <blockquote><p>{{package.description}}</p></blockquote>
+  <pre>spm install {{package.family}}/{{package.name}}@{{package.version}}</pre>
+  <p>Version: <strong>{{package.version}}</strong> <span>~ {{package.tag}}</span></p>
+  <table class="meta">
+    {%- if package.homepage %}
+    <tr>
+      <th>Homepage:</th>
+      <td>{{package.homepage|repo_link}}</td>
+    </tr>
+    {%- endif %}
+    <tr>
+      <th>Updated:</th>
+      <td>{{package.updated_at}}</td>
+    </tr>
+    {%- if package.repository %}
+    <tr>
+      <th>Repository:</th>
+      <td>{{package.repository|repo_link}}</td>
+    </tr>
+    {%- endif %}
+    {%- if package.dependencies %}
+    <tr>
+      <th>Dependencies:</th>
+      <td>{{package.dependencies|join(', ')}}</td>
+    </tr>
+    {%- endif %}
+  </table>
+</div>
+{%- if package.readme %}
+<div class="yue">
+  {{package.readme|markdown|safe}}
+</div>
+{%- endif %}
+{%- endblock %}

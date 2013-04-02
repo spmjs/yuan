@@ -26,7 +26,7 @@ def profile(name):
     return render_template('profile.html', **dct)
 
 
-@bp.route('/<family>/<name>')
+@bp.route('/<family>/<name>/')
 def project(family, name):
     project = Project(family=family, name=name)
     if 'created_at' not in project:
@@ -41,6 +41,14 @@ def project(family, name):
 
     account = Account.query.filter_by(name=family).first()
     return render_template('project.html', project=project, account=account)
+
+
+@bp.route('/<family>/<name>/<version>')
+def version(family, name, version):
+    pkg = Package(family=family, name=name, version=version)
+    if 'created_at' not in pkg:
+        return abort(404)
+    return render_template('version.html', package=pkg)
 
 
 @bp.route('/search')
