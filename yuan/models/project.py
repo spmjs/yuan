@@ -298,8 +298,9 @@ def _connect_project(sender, changes):
         app = Flask('yuan')
         app.config = config
         with app.test_request_context():
-            index_project(project, operation)
+            # must index search first.
             index_search(project, operation)
+            index_project(project, operation)
 
     if current_app.testing:
         index_project(project, operation)
