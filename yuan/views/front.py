@@ -43,7 +43,7 @@ def project(family, name):
     return render_template('project.html', project=project, account=account)
 
 
-@bp.route('/<family>/<name>/<version>')
+@bp.route('/<family>/<name>/<version>/')
 def version(family, name, version):
     pkg = Package(family=family, name=name, version=version)
     if 'created_at' not in pkg:
