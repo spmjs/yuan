@@ -331,6 +331,9 @@ def _create_assets(package, operation):
         shutil.rmtree(pkgdir)
         return
 
+    if operation != 'upload':
+        return
+
     if package.tag != 'stable':
         # only extract stable version
         return
@@ -340,7 +343,7 @@ def _create_assets(package, operation):
         return
 
     try:
-        tar = tarfile.open(fileobj=tarball, mode='r:gz')
+        tar = tarfile.open(tarball, mode='r:gz')
     except:
         return
 
