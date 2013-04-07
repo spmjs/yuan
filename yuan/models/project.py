@@ -3,7 +3,11 @@
 import os
 import gevent
 import shutil
-from flask import Flask, json
+from flask import Flask
+try:
+    import ujson as json
+except ImportError:
+    from flask import json
 from flask import current_app
 from datetime import datetime
 from werkzeug import cached_property
