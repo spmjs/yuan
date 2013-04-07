@@ -11,7 +11,7 @@ from ..helpers import login_user, logout_user, require_login
 from ..helpers import create_auth_token, verify_auth_token
 from ..forms import SignupForm, SigninForm, SettingForm
 from ..forms import FindForm, ResetForm
-from ..tasks import signup_mail, find_mail
+from ..tasks.mail import signup_mail, find_mail
 
 bp = Blueprint('account', __name__)
 

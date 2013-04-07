@@ -5,7 +5,7 @@ from flask import Flask
 from flask import current_app, url_for, render_template
 from flask.ext.babel import gettext as _
 from flask_mail import Mail, Message
-from .helpers import create_auth_token
+from ..helpers import create_auth_token
 
 
 def send_mail(config, msg):
