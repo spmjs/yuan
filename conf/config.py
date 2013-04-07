@@ -31,6 +31,7 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///%s' % database
 
 # WWW_ROOT = '/www/'
 # ALLOW_ANONYMOUS = False
+# ASSETS_ROOT = '/www/assets/'
 
 # BABEL_SUPPORTED_LOCALES = ['en', 'zh']
 # BABEL_DEFAULT_LOCALE = 'en'

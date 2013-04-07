@@ -24,5 +24,6 @@ GRAVATAR_EXTRA = ''
 #: file storage
 WWW_ROOT = 'data'
 ALLOW_ANONYMOUS = False
+ASSETS_ROOT = None
 
 MIRROR_URL = 'http://spmjs.org/repository/gallery/'
