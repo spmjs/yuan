@@ -4,7 +4,7 @@ import os
 
 from flask.ext.script import Manager
 from yuan.app import create_app
-from yuan.models import Project
+from yuan.models import Project, Package
 
 app = create_app(os.path.abspath('./conf/config.py'))
 manager = Manager(app)
@@ -57,6 +57,18 @@ def index():
         for item in Project.list(name):
             print '%(family)s/%(name)s' % item
             index_project(item, 'update')
+
+
+@manager.command
+def initassets():
+    from yuan.tasks import extract_assets
+    for name in Project.all():
+        for item in Project.list(name):
+            item = Project(family=item['family'], name=item['name'])
+            for key in item.packages:
+                pkg = Package(**item.packages[key])
+                print(pkg)
+                extract_assets(pkg, 'upload')
 
 
 @manager.command
