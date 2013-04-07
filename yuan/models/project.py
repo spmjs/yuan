@@ -1,9 +1,7 @@
 # coding: utf-8
 
 import os
-import gevent
 import shutil
-from flask import Flask
 try:
     import ujson as json
 except ImportError:
@@ -13,8 +11,6 @@ from datetime import datetime
 from werkzeug import cached_property
 from collections import OrderedDict
 from distutils.version import StrictVersion
-from ._base import project_signal
-from ..elastic import index_project as index_search
 
 
 __all__ = ['Project', 'Package', 'index_project']
@@ -293,23 +289,3 @@ def _read_json(fpath):
             return json.load(f)
         except:
             return {}
-
-
-def _connect_project(sender, changes):
-    project, operation = changes
-
-    def _index(config):
-        app = Flask('yuan')
-        app.config = config
-        with app.test_request_context():
-            # must index search first.
-            index_search(project, operation)
-            index_project(project, operation)
-
-    if current_app.testing:
-        index_project(project, operation)
-    else:
-        gevent.spawn(_index, current_app.config)
-
-
-project_signal.connect(_connect_project)

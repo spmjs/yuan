@@ -17,10 +17,6 @@ from flask import request, g, escape
 from flask.ext.babel import Babel
 from flask.ext.principal import Principal, Identity, identity_loaded, UserNeed
 from flask import Markup
-from .models import db
-from .views import front, account, repository, admin
-from .helpers import get_current_user
-from .elastic import elastic
 
 
 class HighlightRender(m.HtmlRenderer, m.SmartyPants):
@@ -33,6 +29,12 @@ class HighlightRender(m.HtmlRenderer, m.SmartyPants):
 
 
 def create_app(config=None):
+    from .models import db
+    from .views import front, account, repository, admin
+    from .helpers import get_current_user
+    from .elastic import elastic
+    from .tasks import connect
+
     app = Flask(
         __name__,
         static_folder='_static',
@@ -119,4 +121,5 @@ def create_app(config=None):
             return
         identity.provides.add(UserNeed(g.user.id))
 
+    connect()
     return app
