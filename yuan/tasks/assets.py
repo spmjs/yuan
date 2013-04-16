@@ -72,6 +72,6 @@ def extract_assets(package, operation):
     shutil.move(distdir, dest)
     shutil.move(pkgfile, dest)
     try:
-        shutil.remove(rootdir)
+        shutil.rmtree(fpath)
     except:
         return
