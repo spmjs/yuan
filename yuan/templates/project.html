@@ -13,7 +13,8 @@
     {%- if project.latest.homepage %}
     <tr>
       <th>Homepage:</th>
-      <td>{{project.latest.homepage|repo_link}}</td>
+      {%- set doc = project.family|doc_link(project.name) %}
+      <td>{{project.latest.homepage|repo_link}}{% if doc %}<span class="doc">✔</span>{% endif %}</td>
     </tr>
     {%- endif %}
     <tr>

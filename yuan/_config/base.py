@@ -23,6 +23,7 @@ GRAVATAR_EXTRA = ''
 
 #: file storage
 WWW_ROOT = 'data'
+DOC_HOST = 'spmjs.org'
 ALLOW_ANONYMOUS = False
 ASSETS_ROOT = None
 

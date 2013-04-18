@@ -20,6 +20,10 @@
     <h3><a href="{{url_for('front.project', family=item.family, name=item.name)}}">{{item.family}}/{{item.name}}</a></h3>
     <p>{{item.description}}</p>
     <span class="version">{{item.version}}</span>
+    {%- set doc = item.family|doc_link(item.name) %}
+    {%- if doc %}
+    <a class="doc" href="{{doc}}" title="{{_('Documentation Available')}}">✔</a>
+    {%- endif %}
   </div>
   {%- endfor %}
 </div>

@@ -110,12 +110,20 @@ html, body {
 .cell p {
   margin: 0;
 }
-.cell .version {
+.cell .version, .cell .doc {
   position: absolute;
   top: 0;
   right: 0;
   padding: 2px 4px;
   color: #d64;
+}
+.cell .doc {
+  top: 30px;
+  color: #1A9B20;
+}
+.cell .doc:hover {
+  text-decoration: none;
+  color: #1A9B20;
 }
 
 .profile .avatar {
@@ -128,4 +136,12 @@ table.meta {
 table.meta a {
   word-wrap: break-word;
   word-break: break-all;
+}
+table.meta td {
+  position: relative;
+}
+.meta .doc {
+  position: absolute;
+  right: 10px;
+  color: #1A9B20;
 }

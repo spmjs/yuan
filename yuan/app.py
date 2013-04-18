@@ -93,6 +93,19 @@ def create_app(config=None):
         link = re.sub(r'^git(@|:\/\/)', 'https://', link)
         return Markup('<a href="%s">%s</a>' % (link, url))
 
+    @app.template_filter('doc_link')
+    def doc_link(family, name):
+        rootdir = app.config.get('WWW_ROOT', None)
+        if not rootdir:
+            return None
+        doc_host = app.config.get('DOC_HOST', None)
+        if not doc_host:
+            return None
+        path = os.path.join(rootdir, 'docs', family, name)
+        if not os.path.exists(path):
+            return None
+        return 'http://%s.%s/%s/' % (family, doc_host, name)
+
     @app.before_request
     def load_current_user():
         g.user = get_current_user()
