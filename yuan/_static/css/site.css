@@ -118,7 +118,7 @@ html, body {
   color: #d64;
 }
 .cell .doc {
-  top: 30px;
+  right: 48px;
   color: #1A9B20;
 }
 .cell .doc:hover {
