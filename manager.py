@@ -82,7 +82,11 @@ def mirror(url=None):
         url = app.config['MIRROR_URL']
 
     from scripts.mirror import mirror
-    mirror(url, app.config)
+    if isinstance(url, (list, tuple)):
+        for i in url:
+            mirror(i, app.config)
+    else:
+        mirror(url, app.config)
 
 
 if __name__ == '__main__':
