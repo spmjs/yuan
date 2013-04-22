@@ -213,7 +213,7 @@ def upload(family):
     if not allow_anonymous and not account:
         return abortify(404)
 
-    if not allow_anonymous and not account.permission_write.can():
+    if account and not account.permission_write.can():
         return abortify(403)
 
     tarball = request.files.get('file')
