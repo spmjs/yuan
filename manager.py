@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import os
+import gevent.monkey
+gevent.monkey.patch_all()
 
 from flask.ext.script import Manager
 from yuan.app import create_app
@@ -17,9 +19,6 @@ manager = Manager(app)
 @manager.command
 def runserver(port=5000):
     """Runs a development server."""
-    import gevent.monkey
-    gevent.monkey.patch_all()
-
     from gevent.wsgi import WSGIServer
     from werkzeug.serving import run_with_reloader
     from werkzeug.debug import DebuggedApplication
