@@ -11,12 +11,14 @@ from flask import Flask
 from yuan.models import Package
 from yuan.models import Project
 from yuan.models import index_project
+from yuan.elastic import index_project as index_search
+from yuan.tasks import extract_assets
 
 
 def mirror(url, config):
     """sync a mirror site."""
 
-    print '  mirror:', url
+    print('  mirror: %s' % url)
     rv = requests.get(url)
     if rv.status_code != 200:
         raise Exception('%s: %s' % url, rv.status_code)
@@ -53,7 +55,7 @@ def _fetch(pkg, domain, config):
     url = '%s/%s/%s/%s/' % (
         domain, pkg['family'], pkg['name'], pkg['version'])
     rv = requests.get(url)
-    print '   fetch:', url
+    print('   fetch: %s' % url)
     if rv.status_code != 200:
         raise Exception('%s: %s' % url, rv.status_code)
     pkg = Package(**rv.json()).save()
@@ -64,13 +66,21 @@ def _fetch(pkg, domain, config):
         pkg.family, pkg.name, pkg.version,
         pkg['filename']
     )
-    print '    save:', fpath
+    print('    save: %s' % fpath)
     urllib.urlretrieve(url, fpath)
+    try:
+        extract_assets(pkg, 'upload')
+    except:
+        print('  extract: assets error')
 
 
 def _index(project, domain, config):
-    print '    sync: %(family)s/%(name)s' % project
+    print('    sync: %(family)s/%(name)s' % project)
     index_project(project, 'update')
+    try:
+        index_search(project, 'update')
+    except:
+        print('    index: search error')
 
     url = '%s/%s/%s/' % (domain, project['family'], project['name'])
     rv = requests.get(url)
@@ -94,14 +104,19 @@ def _index(project, domain, config):
             server = data['packages'][v]
 
         if not server:
-            print '  delete: %s/%s@%s' % (me['family'], me['name'], v)
+            print('  delete: %s/%s@%s' % (me['family'], me['name'], v))
             pkg = Package(family=me['family'], name=me['name'], version=v)
+            try:
+                extract_assets(pkg, 'delete')
+            except:
+                print('  delete: assets error')
+
             pkg.delete()
             # remove this version from project
             Project(**me).remove(v)
         elif 'md5' in server and \
                 ('md5' not in local or local['md5'] != server['md5']):
-            print '  create: %s/%s@%s' % (me['family'], me['name'], v)
+            print('  create: %s/%s@%s' % (me['family'], me['name'], v))
             _fetch(server, domain, config)
             # add this version to project
             Project(**me).update(server)
@@ -109,7 +124,7 @@ def _index(project, domain, config):
     for v in data['packages']:
         if v not in packages:
             pkg = data['packages'][v]
-            print '  create: %s/%s@%s' % (pkg['family'], pkg['name'], v)
+            print('  create: %s/%s@%s' % (pkg['family'], pkg['name'], v))
             _fetch(pkg, domain, config)
             # add this version to project
             Project(**me).update(pkg)
