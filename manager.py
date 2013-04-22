@@ -6,7 +6,11 @@ from flask.ext.script import Manager
 from yuan.app import create_app
 from yuan.models import Project, Package
 
-app = create_app(os.path.abspath('./conf/config.py'))
+CONF = os.path.abspath('./etc/config.py')
+if not os.path.exists(CONF):
+    CONF = os.path.abspath('./conf/dev_config.py')
+
+app = create_app(CONF)
 manager = Manager(app)
 
 
