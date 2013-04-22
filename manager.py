@@ -8,9 +8,10 @@ from flask.ext.script import Manager
 from yuan.app import create_app
 from yuan.models import Project, Package
 
-CONF = os.path.abspath('./etc/config.py')
+ROOTDIR = os.path.abspath(os.path.dirname(__file__))
+CONF = os.path.join(ROOTDIR, 'etc/config.py')
 if not os.path.exists(CONF):
-    CONF = os.path.abspath('./conf/dev_config.py')
+    CONF = os.path.join(ROOTDIR, 'conf/dev_config.py')
 
 app = create_app(CONF)
 manager = Manager(app)
