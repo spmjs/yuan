@@ -103,7 +103,7 @@ def create_app(config=None):
         path = os.path.join(rootdir, 'docs', family, name)
         if not os.path.exists(path):
             return None
-        return 'http://%s.%s/%s/' % (family, doc_host, name)
+        return doc_host % {'family': family, 'name': name}
 
     @app.before_request
     def load_current_user():
