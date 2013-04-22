@@ -21,4 +21,5 @@ docs/_build
 data/
 etc/
 
+simplejson.py
 yuan/_static/sea-modules/

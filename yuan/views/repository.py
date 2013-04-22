@@ -203,12 +203,17 @@ def search():
 
 @bp.route('/upload/<family>', methods=['POST'])
 def upload(family):
-    if not g.user:
+    allow_anonymous = current_app.config.get('ALLOW_ANONYMOUS', False)
+    if not allow_anonymous and not g.user:
         # documentation are designed for registered users
         return abortify(401)
 
     account = Account.query.filter_by(name=family).first()
-    if not account.permission_write.can():
+
+    if not allow_anonymous and not account:
+        return abortify(404)
+
+    if not allow_anonymous and not account.permission_write.can():
         return abortify(403)
 
     tarball = request.files.get('file')
