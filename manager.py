@@ -7,6 +7,10 @@ gevent.monkey.patch_all()
 from flask.ext.script import Manager
 from yuan.app import create_app
 from yuan.models import Project, Package
+try:
+    import ujson as json
+except ImportError:
+    from flask import json
 
 ROOTDIR = os.path.abspath(os.path.dirname(__file__))
 CONF = os.path.join(ROOTDIR, 'etc/config.py')
@@ -85,6 +89,20 @@ def initdependents():
                 pkg = Package(**item.packages[key])
                 print(pkg)
                 calculate_dependents(pkg, 'update')
+
+
+@manager.command
+def status():
+    from scripts.status import calculate
+
+    data = calculate()
+    repo = os.path.join(app.config['WWW_ROOT'], 'repository')
+
+    with open(os.path.join(repo, 'popular.json'), 'w') as f:
+        json.dump(data['popular'], f)
+
+    with open(os.path.join(repo, 'latest.json'), 'w') as f:
+        json.dump(data['latest'], f)
 
 
 @manager.command
