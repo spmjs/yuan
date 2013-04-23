@@ -2,6 +2,7 @@
 
 import os
 import shutil
+import copy
 try:
     import ujson as json
 except ImportError:
@@ -215,6 +216,8 @@ class Package(Model):
 
 
 def index_project(project, operation):
+    project = copy.copy(project)
+
     repo = os.path.join(current_app.config['WWW_ROOT'], 'repository')
     if operation == 'create' or operation == 'delete':
         fullname = '%(family)s/%(name)s' % project
