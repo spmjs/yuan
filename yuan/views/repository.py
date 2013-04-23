@@ -39,6 +39,19 @@ def index():
     return Response(json.dumps(projects), content_type='application/json')
 
 
+@bp.route('/<path:filename>.json')
+def jsonfile(filename):
+    repo = os.path.join(current_app.config['WWW_ROOT'], 'repository')
+    fpath = os.path.join(repo, '%s.json' % filename)
+
+    if not os.path.exists(fpath):
+        return abortify(404)
+
+    with open(fpath, 'r') as f:
+        data = json.load(f)
+        return Response(json.dumps(data), content_type='application/json')
+
+
 @bp.route('/<family>/')
 def family(family):
     projects = Project.list(family)
