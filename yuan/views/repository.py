@@ -142,7 +142,7 @@ def package(family, name, version):
         data = request.json or {}
         if 'tag' not in data and _ver.prerelease:
             data['tag'] = 'unstable'
-        else:
+        elif 'tag' not in data:
             data['tag'] = 'stable'
 
         package.update(data)
