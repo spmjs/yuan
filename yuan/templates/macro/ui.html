@@ -1,11 +1,11 @@
 {%- macro flash_messages(messages) %}
 {%- if messages %}
 <div class="container">
-<ul class=flashes>
-  {%- for category, message in messages %}
-  <li class="{{ category }}">{{ message }} <span class="close">×</span></li>
-  {%- endfor %}
-</ul>
+  <ul class=flashes>
+    {%- for category, message in messages %}
+    <li class="{{ category }}">{{ message }} <span class="close">×</span></li>
+    {%- endfor %}
+  </ul>
 </div>
 {%- endif %}
 {%- endmacro %}
@@ -22,5 +22,33 @@
 <link rel="stylesheet" href="{{url_for('static', filename='css/site.css')}}" />
 {%- else %}
 <link rel="stylesheet" href="{{url_for('static', filename='site.css')}}" />
+{%- endif %}
+{%- endmacro %}
+
+{%- macro render_package(pkg) %}
+{%- if pkg.homepage %}
+<tr>
+  <th>Homepage:</th>
+  {%- set doc = pkg.family|doc_link(pkg.name) %}
+  <td>{{pkg.homepage|repo_link}}{% if doc %}<span class="doc">✔</span>{% endif %}</td>
+</tr>
+{%- endif %}
+{%- if pkg.repository %}
+<tr>
+  <th>Repository:</th>
+  <td>{{pkg.repository|repo_link}}</td>
+</tr>
+{%- endif %}
+{%- if pkg.dependencies %}
+<tr>
+  <th>Dependencies:</th>
+  <td>{{pkg.dependencies|join(', ')}}</td>
+</tr>
+{%- endif %}
+{%- if pkg.dependents %}
+<tr>
+  <th>Dependents:</th>
+  <td>{{pkg.dependents|join(', ')}}</td>
+</tr>
 {%- endif %}
 {%- endmacro %}

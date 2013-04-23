@@ -10,13 +10,6 @@
   <pre>spm install {{project.family}}/{{project.name}}</pre>
   <p>Latest version: <strong>{{project.latest.version}}</strong> <span>~ {{project.latest.tag}}</span></p>
   <table class="meta">
-    {%- if project.latest.homepage %}
-    <tr>
-      <th>Homepage:</th>
-      {%- set doc = project.family|doc_link(project.name) %}
-      <td>{{project.latest.homepage|repo_link}}{% if doc %}<span class="doc">✔</span>{% endif %}</td>
-    </tr>
-    {%- endif %}
     <tr>
       <th>Versions:</th>
       <td>{{project.versions|join(', ')}}</td>
@@ -25,18 +18,8 @@
       <th>Updated:</th>
       <td>{{project.updated_at}}</td>
     </tr>
-    {%- if project.latest.repository %}
-    <tr>
-      <th>Repository:</th>
-      <td>{{project.latest.repository|repo_link}}</td>
-    </tr>
-    {%- endif %}
-    {%- if project.latest.dependencies %}
-    <tr>
-      <th>Dependencies:</th>
-      <td>{{project.latest.dependencies|join(', ')}}</td>
-    </tr>
-    {%- endif %}
+    {%- from "macro/ui.html" import render_package %}
+    {{ render_package(project.latest) }}
   </table>
 </div>
 {%- if project.latest.readme %}
