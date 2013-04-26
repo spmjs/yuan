@@ -1,113 +1,32 @@
 Yuan
 =====
 
-yuan is a distributed packaging system for everything.
-
-Client
--------
-
-You should write your own client, and your client must follow our server's API.
+yuan is a distributed packaging system for spmjs.org.
 
 
-Server
--------
+Installation
+-------------
 
-The sever provides an authentication system and APIs for package management.
+Make sure you have Python 2.7.x installed.
 
-User System
-~~~~~~~~~~~~
+Clone this repo::
 
-The authentication system should be simple, just basic auth for the client.
-But it can support some social authentication such as GitHub or BitBucket.
+    $ git clone git://github.com/lepture/yuan.git yuan
 
-Package will be uploaded to one's own (or group) storage, just like GitHub.
-In this case two packages of two people can have the same name.
+Install every requirements we need::
 
-::
+    $ pip install -r conf/reqs-pro.txt
 
-    GET /account/login
+If you don't have pip, install pip first::
 
-    {
-        "status": "info",
-        "data": {
-            "auth": "GEZX......"
-        }
-    }
-
-Search
-~~~~~~~
-
-Client request::
-
-    GET /package/search?package=yuan
-
-Server response::
-
-    {
-        "status": "success",
-        "count": "2",
-        "packages": [
-            {
-                "name": "yuan",
-                "author": "lepture",
-                "description": "yuan is a distributed packaging system"
-            },
-            {
-                "name": "yuan",
-                "author": "lifesinger",
-                "description": "yuan is a seajs module"
-            }
-        ]
-    }
+    $ easy_install pip
 
 
-Register Project
-~~~~~~~~~~~~~~~~
+Configuration
+-------------
 
-Client request::
+Make a directory called `etc` in this repo, copy a basic config file and edit it::
 
-    POST /package/{{username}}/{{name}}
-
-Server response::
-
-    {
-    }
-
-
-1. authentication and permission check
-2. check md5
-3. save information in database
-4. save the file (optional)
-
-
-Version
-~~~~~~~~
-
-All these versions are valid::
-
-    0.4    0.4.0
-    0.5a1           alpha
-    0.5b3           beta
-    0.5
-    0.9.6
-    1.0
-    1.0.4a3         alpha
-    1.0.4b1         beta
-    1.0.4r1         release candidate
-    1.0.4
-
-alpha, beta, and release candidate versions will be marked as unstable.
-
-When client fetch a unspecified version package, the server will show
-the very latest stable version.
-
-
-Readme
-~~~~~~~
-
-We only support markdown for readme.
-
-
-Mirror
-
-Document Site
+    $ mkdir etc
+    $ cp conf/base_config.py etc/config.py
+    $ vim etc/config.py

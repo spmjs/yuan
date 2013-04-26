@@ -7,10 +7,7 @@ gevent.monkey.patch_all()
 from flask.ext.script import Manager
 from yuan.app import create_app
 from yuan.models import Project, Package
-try:
-    import ujson as json
-except ImportError:
-    from flask import json
+from flask import json
 
 ROOTDIR = os.path.abspath(os.path.dirname(__file__))
 CONF = os.path.join(ROOTDIR, 'etc/config.py')
@@ -112,6 +109,8 @@ def mirror(url=None):
         url = app.config['MIRROR_URL']
 
     from scripts.mirror import mirror
+    import time
+    print('\n  %s' % time.ctime())
     if isinstance(url, (list, tuple)):
         for i in url:
             mirror(i, app.config)

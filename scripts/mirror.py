@@ -76,11 +76,11 @@ def _fetch(pkg, domain, config):
 
 def _index(project, domain, config):
     print('    sync: %(family)s/%(name)s' % project)
-    index_project(project, 'update')
     try:
         index_search(project, 'update')
     except:
         print('    index: search error')
+    index_project(project, 'update')
 
     url = '%s/%s/%s/' % (domain, project['family'], project['name'])
     rv = requests.get(url)
