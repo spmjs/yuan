@@ -216,7 +216,7 @@ class Package(Model):
 
 
 def index_project(project, operation):
-    project = copy.copy(project)
+    # project = copy.copy(project)
 
     repo = os.path.join(current_app.config['WWW_ROOT'], 'repository')
     if operation == 'create' or operation == 'delete':
