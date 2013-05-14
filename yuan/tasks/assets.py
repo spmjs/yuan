@@ -19,10 +19,6 @@ def extract_assets(package, operation):
     if operation != 'upload':
         return
 
-    if package.tag != 'stable':
-        # only extract stable version
-        return
-
     tarball = os.path.join(pkgdir, package.filename)
     if not os.path.exists(tarball):
         return
