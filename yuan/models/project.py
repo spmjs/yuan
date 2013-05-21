@@ -231,6 +231,17 @@ def index_project(project, operation):
             repoindex.insert(0, fullname)
         elif fullname in repoindex and operation == 'delete':
             repoindex.remove(fullname)
+            # delete from family index.json
+            familyfile = os.path.join(repo, project['family'], 'index.json')
+            familyindex = _read_json(familyfile)
+            count = 0
+            for pkg in familyindex:
+                if pkg['name'] == project['name']:
+                    break
+                count += 1
+            familyindex.pop(count)
+            with open(familyfile, 'w') as f:
+                json.dump(familyindex, f)
 
         with open(repofile, 'w') as f:
             json.dump(repoindex, f)
