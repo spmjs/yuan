@@ -61,6 +61,20 @@ def create_app(config=None):
     app.register_blueprint(repository.bp, url_prefix='/repository')
     app.register_blueprint(front.bp, url_prefix='')
 
+    register_jinja(app)
+
+    @app.before_request
+    def load_current_user():
+        g.user = get_current_user()
+
+    connect()
+    register_babel(app)
+    register_principal(app)
+    register_logger(app)
+    return app
+
+
+def register_jinja(app):
     @app.template_filter('markdown')
     def markdown(text):
         if not text:
@@ -105,10 +119,8 @@ def create_app(config=None):
             return None
         return doc_host % {'family': family, 'name': name}
 
-    @app.before_request
-    def load_current_user():
-        g.user = get_current_user()
 
+def register_babel(app):
     # babel for i18n
     babel = Babel(app)
 
@@ -120,6 +132,8 @@ def create_app(config=None):
         default = app.config['BABEL_DEFAULT_LOCALE']
         return request.accept_languages.best_match(match, default)
 
+
+def register_principal(app):
     princi = Principal(app)
 
     @princi.identity_loader
@@ -133,5 +147,11 @@ def create_app(config=None):
             return
         identity.provides.add(UserNeed(g.user.id))
 
-    connect()
-    return app
+
+def register_logger(app):
+    import logging
+    if app.debug:
+        return
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.ERROR)
+    app.logging.addHandler(handler)
