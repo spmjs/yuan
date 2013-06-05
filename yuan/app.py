@@ -154,4 +154,4 @@ def register_logger(app):
         return
     handler = logging.StreamHandler()
     handler.setLevel(logging.ERROR)
-    app.logging.addHandler(handler)
+    app.logger.addHandler(handler)
