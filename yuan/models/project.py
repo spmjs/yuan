@@ -143,7 +143,16 @@ class Project(Model):
         pkg = Package(**dct)
         pkg.save()
 
-        for key in ['homepage', 'description', 'keywords', 'repository']:
+        keys = [
+            'homepage',
+            'description',
+            'keywords',
+            'repository',
+            'author',
+            'maintainers',
+        ]
+
+        for key in keys:
             if key in dct:
                 self[key] = dct[key]
 
