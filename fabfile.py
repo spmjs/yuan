@@ -3,10 +3,6 @@ from fabric.api import env, cd, local, run
 env.hosts = ['spmjs.org']
 
 
-def commit():
-    local('git add -p && git commit')
-
-
 def push():
     local('git push')
 
@@ -21,8 +17,12 @@ def restart():
     run('supervisorctl restart yuan')
 
 
+def index():
+    with cd('~/apps/yuan'):
+        run('python manager.py index')
+
+
 def deploy():
-    commit()
     push()
     pull()
     restart()
