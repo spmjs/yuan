@@ -14,7 +14,7 @@ from distutils.version import StrictVersion
 from flask.ext.babel import gettext as _
 from ..models import Project, Package, Account
 from ..models import project_signal, package_signal
-from ..elastic import search_project
+from ..search import search_project
 
 __all__ = ['bp']
 
@@ -210,7 +210,18 @@ def search():
     q = request.args.get('q', None)
     if not q:
         return abortify(404)
-    data = search_project(q)
+    results = search_project(q)
+    ret = []
+    for item in results:
+        value = item.fields()
+        keywords = value.get('keywords')
+        if keywords:
+            value['keywords'] = keywords.split(',')
+        ret.append(value)
+    data = dict(
+        total=len(ret),
+        results=ret,
+    )
     return jsonify(status='success', data=data)
 
 

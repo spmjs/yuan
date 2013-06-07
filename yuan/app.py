@@ -31,7 +31,7 @@ def create_app(config=None):
     from .models import db
     from .views import front, account, repository, admin
     from .helpers import get_current_user
-    from .elastic import elastic
+    from .search import searcher
     from .tasks import connect
 
     app = Flask(
@@ -53,7 +53,7 @@ def create_app(config=None):
     db.init_app(app)
     db.app = app
 
-    elastic.init_app(app)
+    searcher.init_app(app)
     admin.admin.init_app(app)
 
     # register blueprints

@@ -39,6 +39,7 @@ DOC_HOST = 'http://%(family)s.spmjs.org/%(name)s/'
 ALLOW_ANONYMOUS = False
 ASSETS_ROOT = None
 # ASSETS_ROOT = /www/data/assets
+WHOOSH_DIR = 'data/whoosh'
 
 MIRROR_URL = [
     'http://spmjs.org/repository/seajs/',

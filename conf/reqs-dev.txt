@@ -6,6 +6,9 @@ pygments
 gevent
 requests
 
+# search
+Whoosh
+
 # database
 Flask-SQLAlchemy
 

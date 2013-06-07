@@ -12,11 +12,10 @@
 
 <div class="yue">
   {%- if data %}
-  {%- for item in data.results %}
+  {%- for item in data %}
   <div class="cell">
     <h3><a href="{{url_for('front.project', family=item.family, name=item.name)}}">{{item.family}}/{{item.name}}</a></h3>
     <p>{{item.description}}</p>
-    <span class="version">{{item.version}}</span>
   </div>
   {%- endfor %}
   {%- else %}

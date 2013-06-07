@@ -5,7 +5,7 @@ from flask import request
 from flask import abort, render_template
 from distutils.version import StrictVersion
 from ..models import Project, Package, Account
-from ..elastic import search_project
+from ..search import search_project
 
 
 bp = Blueprint('front', __name__)
@@ -43,7 +43,7 @@ def project(family, name):
     return render_template('project.html', project=project, account=account)
 
 
-@bp.route('/<family>/<name>/<version>/')
+#@bp.route('/<family>/<name>/<version>/')
 def version(family, name, version):
     pkg = Package(family=family, name=name, version=version)
     if 'created_at' not in pkg:
