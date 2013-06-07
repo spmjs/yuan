@@ -1,7 +1,7 @@
 import gevent
 from flask import Flask, current_app
 from ..models import project_signal, package_signal, index_project
-from ..elastic import index_project as index_search
+from ..search import index_project as index_search
 from .assets import extract_assets
 from .dependent import calculate_dependents
 
