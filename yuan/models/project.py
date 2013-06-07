@@ -2,7 +2,6 @@
 
 import os
 import shutil
-import copy
 try:
     import ujson as json
 except ImportError:

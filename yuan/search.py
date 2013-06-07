@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os
-from flask import _app_ctx_stack, json
+from flask import _app_ctx_stack
 from whoosh.index import create_in, open_dir
 from whoosh.fields import Schema, TEXT, KEYWORD, ID, STORED
 from whoosh.qparser import MultifieldParser
@@ -66,7 +66,6 @@ class WhooshSearch(object):
             'name', 'family', 'keywords', 'description'
         ], schema)
 
-        app = self.get_app()
         if hasattr(self, '_searcher'):
             searcher = self._searcher
         else:
@@ -112,13 +111,25 @@ def index_project(project, operation):
     if 'packages' not in project:
         return
 
-    package = project.packages[project.version]
+    if not project.packages:
+        return
+
+    try:
+        package = project.packages[project.version]
+    except:
+        pkgs = project.sort(project.packages)
+        version = pkgs.keys()[0]
+        project.version = version
+        project.save()
+        package = project.packages[version]
+
     dct = dict(
         family=project.family,
         name=project.name,
         created_at=project.created_at,
         updated_at=project.updated_at,
     )
+
     if 'keywords' in package and isinstance(package['keywords'], list):
         dct['keywords'] = package['keywords']
 
