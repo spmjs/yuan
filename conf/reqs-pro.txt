@@ -9,6 +9,7 @@ gunicorn
 
 # search
 Whoosh
+jieba
 
 # database
 Flask-SQLAlchemy

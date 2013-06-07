@@ -1,17 +1,38 @@
 #!/usr/bin/env python
 
 import os
+import jieba
 from flask import _app_ctx_stack
 from whoosh.index import create_in, open_dir
 from whoosh.fields import Schema, TEXT, KEYWORD, ID, STORED
 from whoosh.qparser import MultifieldParser
+from whoosh.analysis import Tokenizer, Token
+
+
+class ChineseTokenizer(Tokenizer):
+    def __call__(self, value, positions=False, chars=False,
+                 keeporiginal=False, removestops=True,
+                 start_pos=0, start_char=0, mode='', **kwargs):
+        t = Token(positions, chars, removestops=removestops, mode=mode,
+                  **kwargs)
+
+        seglist = jieba.cut(value, cut_all=False)
+        for word in seglist:
+            t.original = t.text = word
+            t.boost = 1.0
+            if positions:
+                t.pos = start_pos + value.find(word)
+            if chars:
+                t.startchar = start_char + value.find(word)
+                t.endchar = t.startchar + len(word)
+            yield t
 
 
 schema = Schema(
     path=ID(stored=True),
     family=ID(stored=True),
     name=ID(stored=True),
-    description=TEXT(stored=True),
+    description=TEXT(stored=True, analyzer=ChineseTokenizer()),
     keywords=KEYWORD(stored=True, commas=True),
     created_at=STORED(),
     updated_at=STORED(),
