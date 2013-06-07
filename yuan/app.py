@@ -7,6 +7,7 @@ PROJDIR = os.path.abspath(os.path.dirname(__file__))
 ROOTDIR = os.path.split(PROJDIR)[0]
 
 import misaka as m
+import tempfile
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import HtmlFormatter
@@ -48,6 +49,10 @@ def create_app(config=None):
         app.config.from_pyfile(config)
 
     app.config.update({'SITE_TIME': datetime.datetime.utcnow()})
+
+    # set tempdir
+    tempdir = app.config.get('TEMPDIR', None)
+    tempfile.tempdir = tempdir
 
     # prepare for database
     db.init_app(app)
