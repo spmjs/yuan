@@ -114,12 +114,17 @@ def _index(project, domain, config):
             pkg.delete()
             # remove this version from project
             Project(**me).remove(v)
-        elif 'md5' in server and \
-                ('md5' not in local or local['md5'] != server['md5']):
+        elif 'md5' not in server:
+            print('  error: md5 not in remote')
+            continue
+        elif 'md5' not in local or local['md5'] != server['md5']:
             print('  create: %s/%s@%s' % (me['family'], me['name'], v))
             _fetch(server, domain, config)
             # add this version to project
             Project(**me).update(server)
+        elif local['md5'] == server['md5']:
+            print('  warn: md5 match, ignore')
+            continue
 
     for v in data['packages']:
         if v not in packages:
