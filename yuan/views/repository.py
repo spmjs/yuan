@@ -287,7 +287,24 @@ def upload(family):
     if os.path.exists(dest):
         shutil.rmtree(dest)
 
+    version = request.form.get('version')
+    error = None
+    if version:
+        verdir = os.path.join(
+            current_app.config['WWW_ROOT'], 'archive',
+            family, name, version
+        )
+        if os.path.exists(verdir):
+            shutil.rmtree(verdir)
+
+        try:
+            shutil.copytree(rootdir, verdir)
+        except Exception as e:
+            error = e.message
+
     shutil.move(rootdir, dest)
+    if error:
+        return jsonify(status='error', message=error)
     return jsonify(status='info', message=_('upload docs success.'))
 
 
