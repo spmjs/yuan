@@ -2,10 +2,7 @@
 
 import os
 import shutil
-try:
-    import ujson as json
-except ImportError:
-    from flask import json
+from flask import json
 from flask import current_app
 from datetime import datetime
 from werkzeug import cached_property

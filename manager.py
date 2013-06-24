@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import os
+import sys
 import gevent.monkey
 gevent.monkey.patch_all()
 
@@ -33,7 +34,10 @@ def runserver(port=5000):
         http_server = WSGIServer(('', port), DebuggedApplication(app))
         http_server.serve_forever()
 
-    run_server()
+    try:
+        run_server()
+    except TypeError:
+        sys.exit()
 
 
 @manager.command

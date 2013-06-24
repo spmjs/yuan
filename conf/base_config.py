@@ -5,6 +5,15 @@ TESTING = False
 SITE_TITLE = 'Yuan'
 SITE_URL = '/'
 SITE_GA = None
+SITE_STYLES = [
+    '/_static/css/fn.css',
+    '/_static/css/flashes.css',
+    '/_static/css/forms.css',
+    '/_static/css/buttons.css',
+    '/_static/css/typography.css',
+    '/_static/css/pygments.css',
+    '/_static/css/site.css',
+]
 
 #: session
 SESSION_COOKIE_NAME = 'yuan'

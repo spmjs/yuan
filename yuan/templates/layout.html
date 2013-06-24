@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width" />
     <title>{% block title %}{% block subtitle %}{% endblock %} - {{config.SITE_TITLE}}{% endblock %}</title>
     <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="{{config.SITE_TITLE}}" />
-    {%- from "macro/ui.html" import flash_messages, style %}
-    {{ style(True) }}
+    {%- from "macro/ui.html" import flash_messages %}
+
+    {%- for url in config.SITE_STYLES %}
+    <link rel="stylesheet" href="{{ url }}" />
+    {%- endfor %}
+
     {%- block afterstyle %}{% endblock %}
     {%- if config.SITE_GA %}
     <script type="text/javascript">
