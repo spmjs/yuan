@@ -17,9 +17,10 @@ def _publish(sender, changes):
                     data=dict(package)
                 )
             elif operation == 'delete':
+                qs = 'family=%(family)s&name=%(name)s&version=%(version)s'
+                qs = qs % package
                 requests.delete(
-                    'http://site.alipay.im/repository/spm',
-                    data=dict(package)
+                    'http://site.alipay.im/repository/spm?' + qs,
                 )
 
     gevent.spawn(_run, current_app.config)
