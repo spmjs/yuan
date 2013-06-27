@@ -75,11 +75,11 @@ def _fetch(pkg, domain, config):
 
 
 def _index(project, domain, config):
-    print('    sync: %(family)s/%(name)s' % project)
+    print('  sync: %(family)s/%(name)s' % project)
     try:
         index_search(project, 'update')
     except:
-        print('    index: search error')
+        print('  index: search error')
     index_project(project, 'update')
 
     url = '%s/%s/%s/' % (domain, project['family'], project['name'])
@@ -123,7 +123,9 @@ def _index(project, domain, config):
             # add this version to project
             Project(**me).update(server)
         elif local['md5'] == server['md5']:
-            print('  warn: md5 match, ignore')
+            print('  warn: %s/%s@%s, same md5' % (
+                me['family'], me['name'], v
+            ))
             continue
 
     for v in data['packages']:
