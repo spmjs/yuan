@@ -60,7 +60,7 @@ class SignupForm(BaseForm):
 
 class SigninForm(BaseForm):
     account = TextField(
-        _('Account'), validators=[Required(), Length(min=3, max=20)],
+        _('Account'), validators=[Required(), Length(min=3, max=200)],
         description=_('Username or email address')
     )
     password = PasswordField(
@@ -113,7 +113,7 @@ class SettingForm(BaseForm):
 
 class FindForm(BaseForm):
     account = TextField(
-        _('Account'), validators=[Required(), Length(min=3, max=20)],
+        _('Account'), validators=[Required(), Length(min=3, max=200)],
         description=_('Username or email address')
     )
 
