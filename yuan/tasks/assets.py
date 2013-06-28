@@ -12,7 +12,7 @@ def extract_assets(package, operation):
         return
 
     pkgdir = os.path.dirname(package.datafile)
-    if operation == 'delete':
+    if operation == 'delete' and os.path.exists(pkgdir):
         shutil.rmtree(pkgdir)
         return
 

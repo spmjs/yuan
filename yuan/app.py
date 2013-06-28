@@ -23,9 +23,14 @@ class HighlightRender(m.HtmlRenderer, m.SmartyPants):
     def block_code(self, text, lang):
         if not lang:
             return '\n<pre><code>%s</code></pre>\n' % escape(text.strip())
-        lexer = get_lexer_by_name(lang, stripall=True)
-        formatter = HtmlFormatter()
-        return highlight(text, lexer, formatter)
+        try:
+            lexer = get_lexer_by_name(lang, stripall=True)
+            formatter = HtmlFormatter()
+            return highlight(text, lexer, formatter)
+        except:
+            return '\n<pre class="language-%s"><code>%s</code></pre>\n' % (
+                lang, escape(text.strip())
+            )
 
 
 def create_app(config=None):
