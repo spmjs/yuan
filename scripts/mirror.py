@@ -11,7 +11,7 @@ from flask import Flask
 from yuan.models import Package
 from yuan.models import Project
 from yuan.models import index_project
-from yuan.elastic import index_project as index_search
+from yuan.search import index_project as index_search
 from yuan.tasks import extract_assets
 
 
