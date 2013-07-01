@@ -117,8 +117,9 @@ class WhooshSearch(object):
     def delete(self, family, name):
         path = u'%s/%s' % (family, name)
         ix = self.indexer()
-        ix.delete_by_term('path', path)
-        ix.commit()
+        writer = ix.writer()
+        writer.delete_by_term('path', path)
+        writer.commit()
         return self
 
 
