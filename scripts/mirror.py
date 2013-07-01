@@ -75,13 +75,7 @@ def _fetch(pkg, domain, config):
 
 
 def _index(project, domain, config):
-    print('  sync: %(family)s/%(name)s' % project)
-    try:
-        index_search(project, 'update')
-    except:
-        print('  index: search error')
-    index_project(project, 'update')
-
+    print('    sync: %(family)s/%(name)s' % project)
     url = '%s/%s/%s/' % (domain, project['family'], project['name'])
     rv = requests.get(url)
     if rv.status_code != 200:
@@ -123,7 +117,7 @@ def _index(project, domain, config):
             # add this version to project
             Project(**me).update(server)
         elif local['md5'] == server['md5']:
-            print('  warn: %s/%s@%s, same md5' % (
+            print('    warn: %s/%s@%s, same md5' % (
                 me['family'], me['name'], v
             ))
             continue
@@ -135,4 +129,11 @@ def _index(project, domain, config):
             _fetch(pkg, domain, config)
             # add this version to project
             Project(**me).update(pkg)
+
+    project = Project(family=project['family'], name=project['name'])
+    try:
+        index_search(project, 'update')
+    except:
+        print('  index: search error')
+    index_project(project, 'update')
     return True
