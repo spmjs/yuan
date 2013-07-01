@@ -26,7 +26,7 @@ def profile(name):
     return render_template('profile.html', **dct)
 
 
-@bp.route('/<family>/<name>/')
+@bp.route('/<family:family>/<name>/')
 def project(family, name):
     project = Project(family=family, name=name)
     if 'created_at' not in project:
@@ -43,7 +43,7 @@ def project(family, name):
     return render_template('project.html', project=project, account=account)
 
 
-@bp.route('/<family>/<name>/<version>/')
+@bp.route('/<family:family>/<name>/<version>/')
 def version(family, name, version):
     pkg = Package(family=family, name=name, version=version)
     if 'created_at' not in pkg:

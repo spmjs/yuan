@@ -17,6 +17,7 @@ from flask import request, g, escape
 from flask.ext.babel import Babel
 from flask.ext.principal import Principal, Identity, identity_loaded, UserNeed
 from flask import Markup
+from werkzeug.routing import BaseConverter
 
 
 class HighlightRender(m.HtmlRenderer, m.SmartyPants):
@@ -33,6 +34,10 @@ class HighlightRender(m.HtmlRenderer, m.SmartyPants):
             )
 
 
+class FamilyConverter(BaseConverter):
+    regex = '[a-z][a-z0-9\-]+'
+
+
 def create_app(config=None):
     from .models import db
     from .views import front, account, repository, admin
@@ -46,6 +51,8 @@ def create_app(config=None):
         template_folder='templates',
     )
     app.config.from_pyfile(os.path.join(ROOTDIR, 'conf', 'base_config.py'))
+    app.url_map.converters['family'] = FamilyConverter
+
     if 'YUAN_SETTINGS' in os.environ:
         app.config.from_envvar('YUAN_SETTINGS')
     if config and isinstance(config, dict):

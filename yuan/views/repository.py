@@ -60,7 +60,7 @@ def family(family):
     return Response(json.dumps(projects), content_type='application/json')
 
 
-@bp.route('/<family>/<name>/', methods=['GET', 'DELETE'])
+@bp.route('/<family:family>/<name>/', methods=['GET', 'DELETE'])
 def project(family, name):
     project = Project(family=family, name=name)
     if 'created_at' not in project:
@@ -84,7 +84,7 @@ def project(family, name):
 
 
 @bp.route(
-    '/<family>/<name>/<version>/',
+    '/<family:family>/<name>/<version>/',
     methods=['GET', 'POST', 'PUT', 'DELETE'])
 def package(family, name, version):
     """Create, delete, upload, and get information of a package."""
@@ -185,7 +185,7 @@ def package(family, name, version):
         return jsonify(package)
 
 
-@bp.route('/<family>/<name>/<version>/<filename>')
+@bp.route('/<family:family>/<name>/<version>/<filename>')
 def tarball(family, name, version, filename):
     # this will not work in production
     # nginx will stop it
@@ -225,7 +225,7 @@ def search():
     return jsonify(status='success', data=data)
 
 
-@bp.route('/upload/<family>', methods=['POST'])
+@bp.route('/upload/<family:family>', methods=['POST'])
 def upload(family):
     allow_anonymous = current_app.config.get('ALLOW_ANONYMOUS', False)
     if not allow_anonymous and not g.user:
