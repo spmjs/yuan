@@ -167,6 +167,8 @@ class Project(Model):
         self.packages = packages
         self['updated_at'] = now
         self.write()
+
+
         return self
 
     def remove(self, version):

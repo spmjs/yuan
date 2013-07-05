@@ -1,67 +1,81 @@
 <!DOCTYPE HTML>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>{% block title %}{% block subtitle %}{% endblock %} - {{config.SITE_TITLE}}{% endblock %}</title>
-    <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="{{config.SITE_TITLE}}" />
-    {%- from "macro/ui.html" import flash_messages %}
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width"/>
+  <title>{% block title %}{% block subtitle %}{% endblock %} - {{config.SITE_TITLE}}{% endblock %}</title>
+  <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="{{config.SITE_TITLE}}"/>
+  {%- from "macro/ui.html" import flash_messages %}
 
-    {%- for url in config.SITE_STYLES %}
-    <link rel="stylesheet" href="{{ url }}" />
-    {%- endfor %}
+  {%- for url in config.SITE_STYLES %}
+  <link rel="stylesheet" href="{{ url }}"/>
+  {%- endfor %}
 
-    {%- block afterstyle %}{% endblock %}
-    {%- if config.SITE_GA %}
-    <script type="text/javascript">
-      var _gaq = _gaq || [];
-      _gaq.push(['_setAccount', '{{config.SITE_GA}}']);
-      _gaq.push(['_trackPageview']);
-      _gaq.push(['_trackPageLoadTime']);
-      (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = 'https://ssl.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-      })();
-    </script>
-    {%- endif %}
-  </head>
-  <body>
+  {%- block afterstyle %}{% endblock %}
+  {%- if config.SITE_GA %}
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', '{{config.SITE_GA}}']);
+    _gaq.push(['_trackPageview']);
+    _gaq.push(['_trackPageLoadTime']);
+    (function () {
+      var ga = document.createElement('script');
+      ga.type = 'text/javascript';
+      ga.async = true;
+      ga.src = 'https://ssl.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+  {%- endif %}
+</head>
+<body>
+{%- with messages = get_flashed_messages(with_categories=true) %}
+{{ flash_messages(messages) }}
+{%- endwith %}
+
+<header>
+  <div class="container fn-clear">
+    <h1 id="logo"><a href="/">{{config.SITE_TITLE}}</a></h1>
+    <div class="search-form">
+      <form class="form long" method="get" action="/search">
+        <input class="text" type="search" name="q"/>
+        <button class="classy search"><i class="icon-search" title="{{_('Search')}}"></i></button>
+      </form>
+    </div>
     <div class="navigation">
-      <div class="container">
-        <a href="/" class="home">{{config.SITE_TITLE}}</a>
-        <div class="menu">
-          {%- if g.user %}
-          <a href="{{url_for('front.profile', name=g.user.name)}}">{{g.user}}</a>
-          <a href="{{url_for('account.setting')}}">{{_('Settings')}}</a>
-          <a href="{{url_for('account.signout')}}">{{_('Sign Out')}}</a>
-          {%- else %}
-          <a href="{{url_for('account.signin')}}">{{_('Sign In')}}</a>
-          <a href="{{url_for('account.signup')}}">{{_('Sign Up')}}</a>
-          {%- endif %}
-        </div>
-      </div>
+      <a href="http://docs.spmjs.org/" title="{{_('Docs')}}"><i class="icon-meh"></i></a>
+      {%- if g.user %}
+      <a href="{{url_for('front.profile', name=g.user.name)}}" title="{{g.user}}"><i class="icon-user"></i></a>
+      <a href="{{url_for('account.setting')}}" title="{{_('Settings')}}"><i class="icon-wrench"></i></a>
+      <a href="{{url_for('account.signout')}}" title="{{_('Sign Out')}}"><i class="icon-signout"></i></a>
+      {%- else %}
+      <a href="{{url_for('account.signup')}}" title="{{_('Sign Up')}}"><i class="icon-edit"></i></a>
+      <a href="{{url_for('account.signin')}}" title="{{_('Sign In')}}"><i class="icon-signin"></i></a>
+      {%- endif %}
     </div>
+  </div>
+  <div id="color-bar"></div>
+</header>
 
-    {%- with messages = get_flashed_messages(with_categories=true) %}
-    {{ flash_messages(messages) }}
-    {%- endwith %}
+{%- block intro %}
+{%- endblock %}
 
-    {%- block mainbody %}
-    <div class="mainbody">
-      <div class="container fn-clear">
-        {% block content %}{% endblock %}
-      </div>
-    </div>
-    {%- endblock %}
 
-    {%- block footer %}
-    <div class="footer">
-      <div class="container">
-        <div>{{config.SITE_FOOTER}}</div>
-        <p class="software">Powered by <a href="https://github.com/lepture/yuan">yuan</a> {{config.SITE_TIME.strftime('%Y-%m-%d')}}</p>
-      </div>
-    </div>
-    {%- endblock %}
-  </body>
+{%- block mainbody %}
+<div class="container fn-clear">
+  {% block content %}{% endblock %}
+</div>
+{%- endblock %}
+
+{%- block footer %}
+<div class="footer">
+  <div class="container">
+    <div>{{config.SITE_FOOTER}}</div>
+    <p class="software">Powered by <a href="https://github.com/lepture/yuan">yuan</a>
+      {{config.SITE_TIME.strftime('%Y-%m-%d')}}</p>
+  </div>
+</div>
+{%- endblock %}
+</body>
 </html>

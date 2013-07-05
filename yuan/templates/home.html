@@ -2,13 +2,107 @@
 
 {% block title %}{{config.SITE_TITLE}}{% endblock %}
 
-{% block content %}
-<div class="search-form">
-  <form class="form long" method="get" action="/search">
-    <input class="text" type="search" name="q" />
-    <button class="classy search">{{_('Search')}}</button>
-  </form>
+{% block intro %}
+<div id="hero">
+  <div id="intro" class="container">
+    <h1>Bring SPM to work.</h1>
+    <p class="lead">Use GitHub Enterprise, the best way to build software, on your servers.</p>
+    <p class="lead">Powerful collaboration, code review, and code management for open source and private projects. Need private repositories?</p>
+    <a href="http://docs.spmjs.org/en/index#installation" id="button" class="attractive">{{_('Install SPM Right Now')}}</a>
+  </div>
 </div>
 {% endblock %}
 
-{%- block footer %}{% endblock %}
+{% block content %}
+<ul class="quick-meta fn-clear">
+  <li><i class="icon-star"></i><span>{{_('Total Package:')}}<strong>{{total_package_count}}</strong></span></li>
+  <li><i class="icon-home"></i><span>{{_('Total Family:')}}<strong>{{total_family_count}}</strong></span></li>
+  <li><i class="icon-male"></i><span>{{_('Total User:')}}<strong>{{total_user_count}}</strong></span></li>
+</ul>
+
+{%- if latest_publisher or most_depended_upon or top_submittors %}
+<ul class="quick-info fn-clear">
+  <li class="published">
+    {%- if latest_publisher %}
+    <h3>Latest Published</h3>
+    <ul>
+      {%- for latest in latest_publisher %}
+      <li>
+        {%- if latest.account %}
+          <a href="/{{latest.family}}/" title="{{latest.account}}"><img class="avatar" src="{{latest.account.avatar}}" alt="{{latest.account}}"/></a>
+        {%- else %}
+          <a href="{{url_for('front.profile', name=latest.publisher)}}" title="{{latest.publisher}}"><img class="avatar" src="http://cdntest.aliyun.com/avatar/water/user-1337829858480.png" alt="{{latest.publisher}}"/></a>
+        {%- endif %}
+        <span class="action">{{ latest.action }}</span>
+        <a href="/{{ latest.family }}/{{ latest.name }}/{{ latest.version }}" class="version">{{ latest.family }}/{{ latest.name }}@{{ latest.version }}</a>
+        <br />
+        <span class="time" title="{{ latest.update_at }}">{{ latest.pretty_date }}</span>
+      </li>
+      {%- endfor %}
+    </ul>
+    {%- endif %}
+  </li>
+  <li class="depend">
+    {%- if most_depended_upon %}
+    <h3>Most Depended Upon</h3>
+    <ul>
+      {%- for dep in most_depended_upon %}
+      <li>
+        <a href="{{ dep.0|package_to_url }}" class="name">{{ dep.0 }}</a>
+        <span class="count">{{ dep.1 }} packages</span>
+      </li>
+      {%- endfor %}
+    </ul>
+    {%- endif %}
+  </li>
+  <li>
+    {%- if top_submittors %}
+    <h3>Top submittors</h3>
+    <ul>
+      {%- for submit in top_submittors %}
+      <li>
+        <a href="{{url_for('front.profile', name=submit.0)}}" class="people">{{ submit.0 }}</a>
+        <span class="count">{{ submit.1 }} packages</span>
+      </li>
+      {%- endfor %}
+    </ul>
+    {%- endif %}
+  </li>
+</ul>
+{%- endif %}
+
+<h3>Simple Way to Use SPM</h3>
+<ul class="quick-doc fn-clear">
+  <li class="yue">
+    <pre><code>$ npm install spm -g
+$ spm init
+$ spm info
+$ spm install
+$ spm build
+$ spm publish
+$ spm deploy
+$ spm zip
+$ spm help
+</code></pre>
+  </li>
+  <li class="right">
+<iframe src="http://ascii.io/a/2533/raw" frameborder="0" width="100%" height="200"></iframe>
+  </li>
+</ul>
+
+<div class="quick-install">
+  <h3>Available on most platforms</h3>
+  <p class="platforms">
+    <i class="icon-apple"></i>
+    <i class="icon-windows"></i>
+    <i class="icon-linux"></i>
+  </p>
+  <p>SPM has been built to support many operating systems, and can be easily installed using <a href="http://npmjs.org">NPM</a>
+    (which comes installed with <a href="http://nodejs.org">Node.js</a>).</p>
+  <p>
+    <a class="attractive" href="http://docs.spmjs.org/en/index#installation">
+      <i class="icon-download"></i> Install SPM
+    </a>
+  </p>
+</div>
+{% endblock %}

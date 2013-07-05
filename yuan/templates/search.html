@@ -3,13 +3,6 @@
 {% block subtitle %}{{_('Search')}}{% endblock %}
 
 {% block content %}
-<div class="search-form">
-  <form class="form long" method="get" action="/search">
-    <input class="text" type="search" name="q" value="{{request.args.get('q', '')}}" />
-    <button class="classy search">{{_('Search')}}</button>
-  </form>
-</div>
-
 <div class="yue">
   {%- if data %}
   {%- for item in data %}

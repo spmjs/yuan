@@ -4,6 +4,7 @@ from ..models import project_signal, package_signal, index_project
 from ..search import index_project as index_search
 from .assets import extract_assets
 from .dependent import calculate_dependents
+from .meta import meta_info
 
 
 def _connect_package(sender, changes):
@@ -15,6 +16,7 @@ def _connect_package(sender, changes):
         with app.test_request_context():
             extract_assets(package, operation)
             calculate_dependents(package, operation)
+            meta_info(package, operation)
 
     if current_app.testing:
         extract_assets(package, operation)

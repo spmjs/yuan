@@ -49,3 +49,11 @@ a.button-classy:hover {
   background: #2174c8 -ms-linear-gradient(top, #3d8edf 0%, #2174c8 100%);
   background: #2174c8 linear-gradient(top, #3d8edf 0%, #2174c8 100%);
 }
+
+button.classy .iconfont {
+    font-size: 24px;
+    color: #333;
+}
+button.classy:hover .iconfont {
+    color: white;
+}

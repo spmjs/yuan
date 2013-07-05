@@ -6,20 +6,23 @@
 <div class="yue">
   {%- if account %}
   <div class="profile fn-clear">
-    <a class="avatar" href="/{{family}}/"><img src="{{account.avatar}}" alt="{{account}}" /></a>
-    <strong>{{account}}</strong><br />
+    <a class="avatar" href="/{{family}}/"><img src="{{account.avatar}}" alt="{{account}}"/></a>
+    <strong>{{account}}</strong><br/>
     <span>{{account.created.strftime('%Y-%m-%d')}}</span>
   </div>
   {%- if account.description %}
   <div class="markdown">{{account.description|markdown}}</div>
   {%- endif %}
-  <hr />
+  <hr/>
   {%- endif %}
   {%- for item in projects %}
-  <div class="cell">
-    <h3><a href="{{url_for('front.project', family=item.family, name=item.name)}}">{{item.family}}/{{item.name}}</a></h3>
+  <div class="cell" id="{{item.family}}-{{item.name}}">
+    <h3><a href="{{url_for('front.project', family=item.family, name=item.name)}}">{{item.family}}/{{item.name}}</a>
+    </h3>
+
     <p>{{item.description}}</p>
-    <span class="version">{{item.version}}</span>
+    <!--<span class="version">{{item.version}}</span>-->
+    <span class="version J_expand">{{_('All Versions')}}</span>
     {%- set doc = item.family|doc_link(item.name) %}
     {%- if doc %}
     <a class="doc" href="{{doc}}" title="{{_('Documentation Available')}}">✔</a>
@@ -27,4 +30,71 @@
   </div>
   {%- endfor %}
 </div>
+
+<script src="http://assets.spmjs.org/jquery/jquery/1.10.1/jquery.js"></script>
+<script>
+  (function ($) {
+    $(function () {
+
+      $(".J_expand").on("click", function (e) {
+        e.preventDefault();
+        var trigger = $(this),
+            familyElem = trigger.parents(".cell"),
+            id = familyElem.attr("id").split("-"),
+            family = id[0],
+            name = id[1];
+
+        if (trigger.data('load')) {
+          familyElem.next(".cell-1").remove();
+          trigger.data('load', false);
+          return;
+        }
+
+        trigger.data('load', true);
+        // loading
+        $.ajax("/repository/" + family + "/" + name + "/", {
+          success: function (data) {
+            if (!data) {
+              familyElem.after("<p>No results.</p>");
+              return;
+            }
+            var html = '';
+            $.each(data.packages, function (idx, val) {
+              html += '<div class="cell cell-1" id="' + val.family + '-' + data.name + '-' + val.version + '">'
+                  + '<p><span>Publisher: </span>' + val.publisher + '</p>'
+                  + '<p><span>Date: </span>' + val.updated_at + '</p>';
+
+              html += '<p><span>Dependencies: </span>';
+              if (val.dependencies) {
+                $.each(val.dependencies, function (idx, deps) {
+                  html += '<a href="/' + deps.slice(0, deps.indexOf("@")) + '">' + deps + '</a> ';
+                });
+              }
+              html += '</p>';
+
+              html += '<p><span>Dependents: </span>';
+              if (val.dependents) {
+                $.each(val.dependents, function (idx, deps) {
+                  html += '<a href="/' + deps.slice(0, deps.indexOf("@")) + '">' + deps + '</a> ';
+                });
+              }
+              html += '</p>';
+              html += '<span class="version"><a href="/' + val.family + '/' + data.name + '/' + val.version + '/">' + val.version + ' <i class="icon-caret-right"></i></a></span>'
+                  + '</div>';
+            });
+            familyElem.after($(html));
+          },
+          error: function (e) {
+            console.log(e);
+          },
+          complete: function () {
+            // unloading
+          }
+        });
+      });
+    });
+
+  })(jQuery);
+</script>
+
 {%- endblock %}
