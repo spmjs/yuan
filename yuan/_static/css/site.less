@@ -1,0 +1,391 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  color: #3e4349;
+
+  font: 400 14px/1.6 "Ubuntu", 'Helvetica Neue', 'Xin Gothic', 'Hiragino Sans GB', 'Microsoft YaHei', 'WenQuanYi Micro Hei', 'arial', sans-serif;
+}
+
+a {
+  color: #4183c4;
+  text-decoration: none;
+
+  &:hover {
+    color: #26c1c6;
+  }
+}
+
+.container {
+  width: 980px;
+  margin: 0 auto;
+}
+
+@headerHeight: 80px;
+header {
+  height: @headerHeight;
+  background: #F6F6F6;
+
+  #logo, .navigation, .search-form {
+    height: @headerHeight;
+    line-height: @headerHeight;
+  }
+  #logo {
+    float: left;
+    margin: 0;
+    margin-right: 60px;
+    font-family: 'Opensans Condensed', Arial, sans-serif;
+    text-transform: uppercase;
+
+    a, a:hover {
+      color: #777;
+      text-decoration: none;
+    }
+  }
+
+  .search-form {
+    float: left;
+    input.text {
+      padding-left: 0;
+      -webkit-appearance: textfield;
+    }
+  }
+
+  .navigation {
+    float: right;
+    font-size: 18px;
+    color: #999;
+    margin-right: -5px;
+
+    a {
+      color: #333;
+      text-decoration: none;
+      word-wrap: break-word;
+      margin: 0 5px;
+    }
+    a:hover {
+      color: #4183c4;
+    }
+  }
+
+  #color-bar {
+    height: 4px;
+    background: #26c1c6 url(./img/bg.png) no-repeat center center;
+    background-size: cover;
+  }
+}
+
+#hero {
+  position: relative;
+  height: 400px;
+  background: #26c1c6 url(./img/bg.png) no-repeat center center;
+  background-size: cover;
+
+  #intro {
+    position: relative;
+    font-size: 20px;
+    color: #DAEEE1;
+    padding: 80px 0;
+    height: 200px;
+
+    .lead {
+      margin: 10px 300px 10px 0;
+    }
+    h1 {
+      margin: 0 300px 30px 0;
+      color: white;
+      font-size: 62px;
+      letter-spacing: -1px;
+    }
+
+    #button {
+      display: block;
+      position: absolute;
+      top: 50%;
+      right: 0;
+      height: 60px;
+      line-height: 60px;
+      margin-top: -30px;
+    }
+  }
+}
+
+.attractive {
+  padding: 0 40px;
+  font-size: 18px;
+  font-weight: normal;
+  border-radius: 6px;
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+  background-color: #3072b3;
+  background-image: -moz-linear-gradient(#599bcd, #3072b3);
+  background-image: -webkit-linear-gradient(#599bcd, #3072b3);
+  background-image: linear-gradient(#599bcd, #3072b3);
+  background-repeat: repeat-x;
+  border-color: #2a65a0;
+  vertical-align: middle;
+
+  text-decoration: none;
+
+  &:active {
+    background-color: #3072b3;
+    background-image: none;
+    border-color: #25588c;
+    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.15)
+  }
+}
+
+.mainbody {
+  padding: 30px 10px;
+  input {
+    max-width: 90%;
+  }
+}
+
+.comments {
+  margin-top: 30px;
+  padding-top: 30px;
+}
+
+.footer {
+  margin: 50px 0 0;
+  padding: 10px 0;
+  border-top: 1px solid #ddd;
+
+  .software {
+    margin: 0;
+    text-align: center;
+    color: #696969;
+
+    a {
+      color: #565656;
+    }
+  }
+}
+
+.tags a {
+  display: inline-block;
+  color: white;
+  padding: 1px 6px;
+  background-color: #d64;
+  border-radius: 3px;
+  margin: 10px 6px 10px 0;
+  &:hover {
+    text-decoration: none;
+    color: white;
+    opacity: 0.6;
+  }
+}
+
+.profile .avatar {
+  float: left;
+  margin-right: 14px;
+}
+
+table.meta {
+  width: 100%;
+  a {
+    word-wrap: break-word;
+    word-break: break-all;
+  }
+  td {
+    position: relative;
+  }
+}
+
+.meta .doc {
+  position: absolute;
+  right: 10px;
+  color: #1A9B20;
+}
+
+.quick-meta {
+  margin: 20px 0;
+  padding: 10px 0;
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+
+  li {
+    float: left;
+    width: 33%;
+    list-style: none;
+
+    i {
+      position: relative;
+      top: -2px;
+      margin-right: 8px;
+    }
+    strong {
+      margin-left: 10px;
+      font-size: 18px;
+      font-style: italic;
+    }
+  }
+}
+
+.quick-info {
+  margin: 0;
+  margin-bottom: 40px;
+  padding: 0;
+  color: #333;
+  font-size: 14px;
+
+  li {
+    float: left;
+    width: 30%;
+    list-style: none;
+    margin: 0;
+
+    &.published {
+      margin-right: 5%;
+
+      ul li {
+        padding-left: 40px;
+      }
+    }
+    &.depend {
+      margin-right: 5%;
+    }
+  }
+  li ul {
+    margin: 0;
+    padding: 0;
+    li {
+      float: none;
+      width: auto;
+      padding: 0;
+      margin: 0;
+      margin-bottom: 6px;
+
+      .time, .count {
+        color: #bbb;
+      }
+      .count {
+        float: right;
+      }
+
+      .avatar {
+        float: left;
+        margin-left: -40px;
+        margin-top: 8px;
+        height: 32px;
+      }
+
+      * {
+        vertical-align: middle;
+      }
+    }
+  }
+
+  h3 {
+    margin: 20px 0;
+    padding: 0 0 0 12px;
+    border-left: 4px solid #cdcdcd;
+    color: #999;
+    text-transform: uppercase;
+    font-size: 14px;
+
+  }
+}
+
+.quick-doc {
+  margin: 0 0 40px;
+  padding: 0;
+
+  li {
+    float: left;
+    list-style: none;
+    width: 40%;
+    margin: 0 10% 0 0;
+
+    &.right {
+      width: 50%;
+      margin-right: 0;
+    }
+
+    pre {
+      margin: 0;
+    }
+  }
+}
+
+.quick-install {
+  width: 500px;
+  padding-top: 50px;
+  margin: 0 auto 40px;
+  text-align: center;
+
+  p {
+    margin: 10px 0;
+  }
+  .platforms {
+    font-size: 72px;
+
+    i {
+      margin-right: 20px;
+    }
+  }
+  .attractive {
+    display: block;
+    height: 40px;
+    line-height: 40px;
+    margin: 20px 0;
+
+    &:hover {
+      color: white;
+    }
+  }
+}
+
+.yue {
+  margin-top: 20px;
+  .cell {
+    position: relative;
+    padding: 7px;
+    border: 1px solid #dadada;
+    border-radius: 4px;
+    background-color: #f9f9f7;
+    margin: 14px 0;
+    h3 {
+      margin: 0 0 6px;
+    }
+    p {
+      margin: 0;
+
+      span {
+        color: #999;
+        margin-right: 10px;
+      }
+    }
+    .version, .doc {
+      position: absolute;
+      top: 0;
+      right: 0;
+      padding: 2px 4px;
+      color: #d64;
+
+      a, a:hover {
+        text-decoration: none;
+        color: #d64;
+      }
+    }
+    .doc {
+      right: 48px;
+      color: #1A9B20;
+      &:hover {
+        text-decoration: none;
+        color: #1A9B20;
+      }
+    }
+    .J_expand {
+      font-size: 12px;
+      cursor: pointer;
+    }
+  }
+  .cell-1 {
+    margin-left: 40px;
+  }
+  .cell-2 {
+    margin-left: 80px;
+  }
+}
