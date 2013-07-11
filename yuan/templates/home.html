@@ -9,6 +9,12 @@
     <button class="classy search">{{_('Search')}}</button>
   </form>
 </div>
+<div class="families yue">
+  <h3>Try families</h3>
+  {% for name in families %}
+  <a href="/{{name}}/">{{ name }}</a>
+  {% endfor %}
+</div>
 {% endblock %}
 
 {%- block footer %}{% endblock %}
