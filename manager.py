@@ -65,7 +65,7 @@ def index():
     for name in Project.all():
         for item in Project.list(name):
             print '%(family)s/%(name)s' % item
-            index_project(item, 'update')
+            index_project(item, 'sync')
 
 
 @manager.command

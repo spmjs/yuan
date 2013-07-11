@@ -221,10 +221,11 @@ class Package(Model):
 
 
 def index_project(project, operation):
-    # project = copy.copy(project)
+    # copy a new instance
+    project = Project(**project)
 
     repo = os.path.join(current_app.config['WWW_ROOT'], 'repository')
-    if operation == 'create' or operation == 'delete':
+    if operation in ('create', 'delete', 'sync'):
         fullname = '%(family)s/%(name)s' % project
         repofile = os.path.join(repo, 'index.json')
         if os.path.exists(repofile):
@@ -232,7 +233,7 @@ def index_project(project, operation):
         else:
             repoindex = []
 
-        if fullname not in repoindex and operation == 'create':
+        if fullname not in repoindex and operation in ('create', 'sync'):
             repoindex.insert(0, fullname)
         elif fullname in repoindex and operation == 'delete':
             repoindex.remove(fullname)
