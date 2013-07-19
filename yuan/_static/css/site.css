@@ -145,3 +145,28 @@ table.meta td {
   right: 10px;
   color: #1A9B20;
 }
+
+.documentation-center {
+  text-align: center;
+  margin: 60px 0;
+}
+.documentation-center a.big-button {
+  display: inline-block;
+  padding: 16px 29px;
+  text-decoration: none;
+  color: white;
+  background: #222223;
+}
+.documentation-center .big-button:hover {
+  opacity: 0.8;
+}
+
+.families {
+  text-align: center;
+}
+.families a {
+  display: inline-block;
+  background: #666;
+  color: white;
+  padding: 6px 16px;
+}
