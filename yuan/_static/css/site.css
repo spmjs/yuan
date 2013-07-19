@@ -166,6 +166,7 @@ table.meta td {
 }
 .families a {
   display: inline-block;
+  margin: 6px 2px;
   background: #666;
   color: white;
   padding: 6px 16px;
