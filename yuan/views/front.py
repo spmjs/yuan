@@ -32,6 +32,8 @@ def project(family, name):
     project = Project(family=family, name=name)
     if 'created_at' not in project:
         return abort(404)
+    if not project.version:
+        return abort(404)
     package = Package(family=family, name=name, version=project.version)
 
     project['latest'] = package

@@ -102,6 +102,13 @@ class Project(Model):
             'index.json'
         )
 
+    @cached_property
+    def version(self):
+        if 'packages' not in self:
+            return None
+        packages = self.sort(self['packages'])
+        return packages.keys()[0]
+
     @staticmethod
     def all():
         repo = os.path.join(
@@ -158,8 +165,6 @@ class Project(Model):
 
         packages[pkg.version] = pkg
         packages = self.sort(packages)
-        if packages:
-            self['version'] = packages.keys()[0]
 
         if 'created_at' not in self:
             self['created_at'] = now
