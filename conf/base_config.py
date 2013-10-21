@@ -7,7 +7,7 @@ SITE_URL = '/'
 SITE_GA = None
 SITE_STYLES = [
     '/_static/all.css',
-    'http://fontawesome.io/assets/font-awesome/css/font-awesome.css'
+    '/_static/css/font-awesome.css'
 ]
 
 #: session
