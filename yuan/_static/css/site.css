@@ -141,9 +141,8 @@ table.meta td {
   position: relative;
 }
 .meta .doc {
-  position: absolute;
-  right: 10px;
   color: #1A9B20;
+  float: right;
 }
 
 .documentation-center {
