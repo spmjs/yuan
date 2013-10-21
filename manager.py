@@ -82,14 +82,14 @@ def initassets():
 
 @manager.command
 def initdependents():
-    from yuan.tasks import index_dependents
+    from yuan.tasks.dependent import calculate_dependents
     for name in Project.all():
         for item in Project.list(name):
             item = Project(family=item['family'], name=item['name'])
             for key in item.packages:
                 pkg = Package(**item.packages[key])
                 print(pkg)
-                index_dependents(pkg, 'update')
+                calculate_dependents(pkg, 'update')
 
 
 @manager.command
