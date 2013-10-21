@@ -5,9 +5,9 @@ import imp
 import gevent.monkey
 gevent.monkey.patch_all()
 from yuan.app import create_app
+import jieba
 
-__all__ = ['app']
-
+jieba.initialize()
 application = create_app()
 
 ROOTDIR = os.path.abspath(os.path.dirname(__file__))

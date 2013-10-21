@@ -120,6 +120,7 @@ def _index(project, domain, config):
             print('    warn: %s/%s@%s, same md5' % (
                 me['family'], me['name'], v
             ))
+            Project(**me).save()
             continue
 
     for v in data['packages']:

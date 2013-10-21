@@ -7,7 +7,6 @@ from whoosh.index import create_in, open_dir
 from whoosh.fields import Schema, TEXT, KEYWORD, ID, STORED
 from whoosh.qparser import MultifieldParser
 from whoosh.analysis import Tokenizer, Token
-jieba.initialize()
 
 
 class ChineseTokenizer(Tokenizer):

@@ -20,6 +20,7 @@ docs/_build
 
 data/
 etc/
+venv/
 
 simplejson.py
 yuan/_static/sea-modules/
