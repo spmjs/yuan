@@ -6,13 +6,8 @@ SITE_TITLE = 'Yuan'
 SITE_URL = '/'
 SITE_GA = None
 SITE_STYLES = [
-    '/_static/css/fn.css',
-    '/_static/css/flashes.css',
-    '/_static/css/forms.css',
-    '/_static/css/buttons.css',
-    '/_static/css/typography.css',
-    '/_static/css/pygments.css',
-    '/_static/css/site.css',
+    '/_static/all.css',
+    'http://fontawesome.io/assets/font-awesome/css/font-awesome.css'
 ]
 
 #: session
@@ -57,3 +52,6 @@ MIRROR_URL = [
     'http://spmjs.org/repository/arale/',
     'http://spmjs.org/repository/alice/',
 ]
+
+# Max List Count in Homepage
+LIST_MAX_COUNT = 10

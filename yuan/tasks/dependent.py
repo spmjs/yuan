@@ -1,7 +1,7 @@
 from ..models import Package
 
 
-def index_dependents(pkg, operation):
+def calculate_dependents(pkg, operation):
     dependencies = pkg.get('dependencies', None)
     if not dependencies:
         return

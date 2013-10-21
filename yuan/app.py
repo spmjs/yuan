@@ -136,6 +136,10 @@ def register_jinja(app):
             return None
         return doc_host % {'family': family, 'name': name}
 
+    @app.template_filter("package_to_url")
+    def package_to_url(pkg_name):
+        return "/" + pkg_name.replace("@", "/")
+
 
 def register_babel(app):
     # babel for i18n

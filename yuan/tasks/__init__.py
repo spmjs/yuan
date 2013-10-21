@@ -3,7 +3,8 @@ from flask import Flask, current_app
 from ..models import project_signal, package_signal, index_project
 from ..search import index_project as index_search
 from .assets import extract_assets
-from .dependent import index_dependents
+from .dependent import calculate_dependents
+from .meta import meta_info
 
 
 def _connect_package(sender, changes):
@@ -14,11 +15,12 @@ def _connect_package(sender, changes):
         app.config = config
         with app.test_request_context():
             extract_assets(package, operation)
-            index_dependents(package, operation)
+            calculate_dependents(package, operation)
+            meta_info(package, operation)
 
     if current_app.testing:
         extract_assets(package, operation)
-        index_dependents(package, operation)
+        calculate_dependents(package, operation)
     else:
         gevent.spawn(_run, current_app.config)
 

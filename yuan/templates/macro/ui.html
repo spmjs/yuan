@@ -10,21 +10,6 @@
 {%- endif %}
 {%- endmacro %}
 
-
-{%- macro style(debug=True) %}
-{%- if debug %}
-<link rel="stylesheet" href="{{url_for('static', filename='css/fn.css')}}" />
-<link rel="stylesheet" href="{{url_for('static', filename='css/flashes.css')}}" />
-<link rel="stylesheet" href="{{url_for('static', filename='css/forms.css')}}" />
-<link rel="stylesheet" href="{{url_for('static', filename='css/buttons.css')}}" />
-<link rel="stylesheet" href="{{url_for('static', filename='css/typography.css')}}" />
-<link rel="stylesheet" href="{{url_for('static', filename='css/pygments.css')}}" />
-<link rel="stylesheet" href="{{url_for('static', filename='css/site.css')}}" />
-{%- else %}
-<link rel="stylesheet" href="{{url_for('static', filename='site.css')}}" />
-{%- endif %}
-{%- endmacro %}
-
 {%- macro render_package(pkg) %}
 {%- if pkg.homepage %}
 <tr>
