@@ -10,10 +10,20 @@
   </form>
 </div>
 
-<div class="families yue">
-  {% for name in families %}
-  <a href="/{{name}}/">{{ name }}</a>
-  {% endfor %}
+<h1>Families</h1>
+<hr>
+<div class="yue">
+  <table class="meta">
+    <tbody>
+      {% for name in families %}
+      <tr>
+        <td><a href="/{{name}}/">{{ name }}</a></td>
+        <td>10</td>
+        <td>2013-10-20</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 
 {% endblock %}
