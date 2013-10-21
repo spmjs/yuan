@@ -30,6 +30,7 @@
     <div class="navigation">
       <div class="container">
         <a href="/" class="home">{{config.SITE_TITLE}}</a>
+        <a href="http://docs.spmjs.org" target="_blank">docs</a>
         <div class="menu">
           {%- if g.user %}
           <a href="{{url_for('front.profile', name=g.user.name)}}">{{g.user}}</a>
