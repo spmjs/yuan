@@ -76,7 +76,8 @@ def top_submittors(package, operation):
         publisher = "anonymous"
 
     if publishers_obj.has_key(publisher):
-        publishers_obj[publisher].append(p)
+        if p not in publishers_obj[publisher]:
+            publishers_obj[publisher].append(p)
     else:
         publishers_obj[publisher] = [p]
 
