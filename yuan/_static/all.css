@@ -9,6 +9,12 @@
 @import "css/typography.css";
 
 @import "css/pygments.css";
+@font-face {
+  font-family: 'Marmelad';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Marmelad'), local('Marmelad-Regular'), url(http://aralejs.org/static/css/marmelad.woff) format('woff');
+}
 html,
 body {
   margin: 0;
@@ -17,11 +23,13 @@ body {
   font: 400 14px/1.6 "Ubuntu", 'Helvetica Neue', 'Xin Gothic', 'Hiragino Sans GB', 'Microsoft YaHei', 'WenQuanYi Micro Hei', 'arial', sans-serif;
 }
 a {
-  color: #4183c4;
+  color: #3d8edf;
   text-decoration: none;
+  word-wrap: break-word;
 }
 a:hover {
-  color: #26c1c6;
+  color: #69a7e6;
+  text-decoration: underline;
 }
 .container {
   width: 980px;
@@ -41,13 +49,18 @@ header #logo {
   float: left;
   margin: 0;
   margin-right: 60px;
-  font-family: 'Opensans Condensed', Arial, sans-serif;
-  text-transform: uppercase;
+  font-size: 32px;
+  font-weight: bold;
+  font-family: "Marmelad", "Lucida Grande", Georgia, sans-serif;
 }
-header #logo a,
-header #logo a:hover {
+header #logo a {
   color: #777;
   text-decoration: none;
+  transition: all 0.6s ease;
+}
+header #logo a:hover {
+  color: transparent;
+  text-shadow: 0 0 3px #777;
 }
 header .search-form {
   float: left;
@@ -122,6 +135,10 @@ header #color-bar {
   background-repeat: repeat-x;
   border-color: #2a65a0;
   vertical-align: middle;
+  text-decoration: none;
+}
+.attractive:hover {
+  color: #fff;
   text-decoration: none;
 }
 .attractive:active {
