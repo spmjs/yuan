@@ -92,7 +92,11 @@ def home():
         )
         obj_with_count = {}
         for key, val in _read_json(fpath, {}).iteritems():
-            obj_with_count[key] = len(val)
+            key = key.split('@')[0]
+            if obj_with_count.has_key(key):
+                obj_with_count[key] += len(val)
+            else:
+                obj_with_count[key] = len(val)
 
         obj_with_count_sorted = sorted(obj_with_count.iteritems(), key=operator.itemgetter(1))
         obj_with_count_sorted.reverse()
