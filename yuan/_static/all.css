@@ -141,6 +141,8 @@ header #color-bar {
   background-image: -moz-linear-gradient(#66ace6, #3178ba);
   background-image: -webkit-linear-gradient(#66ace6, #3178ba);
   background-image: linear-gradient(#66ace6, #3178ba);
+  text-decoration: none;
+  color: #fff;
 }
 .attractive:active {
   background-color: #3072b3;
