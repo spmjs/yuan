@@ -9,8 +9,6 @@
 @import "css/typography.css";
 
 @import "css/pygments.css";
-
-
 html,
 body {
   margin: 0;
@@ -343,7 +341,8 @@ table.meta td {
   color: #d64;
 }
 .yue .cell .doc {
-  right: 48px;
+  top: -3px;
+  right: 65px;
   color: #1A9B20;
 }
 .yue .cell .doc:hover {
