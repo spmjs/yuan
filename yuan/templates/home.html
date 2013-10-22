@@ -62,7 +62,7 @@
       {%- for submit in top_submittors %}
       <li>
         <a href="{{url_for('front.profile', name=submit.0)}}" class="people">{{ submit.0 }}</a>
-        <span class="count">{{ submit.1 }} packages</span>
+        <span class="count">{{ submit.1 }} times</span>
       </li>
       {%- endfor %}
     </ul>

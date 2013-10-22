@@ -92,11 +92,41 @@ def home():
         )
         obj_with_count = {}
         for key, val in _read_json(fpath, {}).iteritems():
+            obj_with_count[key] = len(val)
+
+        obj_with_count_sorted = sorted(obj_with_count.iteritems(), key=operator.itemgetter(1))
+        obj_with_count_sorted.reverse()
+
+        if len(obj_with_count_sorted) > current_app.config["LIST_MAX_COUNT"]:
+            obj_with_count_sorted = obj_with_count_sorted[0:current_app.config["LIST_MAX_COUNT"]]
+        return obj_with_count_sorted
+
+    def _get_unique_max(filename):
+        fpath = os.path.join(
+            current_app.config["WWW_ROOT"], "repository",
+            filename
+        )
+        obj_unique = {}
+        for key, val in _read_json(fpath, {}).iteritems():
             key = key.split('@')[0]
-            if obj_with_count.has_key(key):
-                obj_with_count[key] += len(val)
+
+            if obj_unique.has_key(key):
+                obj_unique[key] = list(set(obj_unique[key] + val))
             else:
-                obj_with_count[key] = len(val)
+                obj_unique[key] = list(set(val))
+
+        obj_with_count = {}
+        for key, val in obj_unique.iteritems():
+            val_unique = []
+            for v in val:
+                v = v.split('@')[0]
+                if v not in val_unique:
+                    val_unique.append(v)
+
+            if obj_with_count.has_key(key):
+                obj_with_count[key] += len(val_unique)
+            else:
+                obj_with_count[key] = len(val_unique)
 
         obj_with_count_sorted = sorted(obj_with_count.iteritems(), key=operator.itemgetter(1))
         obj_with_count_sorted.reverse()
@@ -110,7 +140,7 @@ def home():
         "total_family_count": len(Project.all()),
         "total_user_count": Account.query.count(),
         "latest_publisher": latest_publish_obj,
-        "most_depended_upon": _get_max("depend.json"),
+        "most_depended_upon": _get_unique_max("depend.json"),
         "top_submittors": _get_max("publishers.json")
     }
     return render_template('home.html', **dct)
