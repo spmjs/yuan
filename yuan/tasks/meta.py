@@ -50,7 +50,7 @@ def most_depended_upon(package, operation):
         if '@' not in dep or '/' not in dep:
             continue
         if depended_obj.has_key(dep):
-            if dep not in depended_obj[dep]:
+            if p not in depended_obj[dep]:
                 depended_obj[dep].append(p)
         else:
             depended_obj[dep] = [p]
