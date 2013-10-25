@@ -85,7 +85,7 @@ def top_submittors(package, operation):
 
 
 def meta_info(package, operation):
-    if operation == "delete" and os.path.exists(os.path.dirname(package.datafile)) or operation == "update":
+    if operation == "delete" and not os.path.exists(os.path.dirname(package.datafile)) or operation == "update":
         latest_publish(package, operation)
         most_depended_upon(package, operation)
         top_submittors(package, operation)
