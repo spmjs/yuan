@@ -38,6 +38,7 @@ a:hover {
 header {
   height: 80px;
   background: #F6F6F6;
+  margin-bottom: 25px;
 }
 header #logo,
 header .navigation,
