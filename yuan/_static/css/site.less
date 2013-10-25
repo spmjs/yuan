@@ -26,6 +26,7 @@ a {
 }
 
 .container {
+  padding-top: 25px;
   width: 980px;
   margin: 0 auto;
 }
@@ -34,7 +35,10 @@ a {
 header {
   height: @headerHeight;
   background: #F6F6F6;
-  margin-bottom: 25px;
+
+  .container {
+    padding-top: 0;
+  }
 
   #logo, .navigation, .search-form {
     height: @headerHeight;
