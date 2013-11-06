@@ -36,4 +36,10 @@
   <td>{{pkg.dependents|join(', ')}}</td>
 </tr>
 {%- endif %}
+{%- if pkg.spm.output %}
+<tr>
+  <th>Output:</th>
+  <td>{{pkg.spm.output|join(', ')}}</td>
+</tr>
+{%- endif %}
 {%- endmacro %}
