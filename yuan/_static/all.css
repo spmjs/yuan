@@ -50,22 +50,22 @@ header #logo {
   margin-right: 60px;
   font-size: 32px;
   font-weight: bold;
-  font-family: "Marmelad", "Lucida Grande", Georgia, sans-serif;
+  font-family: "Ubuntu", "Marmelad", "Lucida Grande", Georgia, sans-serif;
 }
 header #logo a {
-  color: #777;
+  color: #555;
   text-decoration: none;
   transition: all 0.6s ease;
 }
 header #logo a:hover {
   color: transparent;
-  text-shadow: 0 0 3px #777;
+  text-shadow: 0 0 3px #555;
 }
 header .search-form {
   float: left;
 }
 header .search-form input.text {
-  padding-left: 0;
+  padding-left: 0.4em;
   -webkit-appearance: textfield;
 }
 header .navigation {
