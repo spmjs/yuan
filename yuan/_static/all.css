@@ -32,12 +32,16 @@ a:hover {
   text-decoration: underline;
 }
 .container {
+  padding-top: 25px;
   width: 980px;
   margin: 0 auto;
 }
 header {
   height: 80px;
   background: #F6F6F6;
+}
+header .container {
+  padding-top: 0;
 }
 header #logo,
 header .navigation,
