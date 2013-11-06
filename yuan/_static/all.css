@@ -99,7 +99,7 @@ header #color-bar {
   font-size: 20px;
   color: #E8FFC5;
   padding: 80px 0;
-  text-shadow: 0 1px 3px #888;
+  text-shadow: 0 2px 3px #555;
   height: 200px;
 }
 #hero #intro .lead {
