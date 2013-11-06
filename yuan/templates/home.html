@@ -31,7 +31,11 @@
         {%- if latest.account %}
           <a href="/{{latest.family}}/" title="{{latest.account}}"><img class="avatar" src="{{latest.account.avatar}}" alt="{{latest.account}}"/></a>
         {%- else %}
+          {%- if latest.publisher %}
           <a href="{{url_for('front.profile', name=latest.publisher)}}" title="{{latest.publisher}}"><img class="avatar" src="http://cdntest.aliyun.com/avatar/water/user-1337829858480.png" alt="{{latest.publisher}}"/></a>
+          {%- else %}
+          <a href="javascript:;"><img class="avatar" src="http://cdntest.aliyun.com/avatar/water/user-1337829858480.png" alt="{{latest.publisher}}"/></a>
+          {%- endif %}
         {%- endif %}
         <span class="action">{{ latest.action }}</span>
         <a href="/{{ latest.family }}/{{ latest.name }}/{{ latest.version }}" class="version">{{ latest.family }}/{{ latest.name }}@{{ latest.version }}</a>
