@@ -85,13 +85,13 @@ header .navigation a:hover {
 }
 header #color-bar {
   height: 4px;
-  background: #26c1c6 url(img/bg.jpg) no-repeat center center;
+  background: #26c1c6 url(img/bg.jpg) no-repeat center bottom;
   background-size: cover;
 }
 #hero {
   position: relative;
   height: 400px;
-  background: #26c1c6 url(img/bg.jpg) no-repeat center bottom;
+  background: #26c1c6 url(img/bg.jpg) no-repeat center center;
   background-size: cover;
 }
 #hero #intro {
