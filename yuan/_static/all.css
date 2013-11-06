@@ -1,13 +1,8 @@
 @import "css/fn.css";
-
 @import "css/flashes.css";
-
 @import "css/forms.css";
-
 @import "css/buttons.css";
-
 @import "css/typography.css";
-
 @import "css/pygments.css";
 @font-face {
   font-family: 'Marmelad';
@@ -90,13 +85,13 @@ header .navigation a:hover {
 }
 header #color-bar {
   height: 4px;
-  background: #26c1c6 url(./img/bg.png) no-repeat center center;
+  background: #26c1c6 url(img/bg.png) no-repeat center center;
   background-size: cover;
 }
 #hero {
   position: relative;
   height: 400px;
-  background: #26c1c6 url(./img/bg.png) no-repeat center center;
+  background: #26c1c6 url(img/bg.png) no-repeat center center;
   background-size: cover;
 }
 #hero #intro {
@@ -205,8 +200,7 @@ table.meta td {
   position: relative;
 }
 .meta .doc {
-  position: absolute;
-  right: 10px;
+  float: right;
   color: #1A9B20;
 }
 .quick-meta {
