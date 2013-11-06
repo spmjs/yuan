@@ -53,13 +53,13 @@ header #logo {
   font-family: "Ubuntu", "Marmelad", "Lucida Grande", Georgia, sans-serif;
 }
 header #logo a {
-  color: #555;
+  color: #295D82;
   text-decoration: none;
   transition: all 0.6s ease;
 }
 header #logo a:hover {
   color: transparent;
-  text-shadow: 0 0 3px #555;
+  text-shadow: 0 0 3px #295D82;
 }
 header .search-form {
   float: left;
