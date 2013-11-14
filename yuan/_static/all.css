@@ -1,8 +1,13 @@
 @import "css/fn.css";
+
 @import "css/flashes.css";
+
 @import "css/forms.css";
+
 @import "css/buttons.css";
+
 @import "css/typography.css";
+
 @import "css/pygments.css";
 @font-face {
   font-family: 'Marmelad';
@@ -85,13 +90,13 @@ header .navigation a:hover {
 }
 header #color-bar {
   height: 4px;
-  background: #26c1c6 url(img/bg.jpg) no-repeat center bottom;
+  background: #333333 url(./img/bg.jpg) no-repeat center bottom;
   background-size: cover;
 }
 #hero {
   position: relative;
   height: 400px;
-  background: #26c1c6 url(img/bg.jpg) no-repeat center center;
+  background: #333333 url(./img/bg.jpg) no-repeat center center;
   background-size: cover;
 }
 #hero #intro {
