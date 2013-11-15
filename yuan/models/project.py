@@ -165,6 +165,8 @@ class Project(Model):
 
         packages[pkg.version] = pkg
         packages = self.sort(packages)
+        if packages:
+            self['version'] = packages.keys()[0]
 
         if 'created_at' not in self:
             self['created_at'] = now
@@ -172,7 +174,6 @@ class Project(Model):
         self.packages = packages
         self['updated_at'] = now
         self.write()
-
 
         return self
 
@@ -195,6 +196,7 @@ class Project(Model):
         )
         if not os.path.exists(directory):
             os.makedirs(directory)
+
 
         fpath = os.path.join(directory, 'index.json')
         with open(fpath, 'w') as f:
