@@ -15,7 +15,7 @@
 <tr>
   <th>Homepage:</th>
   {%- set doc = pkg.family|doc_link(pkg.name) %}
-  <td>{{pkg.homepage|repo_link}}{% if doc %}<span class="doc">✔</span>{% endif %}</td>
+  <td>{{pkg.homepage|repo_link}}{% if doc %}<a class="doc" href="{{doc}}" title="{{_('Documentation Available')}}">✔</a>{% endif %}</td>
 </tr>
 {%- endif %}
 {%- if pkg.repository %}
