@@ -146,7 +146,7 @@ def home():
         "top_submittors": _get_max("publishers.json")
     }'''
     dct = {
-        "total_package_count": 0,
+        "total_package_count": len(all_package),
         "total_family_count": 0,
         "total_user_count": 0,
         "latest_publisher": [],
