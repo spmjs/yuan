@@ -69,11 +69,12 @@ def _read_json(fpath, default):
 
 @bp.route('/')
 def home():
-    '''
+
     fpath = os.path.join(
         current_app.config["WWW_ROOT"], "repository",
         "index.json"
     )
+    '''
     all_package = _read_json(fpath, {})
 
     fpath = os.path.join(
