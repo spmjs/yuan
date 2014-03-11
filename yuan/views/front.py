@@ -147,8 +147,8 @@ def home():
     }'''
     dct = {
         "total_package_count": len(all_package),
-        "total_family_count": 0,
-        "total_user_count": 0,
+        "total_family_count": len(Project.all()),
+        "total_user_count": Account.query.count(),
         "latest_publisher": [],
         "most_depended_upon": [],
         "top_submittors": []
