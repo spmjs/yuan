@@ -149,7 +149,7 @@ def home():
         "total_package_count": len(all_package),
         "total_family_count": len(Project.all()),
         "total_user_count": Account.query.count(),
-        "latest_publisher": [],
+        "latest_publisher": latest_publish_obj[0:current_app.config["LIST_MAX_COUNT"]/2],
         "most_depended_upon": [],
         "top_submittors": []
     }
