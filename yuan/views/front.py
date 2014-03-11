@@ -136,13 +136,21 @@ def home():
             obj_with_count_sorted = obj_with_count_sorted[0:current_app.config["LIST_MAX_COUNT"]]
         return obj_with_count_sorted
 
-    dct = {
+    '''dct = {
         "total_package_count": len(all_package),
         "total_family_count": len(Project.all()),
         "total_user_count": Account.query.count(),
         "latest_publisher": latest_publish_obj[0:current_app.config["LIST_MAX_COUNT"]/2],
         "most_depended_upon": _get_unique_max("depend.json"),
         "top_submittors": _get_max("publishers.json")
+    }'''
+    dct = {
+        "total_package_count": 0,
+        "total_family_count": 0,
+        "total_user_count": 0,
+        "latest_publisher": [],
+        "most_depended_upon": [],
+        "top_submittors": []
     }
     return render_template('home.html', **dct)
 
