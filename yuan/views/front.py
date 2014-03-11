@@ -80,9 +80,9 @@ def home():
         current_app.config["WWW_ROOT"], "repository",
         "latest.json"
     )
-    '''
     latest_publish_obj = _read_json(fpath, [])
 
+    '''
     for obj in latest_publish_obj:
         obj["pretty_date"] = pretty_date(datetime.strptime(obj["update_at"], '%Y-%m-%dT%H:%M:%SZ'))
         account_query = Account.query.filter_by(name=obj["publisher"])
