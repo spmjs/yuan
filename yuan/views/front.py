@@ -151,7 +151,7 @@ def home():
         "total_user_count": Account.query.count(),
         "latest_publisher": latest_publish_obj[0:current_app.config["LIST_MAX_COUNT"]/2],
         "most_depended_upon": _get_unique_max("depend.json"),
-        "top_submittors": []
+        "top_submittors": _get_max("publishers.json")
     }
     return render_template('home.html', **dct)
 
