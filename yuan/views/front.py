@@ -84,7 +84,7 @@ def home():
 
     for obj in latest_publish_obj:
         obj["pretty_date"] = pretty_date(datetime.strptime(obj["update_at"], '%Y-%m-%dT%H:%M:%SZ'))
-        #account_query = Account.query.filter_by(name=obj["publisher"])
+        account_query = Account.query.filter_by(name=obj["publisher"])
         #obj["account"] = account_query and account_query.first() or ""
 
     def _get_max(filename):
