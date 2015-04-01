@@ -38,12 +38,14 @@ Make a directory called `etc` in this repo, copy a basic config file and edit it
 Find Account Password
 ------------------------------
 
-```
-$python manager.py shell
+::
 
->>> from yuan.models import Account
->>> Account.query.all()
->>> jq = Account.query.filter_by(name="jquery").first()
->>> jq.password = jq.create_password("alipay")
->>> jq.save()
-```
+    $ python manager.py shell
+
+.. sourcecode:: python
+
+    >>> from yuan.models import Account
+    >>> Account.query.all()
+    >>> jq = Account.query.filter_by(name="jquery").first()
+    >>> jq.password = jq.create_password("alipay")
+    >>> jq.save()
