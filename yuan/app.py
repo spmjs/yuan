@@ -14,8 +14,8 @@ from pygments.formatters import HtmlFormatter
 
 from flask import Flask
 from flask import request, g, escape
-from flask.ext.babel import Babel
-from flask.ext.principal import Principal, Identity, identity_loaded, UserNeed
+from flask_babel import Babel
+from flask_principal import Principal, Identity, identity_loaded, UserNeed
 from flask import Markup
 from werkzeug.routing import BaseConverter
 

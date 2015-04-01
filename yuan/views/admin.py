@@ -1,8 +1,8 @@
 # coding: utf-8
 
 from flask import g
-from flask.ext.admin import Admin, AdminIndexView, expose
-from flask.ext.admin.contrib.sqlamodel import ModelView
+from flask_admin import Admin, AdminIndexView, expose
+from flask_admin.contrib.sqla import ModelView
 from ..models import db, Account, Member
 
 
@@ -50,5 +50,5 @@ class MemberView(BaseView):
 
 
 admin = Admin(name='Yuan', index_view=HomeView())
-admin.add_view(UserView(Account, db.session))
+admin.add_view(UserView(Account, db.session, endpoint='users'))
 admin.add_view(MemberView(Member, db.session))
